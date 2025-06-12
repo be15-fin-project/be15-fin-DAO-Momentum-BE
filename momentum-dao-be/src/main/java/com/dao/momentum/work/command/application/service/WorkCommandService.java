@@ -35,15 +35,13 @@ public class WorkCommandService {
         String ip = extractClientIp(httpServletRequest);
         log.info("출근 등록 요청 - IP: {}, 요청 시각: {}", ip, workStartRequest.getStartPushedAt());
 
-        List<String> allowedIps = getAllowedIps();
-        if (!isvalidIp(ip, allowedIps)) {
-            log.warn("허용되지 않은 IP 접근 시도: {}", ip);
-            throw new WorkException(ErrorCode.IP_NOT_ALLOWED);
-        }
-
+        validateIp(ip);
         long empId = 1; // 로그인 구현 후 수정
-
         LocalDate today = LocalDate.now();
+
+        boolean hasAMHalfDayoff = hasAMHalfDayOff(empId, today);
+        boolean hasPMHalfDayoff = hasPMHalfDayOff(empId, today);
+
 
         if (workAlreadyRecorded(empId, today, WorkTypeName.WORK.name())) {
             throw new WorkException(ErrorCode.WORK_ALREADY_RECORDED);
@@ -66,8 +64,8 @@ public class WorkCommandService {
         int typeId = workType.getTypeId();
 
         LocalDateTime startPushedAt = workStartRequest.getStartPushedAt();
-        LocalDateTime startAt = computeStartAt(startPushedAt);
-        LocalDateTime endAt = LocalDateTime.of(startPushedAt.toLocalDate(), getEndTime());
+        LocalDateTime startAt = computeStartAt(startPushedAt, hasAMHalfDayoff);
+        LocalDateTime endAt = hasPMHalfDayoff? LocalDateTime.of(startPushedAt.toLocalDate(), getMidTime()) : LocalDateTime.of(startPushedAt.toLocalDate(), getEndTime());
         validateStartAt(startAt, endAt);
 
         int breakTime = getBreakTime(startAt, endAt);
@@ -101,25 +99,23 @@ public class WorkCommandService {
         return List.of("0.0.0.0/0");
     }
 
-    private boolean isvalidIp(String ip, List<String> allowedIps) {
-        for (String allowedIp : allowedIps) {
+    private void validateIp(String ip) {
+        List<String> allowedIps = getAllowedIps();
+        boolean allowed = allowedIps.stream().anyMatch(allowedIp -> {
             try {
                 if (allowedIp.contains("/")) {
                     SubnetUtils subnet = new SubnetUtils(allowedIp);
                     subnet.setInclusiveHostCount(true);
-                    if (subnet.getInfo().isInRange(ip)) {
-                        return true;
-                    }
-                } else {
-                    if (ip.equals(allowedIp)) {
-                        return true;
-                    }
+                    return subnet.getInfo().isInRange(ip);
                 }
+                return allowedIp.equals(ip);
             } catch (IllegalArgumentException e) {
-                log.warn("잘못된 IP: {}", allowedIp, e);
+                log.warn("잘못된 IP 형식: {}", allowedIp);
+                return false;
             }
-        }
-        return false;
+        });
+
+        if (!allowed) throw new WorkException(ErrorCode.IP_NOT_ALLOWED);
     }
 
     /* 프록시 IP에 대한 처리 필요 */
@@ -174,8 +170,58 @@ public class WorkCommandService {
                 WorkTypeName.BUSINESS_TRIP.name()
         );
 
-        return workRepository.existsByEmpIdAndStartAtDateAndTypeNames(empId, date, typeNames);
+        List<Work> works = workRepository.findAllByEmpIdAndDateAndTypeNames(empId, date, typeNames);
+
+        LocalDateTime startAt = LocalDateTime.of(date, getStartTime());
+        LocalDateTime midTime = LocalDateTime.of(date, getMidTime());
+        LocalDateTime endAt = LocalDateTime.of(date, getEndTime());
+
+        for (Work foundWork : works) {
+            int typeId = foundWork.getTypeId();
+            WorkType type = workTypeRepository.findById(typeId)
+                    .orElseThrow(() -> new WorkException(ErrorCode.WORKTYPE_NOT_FOUND));
+
+            WorkTypeName typeName = type.getTypeName();
+
+            if (typeName == WorkTypeName.REMOTE_WORK || typeName == WorkTypeName.BUSINESS_TRIP) {
+                return true;
+            }
+
+            if (typeName == WorkTypeName.VACATION) {
+                if (hasAMHalfDayOff(empId, date) || hasPMHalfDayOff(empId, date)) {
+                    return true;
+                }
+
+                // 반차가 아닌 일반 휴가 중 겹치는 일정이 있는지 체크
+                LocalDateTime vacationStart = foundWork.getStartAt();
+                LocalDateTime vacationEnd = foundWork.getEndAt();
+
+                boolean overlaps = vacationStart.isBefore(endAt) && vacationEnd.isAfter(startAt);
+
+                if (overlaps) return true;
+
+            }
+        }
+
+        return false;
     }
+
+    private boolean hasHalfDayOff(long empId, LocalDate date, LocalTime start, LocalTime end) {
+        return workRepository.findAllByEmpIdAndDateAndTypeNames(empId, date, List.of(WorkTypeName.VACATION.name()))
+                .stream()
+                .anyMatch(work -> work.getStartAt().toLocalTime().equals(start) &&
+                        work.getEndAt().toLocalTime().equals(end));
+    }
+
+    private boolean hasAMHalfDayOff(long empId, LocalDate date) {
+        return hasHalfDayOff(empId, date, getStartTime(), getMidTime());
+    }
+
+    private boolean hasPMHalfDayOff(long empId, LocalDate date) {
+        return hasHalfDayOff(empId, date, getMidTime(), getEndTime());
+    }
+
+
 
     // 휴일인지 체크
     private boolean isHoliday(LocalDate date) {
@@ -189,7 +235,10 @@ public class WorkCommandService {
     }
 
 
-    private LocalDateTime computeStartAt(LocalDateTime startPushedAt) {
+    private LocalDateTime computeStartAt(LocalDateTime startPushedAt, boolean hasAMHalfDayOff) {
+        if (hasAMHalfDayOff) {
+            return getLaterOne(startPushedAt, LocalDate.now().atTime(getMidTime()));
+        }
         return getLaterOne(startPushedAt, LocalDate.now().atTime(getStartTime()));
     }
 
@@ -197,13 +246,13 @@ public class WorkCommandService {
         return LocalTime.of(9, 0); // 회사 정보로 수정 필요
     }
 
+    private LocalTime getMidTime() {
+        return getStartTime().plusMinutes(4 * 60 + 30);
+    }
+
     private LocalTime getEndTime() {
         return getStartTime().plusHours(DEFAULT_WORK_HOURS).plusHours(1);
         // 휴게시간 1시간 추가
-    }
-
-    private LocalTime getMidTime() {
-        return getStartTime().plusMinutes((long) 4.5 * 60);
     }
 
     private int getBreakTime(LocalDateTime startAt, LocalDateTime endAt) {
