@@ -17,10 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.util.SubnetUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 
 @Slf4j
@@ -38,13 +35,28 @@ public class WorkCommandService {
         String ip = extractClientIp(httpServletRequest);
         log.info("출근 등록 요청 - IP: {}, 요청 시각: {}", ip, workStartRequest.getStartPushedAt());
 
-        List<String> AllowedIps = getAllowedIps();
-        if (!isvalidIp(ip, AllowedIps)) {
+        List<String> allowedIps = getAllowedIps();
+        if (!isvalidIp(ip, allowedIps)) {
             log.warn("허용되지 않은 IP 접근 시도: {}", ip);
             throw new WorkException(ErrorCode.IP_NOT_ALLOWED);
         }
 
         long empId = 1; // 로그인 구현 후 수정
+
+        LocalDate today = LocalDate.now();
+
+        if (workAlreadyRecorded(empId, today, WorkTypeName.WORK.name())) {
+            throw new WorkException(ErrorCode.WORK_ALREADY_RECORDED);
+        }
+
+        if (hasApprovedWork(empId, today)) {
+            throw new WorkException(ErrorCode.ACCEPTED_WORK_ALREADY_RECORDED);
+        }
+
+        if (isHoliday(today)) {
+            throw new WorkException(ErrorCode.WORK_REQUESTED_ON_HOLIDAY);
+        }
+
         WorkType workType = workTypeRepository.findByTypeName(WorkTypeName.WORK.name())
                 .orElseThrow(() -> {
                     log.error("WorkType '{}'을(를) 찾을 수 없음", WorkTypeName.WORK.name());
@@ -55,7 +67,7 @@ public class WorkCommandService {
 
         LocalDateTime startPushedAt = workStartRequest.getStartPushedAt();
         LocalDateTime startAt = computeStartAt(startPushedAt);
-        LocalDateTime endAt = LocalDateTime.of(LocalDate.now(), getEndTime());
+        LocalDateTime endAt = LocalDateTime.of(startPushedAt.toLocalDate(), getEndTime());
         validateStartAt(startAt, endAt);
 
         int breakTime = getBreakTime(startAt, endAt);
@@ -69,7 +81,7 @@ public class WorkCommandService {
                 .breakTime(breakTime)
                 .build();
 
-        IsNormalWork isNormalWork = work.getWorkTime().toHours() >= DEFAULT_WORK_HOURS? IsNormalWork.Y : IsNormalWork.N;
+        IsNormalWork isNormalWork = work.getWorkTime().toHours() >= DEFAULT_WORK_HOURS ? IsNormalWork.Y : IsNormalWork.N;
         work.setIsNormalWork(isNormalWork);
 
         WorkSummaryDTO workSummaryDTO = WorkSummaryDTO.from(work);
@@ -149,6 +161,34 @@ public class WorkCommandService {
 
     }
 
+    // 이미 등록된 출근 기록이 있는 지 체크
+    private boolean workAlreadyRecorded(long empId, LocalDate date, String typeName) {
+        return workRepository.existsByEmpIdAndStartAtDateAndTypeName(empId, date, typeName);
+    }
+
+    // 승인된 휴가/출장/재택 근무가 있는 지 체크
+    private boolean hasApprovedWork(long empId, LocalDate date) {
+        List<String> typeNames = List.of(
+                WorkTypeName.REMOTE_WORK.name(),
+                WorkTypeName.VACATION.name(),
+                WorkTypeName.BUSINESS_TRIP.name()
+        );
+
+        return workRepository.existsByEmpIdAndStartAtDateAndTypeNames(empId, date, typeNames);
+    }
+
+    // 휴일인지 체크
+    private boolean isHoliday(LocalDate date) {
+        if (date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY) {
+            return true;
+        }
+
+        // 회사 휴일 테이블에 등록된 날짜이면 return true 추가 필요
+
+        return false;
+    }
+
+
     private LocalDateTime computeStartAt(LocalDateTime startPushedAt) {
         return getLaterOne(startPushedAt, LocalDate.now().atTime(getStartTime()));
     }
@@ -178,11 +218,11 @@ public class WorkCommandService {
     }
 
     private LocalDateTime getEarlierOne(LocalDateTime first, LocalDateTime second) {
-        return first.isBefore(second)? first : second;
+        return first.isBefore(second) ? first : second;
     }
 
     private LocalDateTime getLaterOne(LocalDateTime first, LocalDateTime second) {
-        return first.isAfter(second)? first : second;
+        return first.isAfter(second) ? first : second;
     }
 
 
