@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public enum ErrorCode {
     // 출퇴근 오류
-    WORKTYPE_NOT_FOUND("10001", "존재하지 않는 근무 유형입니다.", HttpStatus.NOT_FOUND),
+    WORKTYPE_NOT_FOUND("10001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
+    IP_NOT_ALLOWED("10002", "출퇴근 등록이 불가능한 IP입니다.", HttpStatus.BAD_REQUEST),
 
     // 공통 오류
     VALIDATION_ERROR("90001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
