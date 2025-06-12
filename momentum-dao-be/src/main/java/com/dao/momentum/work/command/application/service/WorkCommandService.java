@@ -35,7 +35,7 @@ public class WorkCommandService {
     private final WorkRepository workRepository;
 
     public WorkCreateResponse createWork(WorkStartRequest workStartRequest, HttpServletRequest httpServletRequest) {
-        String ip = httpServletRequest.getRemoteAddr();
+        String ip = extractClientIp(httpServletRequest);
         log.info("출근 등록 요청 - IP: {}, 요청 시각: {}", ip, workStartRequest.getStartPushedAt());
 
         List<String> AllowedIps = getAllowedIps();
@@ -56,6 +56,7 @@ public class WorkCommandService {
         LocalDateTime startPushedAt = workStartRequest.getStartPushedAt();
         LocalDateTime startAt = computeStartAt(startPushedAt);
         LocalDateTime endAt = LocalDateTime.of(LocalDate.now(), getEndTime());
+        validateStartAt(startAt, endAt);
 
         int breakTime = getBreakTime(startAt, endAt);
 
@@ -107,6 +108,45 @@ public class WorkCommandService {
             }
         }
         return false;
+    }
+
+    /* 프록시 IP에 대한 처리 필요 */
+    private String extractClientIp(HttpServletRequest request) {
+        String[] headers = {
+                "X-Forwarded-For",
+                "Proxy-Client-IP",
+                "WL-Proxy-Client-IP",
+                "HTTP_X_FORWARDED_FOR",
+                "HTTP_X_FORWARDED",
+                "HTTP_CLIENT_IP",
+                "HTTP_FORWARDED_FOR",
+                "HTTP_FORWARDED",
+                "X-Real-IP"
+        };
+
+        for (String header : headers) {
+            String ip = request.getHeader(header);
+            if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+                return ip.split(",")[0].trim();
+            }
+        }
+
+        return request.getRemoteAddr();
+    }
+
+    private void validateStartAt(LocalDateTime startAt, LocalDateTime endAt) {
+        LocalDate today = LocalDate.now();
+
+        if (!startAt.toLocalDate().isEqual(today)) {
+            log.warn("잘못된 출근 요청 - 출근 시각이 오늘 날짜가 아님: {}", startAt.toLocalDate());
+            throw new WorkException(ErrorCode.INVALID_WORK_TIME);
+        }
+
+        if (startAt.isAfter(endAt)) {
+            log.warn("잘못된 출근 요청 - 출근 시각이 종료 시각보다 늦음: startAt={}, endAt={}", startAt, endAt);
+            throw new WorkException(ErrorCode.INVALID_WORK_TIME);
+        }
+
     }
 
     private LocalDateTime computeStartAt(LocalDateTime startPushedAt) {
