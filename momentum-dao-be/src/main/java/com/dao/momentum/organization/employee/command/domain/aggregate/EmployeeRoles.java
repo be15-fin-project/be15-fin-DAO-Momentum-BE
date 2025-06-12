@@ -15,9 +15,9 @@ import lombok.NoArgsConstructor;
 public class EmployeeRoles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer employeeRolesId;
+    private Long employeeRolesId;
 
-    private Integer empId;
+    private Long empId;
 
     private Integer UserRoleId;
 }
