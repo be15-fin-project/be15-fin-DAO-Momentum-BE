@@ -26,7 +26,7 @@ public class RetentionInsight {
     private Integer positionId;
 
     @Column(name = "round_id", nullable = false)
-    private Long roundId;
+    private Integer roundId;
 
     @Column(name = "eval_month", nullable = false)
     private Integer evalMonth;

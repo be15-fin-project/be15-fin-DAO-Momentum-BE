@@ -22,7 +22,7 @@ public class RetentionSupport {
     private Long empId;
 
     @Column(name = "round_id", nullable = false)
-    private Long roundId;
+    private Integer roundId;
 
     @Column(name = "rating_score", nullable = false)
     private Integer ratingScore;

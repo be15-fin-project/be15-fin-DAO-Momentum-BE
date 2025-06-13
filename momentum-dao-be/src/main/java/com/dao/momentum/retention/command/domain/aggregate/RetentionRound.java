@@ -14,7 +14,7 @@ public class RetentionRound {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "round_id", nullable = false, updatable = false)
-    private Long roundId;
+    private Integer roundId;
 
     @Column(name = "round_no", nullable = false)
     private Integer roundNo;
