@@ -1,0 +1,57 @@
+package com.dao.momentum.retention.command.domain.aggregate;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "retention_insight")
+public class RetentionInsight {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "insight_id", nullable = false, updatable = false)
+    private Long insightId;
+
+    @Column(name = "dept_id", nullable = false)
+    private Integer deptId;
+
+    @Column(name = "position_id")
+    private Integer positionId;
+
+    @Column(name = "round_id", nullable = false)
+    private Long roundId;
+
+    @Column(name = "eval_month", nullable = false)
+    private Integer evalMonth;
+
+    @Column(name = "retention_score", nullable = false)
+    private Integer retentionScore;
+
+    @Column(name = "emp_count", nullable = false)
+    private Integer empCount;
+
+    @Column(name = "progress_20", nullable = false)
+    private Integer progress20;
+
+    @Column(name = "progress_40", nullable = false)
+    private Integer progress40;
+
+    @Column(name = "progress_60", nullable = false)
+    private Integer progress60;
+
+    @Column(name = "progress_80", nullable = false)
+    private Integer progress80;
+
+    @Column(name = "progress_100", nullable = false)
+    private Integer progress100;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+}
