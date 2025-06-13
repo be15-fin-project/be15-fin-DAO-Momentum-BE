@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import com.dao.momentum.evaluation.command.domain.aggregate.UseStatus;
 
 @Entity
@@ -48,6 +49,9 @@ public class Kpi {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "deadline", nullable = false)
+    private LocalDate deadline;
 
     @Column(name = "reason", length = 255)
     private String reason;

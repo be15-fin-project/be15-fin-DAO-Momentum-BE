@@ -13,8 +13,8 @@ public class HrWeight {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "weight", nullable = false, updatable = false)
-    private Integer weight;
+    @Column(name = "weight_id", nullable = false, updatable = false)
+    private Integer weight_id;
 
     @Column(name = "round_id", nullable = false)
     private Integer roundId;
