@@ -30,5 +30,6 @@ public class Announcement {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Column(insertable = false)
     private IsDeleted isDeleted;
 }
