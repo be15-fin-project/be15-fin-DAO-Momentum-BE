@@ -3,6 +3,7 @@ package com.dao.momentum.common.exception;
 
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.work.exception.WorkException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,6 +24,16 @@ public class GlobalExceptionHandler {
         ApiResponse<Void> response
                 = ApiResponse.failure(errorCode.getCode(), errorMessage.toString());
         return new ResponseEntity<>(response, errorCode.getHttpStatus());
+    }
+
+    @ExceptionHandler(WorkException.class)
+    public ResponseEntity<ApiResponse<Void>> handleWorkException(WorkException e){
+        ErrorCode errorCode = e.getErrorCode();
+
+        ApiResponse<Void> response
+                = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
+
+        return new ResponseEntity<>(response,errorCode.getHttpStatus());
     }
 
 
