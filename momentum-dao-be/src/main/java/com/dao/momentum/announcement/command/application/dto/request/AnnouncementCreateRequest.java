@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class AnnouncementCreateRequest {
-    @NotBlank
+    @NotBlank(message = "공지사항 제목은 비어 있을 수 없습니다.")
     private String title;
-    @NotBlank
+    @NotBlank(message = "공지사항 내용은 비어 있을 수 없습니다.")
     private String content;
 }

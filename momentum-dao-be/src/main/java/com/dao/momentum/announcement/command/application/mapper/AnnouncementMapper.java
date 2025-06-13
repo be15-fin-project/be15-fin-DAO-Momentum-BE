@@ -3,6 +3,7 @@ package com.dao.momentum.announcement.command.application.mapper;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
+import com.dao.momentum.announcement.command.domain.aggregate.IsDeleted;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,6 +14,7 @@ public class AnnouncementMapper {
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .empId(empId)
+                .isDeleted(IsDeleted.N)
                 .build();
     }
 

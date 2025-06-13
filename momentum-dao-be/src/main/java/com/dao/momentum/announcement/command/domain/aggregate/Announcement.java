@@ -1,6 +1,7 @@
 package com.dao.momentum.announcement.command.domain.aggregate;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -21,8 +22,10 @@ public class Announcement {
 
     private Long empId;
 
+    @NotBlank
     private String title;
 
+    @NotBlank
     private String content;
 
     @CreatedDate
@@ -32,6 +35,6 @@ public class Announcement {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @Column(insertable = false)
+    @Enumerated(EnumType.STRING)
     private IsDeleted isDeleted;
 }
