@@ -1,10 +1,9 @@
 package com.dao.momentum.announcement.command.domain.aggregate;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -24,8 +23,11 @@ public class Announcement {
 
     private String content;
 
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     private IsDeleted isDeleted;
