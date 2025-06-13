@@ -2,9 +2,8 @@ package com.dao.momentum.organization.employee.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
-import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRoleName;
+import com.dao.momentum.organization.employee.command.domain.aggregate.employee.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.userrole.EmployeeRoles;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;

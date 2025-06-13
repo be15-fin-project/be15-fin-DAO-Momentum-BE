@@ -5,7 +5,7 @@ import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
 import com.dao.momentum.common.auth.domain.aggregate.RefreshToken;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.employee.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;

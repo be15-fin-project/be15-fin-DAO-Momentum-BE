@@ -1,8 +1,7 @@
 package com.dao.momentum.organization.employee.command.application.dto.request;
 
-import com.dao.momentum.organization.employee.command.domain.aggregate.Gender;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRole;
+import com.dao.momentum.organization.employee.command.domain.aggregate.employee.Gender;
+import com.dao.momentum.organization.employee.command.domain.aggregate.employee.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

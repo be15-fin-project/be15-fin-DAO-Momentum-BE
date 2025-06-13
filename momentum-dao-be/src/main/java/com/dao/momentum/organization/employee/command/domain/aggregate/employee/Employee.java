@@ -1,4 +1,4 @@
-package com.dao.momentum.organization.employee.command.domain.aggregate;
+package com.dao.momentum.organization.employee.command.domain.aggregate.employee;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
