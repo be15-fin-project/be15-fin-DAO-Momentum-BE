@@ -16,6 +16,7 @@ import com.dao.momentum.work.exception.WorkException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -34,14 +35,14 @@ public class WorkCommandService {
     private final WorkCreateValidator workCreateValidator;
     private final WorkTimeService workTimeService;
 
-    public WorkStartResponse createWork(WorkStartRequest workStartRequest, HttpServletRequest httpServletRequest) {
+    public WorkStartResponse createWork(UserDetails userDetails, WorkStartRequest workStartRequest, HttpServletRequest httpServletRequest) {
         String ip = extractClientIp(httpServletRequest);
         LocalDateTime startPushedAt = workStartRequest.getStartPushedAt();
         log.info("출근 등록 요청 - IP: {}, 요청 시각: {}", ip, startPushedAt);
 
         ipValidator.validateIp(ip, getAllowedIps());
 
-        long empId = 1; // 로그인 구현 후 수정
+        long empId = Long.parseLong(userDetails.getUsername()); // 로그인 구현 후 수정
         LocalDate today = LocalDate.now();
 
         boolean hasAMHalfDayoff = workCreateValidator.hasAMHalfDayOff(empId, today);

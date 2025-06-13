@@ -2,9 +2,11 @@ package com.dao.momentum.work.command.application.dto.response;
 
 import com.dao.momentum.work.command.domain.aggregate.Work;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Builder
 public class WorkSummaryDTO {
     private long workId;
