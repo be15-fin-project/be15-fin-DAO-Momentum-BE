@@ -1,6 +1,7 @@
 package com.dao.momentum.work.command.domain.repository;
 
 import com.dao.momentum.work.command.domain.aggregate.Work;
+import com.dao.momentum.work.command.domain.aggregate.WorkTypeName;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
 
@@ -19,7 +20,7 @@ public interface WorkRepository {
             AND wt.typeName = :typeName
             """)
     boolean existsByEmpIdAndStartAtDateAndTypeName(
-            @Param("empId") long empId, @Param("date") LocalDate date, @Param("typeName") String typeName
+            @Param("empId") long empId, @Param("date") LocalDate date, @Param("typeName") WorkTypeName typeName
     );
 
     @Query("""
@@ -31,7 +32,7 @@ public interface WorkRepository {
             AND wt.typeName IN :typeNames
             """)
     boolean existsByEmpIdAndStartAtDateAndTypeNames(
-            @Param("empId") long empId, @Param("date") LocalDate date, @Param("typeName") List<String> typeNames
+            @Param("empId") long empId, @Param("date") LocalDate date, @Param("typeName") List<WorkTypeName> typeNames
     );
 
     @Query("""
@@ -45,7 +46,7 @@ public interface WorkRepository {
     List<Work> findAllByEmpIdAndDateAndTypeNames(
             @Param("empId") long empId,
             @Param("date") LocalDate date,
-            @Param("typeNames") List<String> typeNames
+            @Param("typeNames") List<WorkTypeName> typeNames
     );
 
 

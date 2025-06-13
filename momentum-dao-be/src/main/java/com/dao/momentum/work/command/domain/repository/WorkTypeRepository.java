@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface WorkTypeRepository {
 
-    Optional<WorkType> findByTypeName(String work);
+    Optional<WorkType> findByTypeName(WorkTypeName workType);
 
     Optional<WorkType> findById(int typeId);
 }

@@ -52,4 +52,8 @@ public class Work {
                 .minusMinutes(this.breakTime);
     }
 
+    public boolean isNormalWork(long requiredMinutes) {
+        return this.getWorkTime().toMinutes() >= requiredMinutes;
+    }
+
 }
