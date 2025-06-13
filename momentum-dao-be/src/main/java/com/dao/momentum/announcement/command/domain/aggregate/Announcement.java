@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 public class Announcement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long announcementId;
+    private Long announcementId;
 
-    private long empId;
+    private Long empId;
 
     private String title;
 

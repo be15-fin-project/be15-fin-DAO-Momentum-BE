@@ -14,7 +14,7 @@ import lombok.*;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long attachmentId;
+    private Long attachmentId;
 
     private Long announcementId;
 
