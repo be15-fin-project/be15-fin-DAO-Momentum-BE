@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.organization.employee.query.mapper.UserRoleMapper">
+
+    <select id="findByEmpId" resultType="java.lang.String">
+        SELECT ur.user_role_name
+        FROM employee_roles er
+        JOIN user_role ur ON er.user_role_id = ur.user_role_id
+        WHERE er.emp_id = #{empId}
+    </select>
+
+</mapper>

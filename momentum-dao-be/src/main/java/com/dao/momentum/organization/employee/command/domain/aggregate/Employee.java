@@ -17,13 +17,15 @@ import java.time.LocalDateTime;
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer emp_id;
+    private Long empId;
 
-    private String emp_no;
+    private String empNo;
 
-    private Integer dept_id;
+    private String email;
 
-    private Integer position_id;
+    private Integer deptId;
+
+    private Integer positionId;
 
     private String password;
 
@@ -36,18 +38,26 @@ public class Employee {
 
     private String contact;
 
-    private LocalDate join_date;
+    private LocalDate joinDate;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private LocalDateTime create_at;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
-    private Integer remaining_dayoff_hours;
+    private Integer remainingDayoffHours;
 
-    private Integer remaining_refresh_days;
+    private Integer remainingRefreshDays;
 
-    private LocalDate birth_date;
+    private LocalDate birthDate;
+
+    public void setPassword(String password){
+        this.password = password;
+    }
+
+    public void setEmpNo(String nextEmpNo) {
+        this.empNo = nextEmpNo;
+    }
 }
