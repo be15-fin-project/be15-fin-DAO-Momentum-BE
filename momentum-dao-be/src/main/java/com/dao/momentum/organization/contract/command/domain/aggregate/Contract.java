@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,10 +22,12 @@ public class Contract {
 
     private Long empId;
 
+    @Enumerated(EnumType.STRING)
     private ContractType type;
 
     @Column(precision = 15, scale = 3)
     private BigDecimal salary;
 
+    @CreatedDate
     private LocalDate createdAt;
 }
