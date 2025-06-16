@@ -21,8 +21,11 @@ public class WorkQueryService {
     @Transactional(readOnly = true)
     public WorkListResponse getMyWorks(UserDetails userDetails, WorkSearchRequest workSearchRequest) {
         long empId = Long.parseLong(userDetails.getUsername());
-        LocalDate rangeStartDate = workSearchRequest.getRangeStartDate();
-        LocalDate rangeEndDate = workSearchRequest.getRangeEndDate().plusDays(1);
+            LocalDate rangeStartDate = workSearchRequest.getRangeStartDate() == null ?
+                    null : workSearchRequest.getRangeStartDate();
+            LocalDate rangeEndDate = workSearchRequest.getRangeEndDate() == null ?
+                    null : workSearchRequest.getRangeEndDate().plusDays(1);
+
         // EndDate에 지정한 날짜를 포함하려면 LocalDateTime 기준으로 하루 더 있어야 함
 
         List<WorkDTO> works = workMapper.getMyWorks(rangeStartDate, rangeEndDate, empId);
