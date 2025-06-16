@@ -1,11 +1,12 @@
 package com.dao.momentum.organization.position.command.application.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionCreateRequest;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionCreateResponse;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
+import com.dao.momentum.organization.position.exception.PositionException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,10 @@ public class PositionCommandService {
     @Transactional
     public PositionCreateResponse createPositions(PositionCreateRequest request) {
         if (positionRepository.existsByName(request.getName())) {
-            throw new IllegalArgumentException("이미 존재하는 직위 이름입니다.");
+            throw new PositionException(ErrorCode.POSITION_ALREADY_EXISTS);
         }
+
+        //POSITION_ALREADY_EXISTS
         Integer requestedLevel = request.getLevel();
 
         // 이미 존재하는 레벨인지 확인
