@@ -43,6 +43,19 @@ public class S3Service {
                 .build());
     }
 
+    public void deleteFileFromS3(String url) {
+        String key = extractKeyFromUrl(url);
+        deleteFile(key);
+    }
+
+    // cloudfront 도메인부분을 제거하고 S3 Key 추출
+    public String extractKeyFromUrl(String url) {
+        if (url == null || !url.startsWith(cloudFrontDomain)) {
+            throw new IllegalArgumentException("Invalid CloudFront URL: " + url);
+        }
+        return url.substring(cloudFrontDomain.length() + 1);
+    }
+
     public String sanitizeFilename(String filename) {
         if (filename == null) return "unnamed";
 

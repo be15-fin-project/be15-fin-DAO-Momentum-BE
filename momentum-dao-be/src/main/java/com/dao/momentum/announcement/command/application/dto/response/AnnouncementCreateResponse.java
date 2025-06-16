@@ -4,6 +4,7 @@ import lombok.*;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class AnnouncementCreateResponse {
     private Long announcementId;
 }
