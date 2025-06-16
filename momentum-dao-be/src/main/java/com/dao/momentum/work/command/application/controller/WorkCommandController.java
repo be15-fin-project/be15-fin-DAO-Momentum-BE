@@ -1,9 +1,7 @@
 package com.dao.momentum.work.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.work.command.application.dto.request.WorkEndRequest;
 import com.dao.momentum.work.command.application.dto.request.WorkStartRequest;
-import com.dao.momentum.work.command.application.dto.response.WorkEndResponse;
 import com.dao.momentum.work.command.application.dto.response.WorkStartResponse;
 import com.dao.momentum.work.command.application.service.WorkCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
