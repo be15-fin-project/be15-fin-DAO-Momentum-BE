@@ -1,13 +1,15 @@
 package com.dao.momentum.organization.department.command.domain.aggregate;
 
 import com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 
 import java.time.LocalDateTime;
 
@@ -19,12 +21,23 @@ public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer deptId;
-    private Integer deptHeadId;
+
     private Integer parentDeptId;
+
+    @NotBlank
     private String name;
+
+    @NotBlank
     private String contact;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(updatable = false)
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
     private IsDeleted isDeleted = IsDeleted.N;
 
 }
