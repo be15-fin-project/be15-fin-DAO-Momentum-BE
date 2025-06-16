@@ -1,5 +1,7 @@
 package com.dao.momentum.announcement.command.domain.aggregate;
 
+import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
+import com.dao.momentum.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -43,5 +45,16 @@ public class Announcement {
         this.title = title;
         this.content = content;
         this.isDeleted = isDeleted;
+    }
+
+    public void validateAuthor(Long empId) {
+        if (!empId.equals(this.empId)) {
+            throw new AnnouncementAccessDeniedException(ErrorCode.ANNOUNCEMENT_NOT_AUTHOR);
+        }
+    }
+
+    public void modify(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 }
