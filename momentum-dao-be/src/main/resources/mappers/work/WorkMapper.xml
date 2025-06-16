@@ -2,7 +2,63 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.dao.momentum.work.query.mapper.WorkMapper">
+    <select id="getMyWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+        SELECT
+        work.work_id,
+        work.emp_id,
+        emp.emp_no,
+        emp.name As empName,
+        work.type_id,
+        wt.type_name,
+        work.start_at,
+        work.end_at,
+        work.is_normal_work
+        FROM work AS work
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE work.emp_id = #{empId}
+        <if test = "rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{rangeStartDate}
+        </if>
+        <if test = "rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{rangeEndDate}
+        </if>
+            ORDER BY work.start_at ASC;
+    </select>
 
+    <select id="getWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+        SELECT
+            work.workId,
+            work.empId,
+            emp.empNo,
+            emp.name As empName,
+            work.typeId,
+            work.typeName,
+            work.startAt,
+            work.endAt,
+            work.isNormalWork
+        FROM work AS work
+        JOIN employee AS emp ON work.empId = emp.empId
+        JOIN work_type AS wt ON work.typeId = wt.typeId
+        WHERE 1 = 1
+        <if test = "empNo != null">
+            AND emp.empNo = empNo
+        </if>
+        <if test = "empName != null">
+            AND emp.name = empName
+        </if>
+        <if test = "rangeStartDate != null">
+            AND work.startAt <![CDATA[ >= ]]> {rangeStartDate}
+        </if>
+        <if test = "rangeEndDate != null">
+            AND work.startAt <![CDATA[ <= ]]> {rangeEndDate}
+        </if>
+        <if test = "order != 'DESC'">
+        ORDER BY work.startAt ASC;
+        </if>
+        <if test = "order == 'DESC'">
+        ORDER BY work.startAt DESC;
+        </if>
+    </select>
 </mapper>
