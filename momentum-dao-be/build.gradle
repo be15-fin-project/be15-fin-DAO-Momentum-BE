@@ -49,6 +49,10 @@ dependencies {
 
     //modelmapper 의존성 추가
     implementation 'org.modelmapper:modelmapper:3.2.1'
+
+    // ip 로그인
+    // https://mvnrepository.com/artifact/com.github.seancfoley/ipaddress
+    implementation 'com.github.seancfoley:ipaddress:5.5.0'
 }
 
 tasks.named('test') {

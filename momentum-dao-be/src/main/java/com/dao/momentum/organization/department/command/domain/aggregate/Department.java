@@ -1,10 +1,15 @@
 package com.dao.momentum.organization.department.command.domain.aggregate;
 
 import com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted;
+
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 
 import java.time.LocalDateTime;
 
@@ -19,13 +24,18 @@ public class Department {
 
     private Integer parentDeptId;
 
+    @NotBlank
     private String name;
 
+    @NotBlank
     private String contact;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreatedDate
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @LastModifiedDate
+    @Column(updatable = false)
+    private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     private IsDeleted isDeleted = IsDeleted.N;
