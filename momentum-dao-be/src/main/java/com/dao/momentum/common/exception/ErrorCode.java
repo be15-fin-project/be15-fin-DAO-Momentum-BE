@@ -13,6 +13,10 @@ public enum ErrorCode {
     EMPLOYEE_NOT_FOUND("10002","해당 사원을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
     INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.FORBIDDEN),
 
+    //공지사항 오류(60001 - 69999)
+    ANNOUNCEMENT_NOT_FOUND("60001", "해당 공지사항 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    ANNOUNCEMENT_NOT_AUTHOR("60002", "해당 공지사항 게시글의 작성자가 아닙니다.", HttpStatus.FORBIDDEN),
+
     // 공통 오류
     VALIDATION_ERROR("90001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
     UNKNOWN_RUNTIME_ERROR("90002", "알 수 없는 런타임 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
