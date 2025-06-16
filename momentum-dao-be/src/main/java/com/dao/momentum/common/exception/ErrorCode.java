@@ -11,8 +11,9 @@ public enum ErrorCode {
     //사원 오류(10001 - 199999)
     EMPLOYEE_ALREADY_EXISTS("10001", "해당 사원이 이미 존재합니다.",HttpStatus.BAD_REQUEST),
     EMPLOYEE_NOT_FOUND("10002","해당 사원을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
-    INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.FORBIDDEN),
-    POSITION_ALREADY_EXISTS("10004","이미 존재하는 직위입니다.",HttpStatus.FORBIDDEN),
+    INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.NOT_FOUND),
+    POSITION_ALREADY_EXISTS("10004","이미 존재하는 직위입니다.",HttpStatus.CONFLICT),
+    POSITION_NOT_FOUND("10005","존재하지 않는 직위입니다.",HttpStatus.NOT_FOUND),
 
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
