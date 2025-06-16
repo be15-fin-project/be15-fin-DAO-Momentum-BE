@@ -5,6 +5,10 @@ import com.dao.momentum.approve.query.dto.request.PageRequest;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.service.AdminApproveService;
 import com.dao.momentum.common.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.tags.Tags;
+import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/admin")
+@Tag(name = "전체 결재 내역 조회", description = "전체 결재 내역 조회 API")
 @RequiredArgsConstructor
 public class AdminApproveController {
 
@@ -25,6 +30,7 @@ public class AdminApproveController {
     /* 전체 결재 목록 조회하기 */
     @GetMapping("/approval/documents")
     @PreAuthorize("hasAuthority('MASTER')")
+    @Operation(summary = "전체 결재 내역 조회", description = "마스터 관리자가 전체 결재 내역을 조회합니다.")
     public ResponseEntity<ApiResponse<ApproveResponse>> getApproveList(
             @Validated ApproveListRequest approveListRequest,
             PageRequest pageRequest
