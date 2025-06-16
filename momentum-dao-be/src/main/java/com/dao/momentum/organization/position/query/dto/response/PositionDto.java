@@ -1,9 +1,11 @@
 package com.dao.momentum.organization.position.query.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class PositionDto {
     private Integer positionId;
