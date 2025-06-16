@@ -1,6 +1,8 @@
 package com.dao.momentum.work.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.company.command.domain.aggregate.IpAddress;
+import com.dao.momentum.organization.company.command.domain.repository.IpAddressRepository;
 import com.dao.momentum.work.command.application.dto.response.WorkStartResponse;
 import com.dao.momentum.work.command.application.dto.response.WorkSummaryDTO;
 import com.dao.momentum.work.command.application.validator.IpValidator;
@@ -34,6 +36,7 @@ public class WorkCommandService {
     private final IpValidator ipValidator;
     private final WorkCreateValidator workCreateValidator;
     private final WorkTimeService workTimeService;
+    private final IpAddressRepository ipAddressRepository;
 
     @Transactional
     public WorkStartResponse createWork(UserDetails userDetails, HttpServletRequest httpServletRequest, LocalDateTime startPushedAt) {
@@ -153,8 +156,11 @@ public class WorkCommandService {
 //    }
 
     private List<String> getAllowedIps() {
-//        return List.of();
-        return List.of("0.0.0.0/0", "::/0");
+        return ipAddressRepository.findAll().stream()
+                .map(IpAddress::getIpAddress)
+                .toList();
+
+//        return List.of("0.0.0.0/0", "::/0");
     }
 
     /* 프록시 IP에 대한 처리 필요 */

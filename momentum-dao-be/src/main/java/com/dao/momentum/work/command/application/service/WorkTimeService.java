@@ -1,5 +1,11 @@
 package com.dao.momentum.work.command.application.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.company.command.domain.aggregate.Company;
+import com.dao.momentum.organization.company.command.domain.repository.CompanyRepository;
+import com.dao.momentum.organization.company.exception.CompanyException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -7,14 +13,22 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class WorkTimeService {
     public static final int DEFAULT_WORK_HOURS = 8;
     private static final int BREAK_30M_THRESHOLD = 4 * 60;
     private static final int BREAK_60M_THRESHOLD = 8 * 60 + 30;
+    private final CompanyRepository companyRepository;
 
     public LocalTime getStartTime() {
-        return LocalTime.of(9, 0); // 회사 정보로 수정 필요
+        Company company = companyRepository.findById(1)
+                .orElseThrow(() -> {
+                    log.error("회사 정보 조회 실패 - 요청 일시: {}", LocalDateTime.now());
+                    return new CompanyException(ErrorCode.COMPANY_INFO_NOT_FOUND);
+                });
+        return company.getWorkStartTime();
     }
 
     public LocalTime getMidTime() {
