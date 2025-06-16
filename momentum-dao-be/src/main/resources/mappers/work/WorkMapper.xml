@@ -5,60 +5,89 @@
 <mapper namespace="com.dao.momentum.work.query.mapper.WorkMapper">
     <select id="getMyWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
         SELECT
-        work.work_id,
-        work.emp_id,
-        emp.emp_no,
-        emp.name As empName,
-        work.type_id,
-        wt.type_name,
-        work.start_at,
-        work.end_at,
-        work.is_normal_work
+            work.work_id,
+            work.emp_id,
+            emp.emp_no,
+            emp.name AS empName,
+            work.type_id,
+            wt.type_name,
+            work.start_at,
+            work.end_at,
+            work.is_normal_work
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
         JOIN work_type AS wt ON work.type_id = wt.type_id
         WHERE work.emp_id = #{empId}
-        <if test = "rangeStartDate != null">
-            AND work.start_at <![CDATA[ >= ]]> #{rangeStartDate}
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
         </if>
-        <if test = "rangeEndDate != null">
-            AND work.start_at <![CDATA[ <= ]]> #{rangeEndDate}
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-            ORDER BY work.start_at ASC;
+        ORDER BY work.start_at ASC;
     </select>
 
     <select id="getWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
         SELECT
-            work.workId,
-            work.empId,
-            emp.empNo,
-            emp.name As empName,
-            work.typeId,
-            work.typeName,
-            work.startAt,
-            work.endAt,
-            work.isNormalWork
+            work.work_id,
+            work.emp_id,
+            emp.emp_no,
+            emp.name AS empName,
+            work.type_id,
+            wt.type_name,
+            work.start_at,
+            work.end_at,
+            work.is_normal_work
         FROM work AS work
-        JOIN employee AS emp ON work.empId = emp.empId
-        JOIN work_type AS wt ON work.typeId = wt.typeId
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
         WHERE 1 = 1
-        <if test = "empNo != null">
-            AND emp.empNo = empNo
+        <if test="request.empNo != null">
+            AND emp.emp_no = #{request.empNo}
         </if>
-        <if test = "empName != null">
-            AND emp.name = empName
+        <if test="request.empName != null">
+            AND emp.name = #{request.empName}
         </if>
-        <if test = "rangeStartDate != null">
-            AND work.startAt <![CDATA[ >= ]]> {rangeStartDate}
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
         </if>
-        <if test = "rangeEndDate != null">
-            AND work.startAt <![CDATA[ <= ]]> {rangeEndDate}
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test = "order != 'DESC'">
-        ORDER BY work.startAt ASC;
+        <if test="request.typeName != null">
+            AND wt.type_name = #{request.typeName}
         </if>
-        <if test = "order == 'DESC'">
-        ORDER BY work.startAt DESC;
+        <if test="request.order != 'DESC'">
+            ORDER BY work.start_at ASC
         </if>
+        <if test="request.order == 'DESC'">
+            ORDER BY work.start_at DESC
+        </if>
+        LIMIT #{request.limit} OFFSET #{request.offset};
+    </select>
+
+    <select id="countWorks" resultType="java.lang.Long">
+        SELECT
+        COUNT(work.work_id)
+        FROM work AS work
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE 1 = 1
+        <if test="request.empNo != null">
+            AND emp.emp_no = #{request.empNo}
+        </if>
+        <if test="request.empName != null">
+            AND emp.name = #{request.empName}
+        </if>
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
+        </if>
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
+        </if>
+        <if test="request.typeName != null">
+            AND wt.type_name = #{request.typeName}
+        </if>
+        ;
     </select>
 </mapper>
