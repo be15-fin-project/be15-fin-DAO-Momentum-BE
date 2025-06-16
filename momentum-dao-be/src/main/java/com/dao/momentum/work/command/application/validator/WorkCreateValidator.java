@@ -76,15 +76,12 @@ public class WorkCreateValidator {
             }
 
             if (typeName == WorkTypeName.VACATION) {
-                if (hasAMHalfDayOff(empId, date) || hasPMHalfDayOff(empId, date)) {
-                    return true;
-                }
 
                 // 반차가 아닌 일반 휴가 중 겹치는 일정이 있는지 체크
                 LocalDateTime vacationStart = foundWork.getStartAt();
                 LocalDateTime vacationEnd = foundWork.getEndAt();
 
-                boolean overlaps = vacationStart.isBefore(endAt) && vacationEnd.isAfter(startAt);
+                boolean overlaps = vacationStart.equals(startAt) && vacationEnd.equals(endAt);
 
                 if (overlaps) return true;
 
@@ -132,8 +129,8 @@ public class WorkCreateValidator {
             throw new WorkException(ErrorCode.INVALID_WORK_TIME);
         }
 
-        if (startAt.isAfter(endAt)) {
-            log.warn("잘못된 출근 요청 - 출근 시각이 종료 시각보다 늦음: startAt={}, endAt={}", startAt, endAt);
+        if (!startAt.isBefore(endAt)) {
+            log.warn("잘못된 출근 요청 - 출근 시각이 종료 시각보다 늦거나 같음: startAt={}, endAt={}", startAt, endAt);
             throw new WorkException(ErrorCode.INVALID_WORK_TIME);
         }
 

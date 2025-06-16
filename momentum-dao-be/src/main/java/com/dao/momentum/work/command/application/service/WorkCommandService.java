@@ -1,7 +1,9 @@
 package com.dao.momentum.work.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.work.command.application.dto.request.WorkEndRequest;
 import com.dao.momentum.work.command.application.dto.request.WorkStartRequest;
+import com.dao.momentum.work.command.application.dto.response.WorkEndResponse;
 import com.dao.momentum.work.command.application.dto.response.WorkStartResponse;
 import com.dao.momentum.work.command.application.dto.response.WorkSummaryDTO;
 import com.dao.momentum.work.command.application.validator.IpValidator;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,15 +38,16 @@ public class WorkCommandService {
     private final WorkCreateValidator workCreateValidator;
     private final WorkTimeService workTimeService;
 
-    public WorkStartResponse createWork(UserDetails userDetails, WorkStartRequest workStartRequest, HttpServletRequest httpServletRequest) {
+    @Transactional
+    public WorkStartResponse createWork(UserDetails userDetails, HttpServletRequest httpServletRequest, LocalDateTime startPushedAt) {
         String ip = extractClientIp(httpServletRequest);
-        LocalDateTime startPushedAt = workStartRequest.getStartPushedAt();
-        log.info("출근 등록 요청 - IP: {}, 요청 시각: {}", ip, startPushedAt);
+        long empId = Long.parseLong(userDetails.getUsername());
+
+        log.info("출근 등록 요청 - 사원ID: {}, IP: {}, 요청 시각: {}", empId, ip, startPushedAt);
 
         ipValidator.validateIp(ip, getAllowedIps());
 
-        long empId = Long.parseLong(userDetails.getUsername()); // 로그인 구현 후 수정
-        LocalDate today = LocalDate.now();
+        LocalDate today = startPushedAt.toLocalDate();
 
         boolean hasAMHalfDayoff = workCreateValidator.hasAMHalfDayOff(empId, today);
         boolean hasPMHalfDayoff = workCreateValidator.hasPMHalfDayOff(empId, today);
@@ -85,9 +89,9 @@ public class WorkCommandService {
                 IsNormalWork.Y : IsNormalWork.N;
         work.setIsNormalWork(isNormalWork);
 
-        WorkSummaryDTO workSummaryDTO = WorkSummaryDTO.from(work);
 
         workRepository.save(work);
+        WorkSummaryDTO workSummaryDTO = WorkSummaryDTO.from(work);
         log.info("출근 등록 완료 - workId: {}, empId: {}, 등록일시: {}", work.getWorkId(), empId, startPushedAt);
 
 
@@ -97,9 +101,63 @@ public class WorkCommandService {
                 .build();
     }
 
+//    @Transactional
+//    public WorkEndResponse updateWork(UserDetails userDetails, WorkEndRequest workEndRequest, HttpServletRequest httpServletRequest) {
+//        String ip = extractClientIp(httpServletRequest);
+//        long empId = Long.parseLong(userDetails.getUsername());
+//        LocalDateTime endPushedAt = workEndRequest.getEndPushedAt();
+//
+//        log.info("퇴근 등록 요청 - 사원ID: {}, IP: {}, 요청 시각: {}", empId, ip, endPushedAt);
+//        ipValidator.validateIp(ip, getAllowedIps());
+//
+//        LocalDate today = LocalDate.now();
+//
+//        WorkType workType = workTypeRepository.findByTypeName(WorkTypeName.WORK)
+//                .orElseThrow(() -> {
+//                    log.error("WorkType '{}'을(를) 찾을 수 없음", WorkTypeName.WORK);
+//                    return new WorkException(ErrorCode.WORKTYPE_NOT_FOUND);
+//                });
+//
+//        // 기존 출근 기록 조회
+//        Work work = workRepository.findByEmpIdAndDateAndTypeName(empId, today, workType)
+//                .orElseThrow(() -> new WorkException(ErrorCode.WORK_NOT_FOUND));
+//
+//        boolean hasAMHalfDayoff = workCreateValidator.hasAMHalfDayOff(empId, today);
+//        boolean hasPMHalfDayoff = workCreateValidator.hasPMHalfDayOff(empId, today);
+//
+//        LocalTime midTime = workTimeService.getMidTime();
+//        LocalTime endTime = workTimeService.getEndTime();
+////        LocalDateTime endAt = hasPMHalfDayoff ?
+////                today.atTime(midTime) : today.atTime(endTime);
+//
+//        LocalDateTime endAt = workTimeService.computeEndAt(endPushedAt, hasPMHalfDayoff);
+//
+////        workCreateValidator.validateWorkCreation(empId, today, startPushedAt, startAt, endAt);
+//
+//        int breakTime = workTimeService.getBreakTime(work.getStartAt(), endAt);
+//
+//        int requiredMinutes = WorkTimeService.DEFAULT_WORK_HOURS;
+//        if (hasAMHalfDayoff || hasPMHalfDayoff) {
+//            requiredMinutes /= 2;
+//        }
+//
+//        work.fromUpdate(endAt, endPushedAt, breakTime);
+//
+//        IsNormalWork isNormalWork = work.isNormalWork(requiredMinutes) ?
+//                IsNormalWork.Y : IsNormalWork.N;
+//        work.setIsNormalWork(isNormalWork);
+//
+//        WorkSummaryDTO workSummaryDTO = WorkSummaryDTO.from(work);
+//
+//        return WorkEndResponse.builder()
+//                .workSummaryDTO(workSummaryDTO)
+//                .message("퇴근 등록 성공")
+//                .build();
+//    }
+
     private List<String> getAllowedIps() {
 //        return List.of();
-        return List.of("0.0.0.0/0");
+        return List.of("0.0.0.0/0", "::/0");
     }
 
     /* 프록시 IP에 대한 처리 필요 */
@@ -119,13 +177,19 @@ public class WorkCommandService {
         for (String header : headers) {
             String ip = request.getHeader(header);
             if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-                return ip.split(",")[0].trim();
+                String clientIp = ip.split(",")[0].trim();
+                if (isLoopbackAddress(clientIp)) {
+                    return clientIp;  // 그대로 반환하거나 "127.0.0.1"로 통일해도 됨
+                }
+                return clientIp;
             }
         }
 
         return request.getRemoteAddr();
     }
 
-
+    private boolean isLoopbackAddress(String ip) {
+        return "127.0.0.1".equals(ip) || "::1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip);
+    }
 
 }

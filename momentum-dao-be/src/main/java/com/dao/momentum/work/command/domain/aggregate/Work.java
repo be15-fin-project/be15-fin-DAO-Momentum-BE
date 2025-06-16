@@ -47,6 +47,12 @@ public class Work {
         this.startPushedAt = startPushedAt;
     }
 
+    public void fromUpdate(LocalDateTime endAt, LocalDateTime endPushedAt, int breakTime) {
+        this.endAt = endAt;
+        this.endPushedAt = endPushedAt;
+        this.breakTime = breakTime;
+    }
+
     public Duration getWorkTime() {
         return Duration.between(this.startAt, this.endAt)
                 .minusMinutes(this.breakTime);

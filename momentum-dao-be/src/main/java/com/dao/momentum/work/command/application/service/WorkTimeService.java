@@ -57,4 +57,17 @@ public class WorkTimeService {
         }
         return getLaterOne(startPushedAt, startAtByPolicy);
     }
+
+    LocalDateTime computeEndAt(LocalDateTime endPushedAt, boolean hasPMHalfDayOff) {
+        LocalDate endPushedDate = endPushedAt.toLocalDate();
+        LocalTime endTime = getEndTime();
+        LocalDateTime endAtByPolicy = endPushedDate.atTime(endTime);
+        LocalTime midTime = getMidTime();
+        LocalDateTime endAtByPolicyForPMDayoff = endPushedDate.atTime(midTime);
+
+        if (hasPMHalfDayOff) {
+            return getEarlierOne(endPushedAt, endAtByPolicyForPMDayoff);
+        }
+        return getEarlierOne(endPushedAt, endAtByPolicy);
+    }
 }
