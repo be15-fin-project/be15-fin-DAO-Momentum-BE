@@ -36,4 +36,10 @@ public class AdminWorkSearchRequest {
     private int getLimit() {
         return getSize() == null ? 10 : getSize();
     }
+
+    public void addToEndDate() {
+        if (rangeEndDate != null) {
+            rangeEndDate = rangeEndDate.plusDays(1);
+        }
+    }
 }
