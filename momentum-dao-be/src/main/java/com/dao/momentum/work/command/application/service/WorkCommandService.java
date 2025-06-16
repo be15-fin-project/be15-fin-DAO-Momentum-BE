@@ -77,7 +77,7 @@ public class WorkCommandService {
                 .breakTime(breakTime)
                 .build();
 
-        int requiredMinutes = WorkTimeService.DEFAULT_WORK_HOURS;
+        int requiredMinutes = WorkTimeService.DEFAULT_WORK_HOURS * 60;
         if (hasAMHalfDayoff || hasPMHalfDayoff) {
             requiredMinutes /= 2;
         }
