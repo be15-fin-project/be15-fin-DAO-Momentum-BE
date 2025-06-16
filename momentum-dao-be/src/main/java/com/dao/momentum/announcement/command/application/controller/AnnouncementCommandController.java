@@ -6,6 +6,7 @@ import com.dao.momentum.announcement.command.application.dto.response.Announceme
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
 import com.dao.momentum.announcement.command.application.service.AnnouncementCommandService;
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
+import com.dao.momentum.announcement.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
@@ -62,7 +63,15 @@ public class AnnouncementCommandController {
     }
 
     @ExceptionHandler(NoSuchAnnouncementException.class)
-    public ResponseEntity<ApiResponse<Void>> NoSuchAnnouncementExceptionException(NoSuchAnnouncementException e) {
+    public ResponseEntity<ApiResponse<Void>> NoSuchAnnouncementException(NoSuchAnnouncementException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
+    }
+
+    @ExceptionHandler(FileUploadFailedException.class)
+    public ResponseEntity<ApiResponse<Void>> FileUploadFailedException(FileUploadFailedException e) {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getHttpStatus())

@@ -42,3 +42,15 @@ jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION} # 30분
   refresh-expiration : ${JWT_REFRESH_EXPIRATION} # 7일
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: dao-momentum
+    cloudfront:
+      domain: http://momentum-dao.site
