@@ -1,9 +1,12 @@
 package com.dao.momentum.organization.company.command.domain.aggregate;
 
+import com.dao.momentum.organization.company.command.application.dto.request.CompanyUpdateDTO;
+import com.dao.momentum.organization.company.command.application.dto.request.CompanyUpdateRequest;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -12,6 +15,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -37,15 +41,27 @@ public class Company {
     @NotBlank
     private String businessRegistrationNumber;
 
-    @NotBlank
+    @Email
     private String email;
 
-    @NotBlank
+    @NotNull
     private Integer paymentDay;
 
     @NotNull
     private LocalDate establishDate;
 
     @NotNull
-    private LocalDateTime workStartTime;
+    private LocalTime workStartTime;
+
+    public void updateFrom(CompanyUpdateDTO dto) {
+        this.name = dto.getName();
+        this.chairman = dto.getChairman();
+        this.address = dto.getAddress();
+        this.contact = dto.getContact();
+        this.businessRegistrationNumber = dto.getBusinessRegistrationNumber();
+        this.email = dto.getEmail();
+        this.paymentDay = dto.getPaymentDay();
+        this.establishDate = dto.getEstablishDate();
+        this.workStartTime = dto.getWorkStartTime();
+    }
 }

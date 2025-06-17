@@ -20,26 +20,24 @@ public class AdminWorkSearchRequest {
 
     private String typeName;
 
-    private String order;
+    private Order order;
 
-    @Builder.Default
-    private Integer page = 1;
+    private Integer page;
 
-    @Builder.Default
-    private Integer size = 10;
+    private Integer size;
 
-    private int getOffset() {
-        int page = getPage() == null ? 1 : getPage();
-        return (page - 1) * getLimit();
-    }
-
-    private int getLimit() {
-        return getSize() == null ? 10 : getSize();
-    }
-
-    public void addToEndDate() {
-        if (rangeEndDate != null) {
-            rangeEndDate = rangeEndDate.plusDays(1);
-        }
+    public AdminWorkSearchDTO toDTO() {
+        return AdminWorkSearchDTO.builder()
+                .empNo(this.empNo)
+                .empName(this.empName)
+                .deptName(this.deptName)
+                .rangeStartDate(this.rangeStartDate)
+                .rangeEndDate(this.rangeEndDate == null ?
+                        null : this.rangeEndDate.plusDays(1))
+                .typeName(this.typeName)
+                .order(this.order)
+                .page(this.page == null ? 1 : this.page)
+                .size(this.size == null ? 10 : this.size)
+                .build();
     }
 }

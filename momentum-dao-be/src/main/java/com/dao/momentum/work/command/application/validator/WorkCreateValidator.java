@@ -1,6 +1,7 @@
 package com.dao.momentum.work.command.application.validator;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.company.command.domain.repository.HolidayRepository;
 import com.dao.momentum.work.command.application.service.WorkTimeService;
 import com.dao.momentum.work.command.domain.aggregate.Work;
 import com.dao.momentum.work.command.domain.aggregate.WorkType;
@@ -8,7 +9,6 @@ import com.dao.momentum.work.command.domain.aggregate.WorkTypeName;
 import com.dao.momentum.work.command.domain.repository.WorkRepository;
 import com.dao.momentum.work.command.domain.repository.WorkTypeRepository;
 import com.dao.momentum.work.exception.WorkException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +20,21 @@ import java.util.List;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class WorkCreateValidator {
+public class WorkCreateValidator extends WorkCommandValidator {
 
-    private final WorkRepository workRepository;
     private final WorkTypeRepository workTypeRepository;
-    private final WorkTimeService workTimeService;
+    private final HolidayRepository holidayRepository;
+
+    public WorkCreateValidator(
+            WorkRepository workRepository,
+            WorkTypeRepository workTypeRepository,
+            WorkTimeService workTimeService,
+            HolidayRepository holidayRepository
+    ) {
+        super(workRepository, workTimeService); // 부모 클래스의 생성자 호출
+        this.workTypeRepository = workTypeRepository;
+        this.holidayRepository = holidayRepository;
+    }
 
     public void validateWorkCreation(long empId, LocalDate today, LocalDateTime startPushedAt, LocalDateTime startAt, LocalDateTime endAt) {
         if (workAlreadyRecorded(empId, today)) {
@@ -91,41 +100,20 @@ public class WorkCreateValidator {
         return false;
     }
 
-    private boolean hasHalfDayOff(long empId, LocalDate date, LocalTime start, LocalTime end) {
-        return workRepository.findAllByEmpIdAndDateAndTypeNames(empId, date, List.of(WorkTypeName.VACATION))
-                .stream()
-                .anyMatch(work -> work.getStartAt().toLocalTime().equals(start) &&
-                        work.getEndAt().toLocalTime().equals(end));
-    }
-
-    public boolean hasAMHalfDayOff(long empId, LocalDate date) {
-        LocalTime startTime = workTimeService.getStartTime();
-        LocalTime midTime = workTimeService.getMidTime();
-        return hasHalfDayOff(empId, date, startTime, midTime);
-    }
-
-    public boolean hasPMHalfDayOff(long empId, LocalDate date) {
-        LocalTime midTime = workTimeService.getMidTime();
-        LocalTime endTime = workTimeService.getEndTime();
-        return hasHalfDayOff(empId, date, midTime, endTime);
-    }
-
     // 휴일인지 체크
     public boolean isHoliday(LocalDate date) {
         if (date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY) {
             return true;
         }
 
-        // 회사 휴일 테이블에 등록된 날짜이면 return true 추가 필요
-
-        return false;
+        return holidayRepository.existsByDate(date);
     }
 
     public void validateStartAt(LocalDateTime startAt, LocalDateTime endAt, LocalDateTime startPushedAt, LocalDate today) {
         LocalDate pushedDate = startPushedAt.toLocalDate();
 
         if (!pushedDate.isEqual(today)) {
-            log.warn("잘못된 출근 요청 - 출근 시각이 오늘 날짜가 아님: {}", startAt.toLocalDate());
+            log.warn("잘못된 출근 요청 - 출근 시각이 오늘 날짜가 아님: startDate={}, today={}", startAt.toLocalDate(), today);
             throw new WorkException(ErrorCode.INVALID_WORK_TIME);
         }
 
