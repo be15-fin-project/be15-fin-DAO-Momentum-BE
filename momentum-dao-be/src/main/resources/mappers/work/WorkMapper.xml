@@ -45,7 +45,7 @@
         <if test="request.empNo != null">
             AND emp.emp_no = #{request.empNo}
         </if>
-        <if test="request.empName != null">
+        <if test="request.empName != null and request.empName != ''">
             AND emp.name = #{request.empName}
         </if>
         <if test="request.rangeStartDate != null">
@@ -54,7 +54,7 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null">
+        <if test="request.typeName != null and request.typeName != ''">
             AND wt.type_name = #{request.typeName}
         </if>
         <if test="request.order == null or request.order.name() != 'DESC'">
@@ -76,7 +76,7 @@
         <if test="request.empNo != null">
             AND emp.emp_no = #{request.empNo}
         </if>
-        <if test="request.empName != null">
+        <if test="request.empName != null and request.empName != ''">
             AND emp.name = #{request.empName}
         </if>
         <if test="request.rangeStartDate != null">
@@ -85,7 +85,7 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null">
+        <if test="request.typeName != null and request.typeName != ''">
             AND wt.type_name = #{request.typeName}
         </if>
         ;
