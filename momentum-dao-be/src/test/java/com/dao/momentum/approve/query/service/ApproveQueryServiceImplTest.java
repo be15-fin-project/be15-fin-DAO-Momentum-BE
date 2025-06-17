@@ -8,7 +8,7 @@ import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
-import com.dao.momentum.approve.query.mapper.ApproveMapper;
+import com.dao.momentum.approve.query.mapper.ReceivedApproveMapper;
 import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ApproveQueryServiceImplTest {
 
     @Mock
-    private ApproveMapper approveMapper;
+    private ReceivedApproveMapper receivedApproveMapper;
 
     @Mock
     private DraftApproveMapper draftApproveMapper;
@@ -50,9 +50,9 @@ class ApproveQueryServiceImplTest {
 
         List<ApproveDTO> dummyList = getDummyApproves();
 
-        when(approveMapper.existsByEmpId(empId)).thenReturn(true);
-        when(approveMapper.findReceivedApproval(request, empId, pageRequest)).thenReturn(dummyList);
-        when(approveMapper.countReceivedApproval(request, empId)).thenReturn((long) dummyList.size());
+        when(receivedApproveMapper.existsByEmpId(empId)).thenReturn(true);
+        when(receivedApproveMapper.findReceivedApproval(request, empId, pageRequest)).thenReturn(dummyList);
+        when(receivedApproveMapper.countReceivedApproval(request, empId)).thenReturn((long) dummyList.size());
 
         ApproveResponse response = approveService.getReceivedApprove(request, empId, pageRequest);
 
@@ -86,7 +86,7 @@ class ApproveQueryServiceImplTest {
         PageRequest pageRequest = new PageRequest(1, 10);
         Long empId = 999L;
 
-        when(approveMapper.existsByEmpId(empId)).thenReturn(false);
+        when(receivedApproveMapper.existsByEmpId(empId)).thenReturn(false);
 
         assertThrows(EmployeeException.class,
                 () -> approveService.getReceivedApprove(request, empId, pageRequest));

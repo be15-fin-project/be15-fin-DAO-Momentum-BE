@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface ApproveMapper {
+public interface ReceivedApproveMapper {
 
     List<ApproveDTO> findReceivedApproval(
             @Param("req") ApproveListRequest approveListRequest,
