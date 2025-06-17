@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public interface AdminApproveService {
+public interface AdminApproveQueryService {
 
     ApproveResponse getApproveList(
             ApproveListRequest approveListRequest,

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.momentum.approve.query.mapper.ApproveMapper">
+<mapper namespace="com.dao.momentum.approve.query.mapper.ReceivedApproveMapper">
 
     <select id="findReceivedApproval" resultType="com.dao.momentum.approve.query.dto.ApproveDTO">
         SELECT

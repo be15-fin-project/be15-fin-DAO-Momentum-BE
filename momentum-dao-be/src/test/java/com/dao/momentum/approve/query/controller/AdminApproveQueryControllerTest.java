@@ -2,7 +2,7 @@ package com.dao.momentum.approve.query.controller;
 
 import com.dao.momentum.approve.query.dto.ApproveDTO;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
-import com.dao.momentum.approve.query.service.AdminApproveService;
+import com.dao.momentum.approve.query.service.AdminApproveQueryService;
 import com.dao.momentum.common.dto.Pagination;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -22,8 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AdminApproveController.class)
-class AdminApproveControllerTest {
+@WebMvcTest(AdminApproveQueryController.class)
+class AdminApproveQueryControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -32,7 +32,7 @@ class AdminApproveControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    AdminApproveService adminApproveService;
+    AdminApproveQueryService adminApproveQueryService;
 
     private List<ApproveDTO> getDummyApproves() {
         ApproveDTO dummy1 = ApproveDTO.builder()
@@ -81,7 +81,7 @@ class AdminApproveControllerTest {
                         .build())
                 .build();
 
-        Mockito.when(adminApproveService.getApproveList(Mockito.any(), Mockito.any()))
+        Mockito.when(adminApproveQueryService.getApproveList(Mockito.any(), Mockito.any()))
                 .thenReturn(approveResponse);
 
         System.out.println(approveResponse);
