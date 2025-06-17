@@ -1,8 +1,6 @@
 package com.dao.momentum.organization.company.command.application.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +32,8 @@ public class CompanyUpdateDTO {
     @Email
     private String email;
 
+    @Min(1)
+    @Max(31)
     @NotNull
     private Integer paymentDay;
 
