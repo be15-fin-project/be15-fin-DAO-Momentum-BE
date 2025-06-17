@@ -153,7 +153,10 @@ public class AnnouncementCommandService {
 
         // 공지사항에 첨부된 파일들 hard delete
         List<File> files = fileRepository.findAllByAnnouncementId(announcementId);
-        files.forEach(file -> fileRepository.deleteById(file.getAttachmentId()));
+        files.forEach(file -> {
+            s3Service.deleteFileFromS3(file.getUrl());
+            fileRepository.deleteById(file.getAttachmentId());
+        });
 
         log.info("공지사항 삭제 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), announcement.getTitle());
 
