@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AdminApproveServiceImpl implements AdminApproveService {
+public class AdminApproveQueryServiceImpl implements AdminApproveQueryService {
 
     private final AdminApproveMapper adminApproveMapper;
 

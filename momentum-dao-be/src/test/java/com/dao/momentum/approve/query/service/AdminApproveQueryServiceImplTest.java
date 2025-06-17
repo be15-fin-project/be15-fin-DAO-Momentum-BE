@@ -20,13 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class AdminApproveServiceImplTest {
+class AdminApproveQueryServiceImplTest {
 
     @Mock
     private AdminApproveMapper adminApproveMapper;
 
     @InjectMocks
-    private AdminApproveServiceImpl adminApproveService;
+    private AdminApproveQueryServiceImpl adminApproveService;
 
     @BeforeEach
     void setUp() {
