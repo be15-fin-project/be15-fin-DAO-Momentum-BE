@@ -1,6 +1,7 @@
 package com.dao.momentum.work.command.application.validator;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.company.command.domain.repository.HolidayRepository;
 import com.dao.momentum.work.command.application.service.WorkTimeService;
 import com.dao.momentum.work.command.domain.aggregate.Work;
 import com.dao.momentum.work.command.domain.aggregate.WorkType;
@@ -26,6 +27,7 @@ public class WorkCreateValidator {
     private final WorkRepository workRepository;
     private final WorkTypeRepository workTypeRepository;
     private final WorkTimeService workTimeService;
+    private final HolidayRepository holidayRepository;
 
     public void validateWorkCreation(long empId, LocalDate today, LocalDateTime startPushedAt, LocalDateTime startAt, LocalDateTime endAt) {
         if (workAlreadyRecorded(empId, today)) {
@@ -116,16 +118,14 @@ public class WorkCreateValidator {
             return true;
         }
 
-        // 회사 휴일 테이블에 등록된 날짜이면 return true 추가 필요
-
-        return false;
+        return holidayRepository.existsByDate(date);
     }
 
     public void validateStartAt(LocalDateTime startAt, LocalDateTime endAt, LocalDateTime startPushedAt, LocalDate today) {
         LocalDate pushedDate = startPushedAt.toLocalDate();
 
         if (!pushedDate.isEqual(today)) {
-            log.warn("잘못된 출근 요청 - 출근 시각이 오늘 날짜가 아님: {}", startAt.toLocalDate());
+            log.warn("잘못된 출근 요청 - 출근 시각이 오늘 날짜가 아님: startDate={}, today={}", startAt.toLocalDate(), today);
             throw new WorkException(ErrorCode.INVALID_WORK_TIME);
         }
 
