@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8cc95f56-778b-49c8-a66a-38c40b793d1a" name="변경" comment="" />
+    <list default="true" id="8cc95f56-778b-49c8-a66a-38c40b793d1a" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/dto/request/PositionUpdateRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/dto/response/PositionUpdateResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/controller/PositionCommandController.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/controller/PositionCommandController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/service/PositionCommandService.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/application/service/PositionCommandService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/domain/aggregate/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/domain/aggregate/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/domain/repository/PositionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/domain/repository/PositionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/infrastructure/repository/JpaPositionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentum-dao-be/src/main/java/com/dao/momentum/organization/position/command/infrastructure/repository/JpaPositionRepository.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -10,44 +20,36 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "meowdule"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;meowdule&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/be15-fin-project/be15-fin-BE.git",
-    "accountId": "c82c5e19-6da9-4a60-8e60-9611125cc815"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/be15-fin-project/be15-fin-BE.git&quot;,
+    &quot;accountId&quot;: &quot;c82c5e19-6da9-4a60-8e60-9611125cc815&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2yQlVF5rrqk3EnndnbiSqJSdQ38" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "entity/evaluation",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/develop/be15_project/be15-fin-DAO-Momentum/fin-BE/momentum-dao-be",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/organization/position&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/develop/be15_project/be15-fin-DAO-Momentum/fin-BE/momentum-dao-be&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
-      </set>
-    </attachedChunks>
-  </component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="디폴트 작업">
@@ -57,6 +59,8 @@
       <option name="presentableId" value="Default" />
       <updated>1749774700018</updated>
       <workItem from="1749774701134" duration="76000" />
+      <workItem from="1750119479837" duration="212000" />
+      <workItem from="1750119729506" duration="82000" />
     </task>
     <servers />
   </component>
