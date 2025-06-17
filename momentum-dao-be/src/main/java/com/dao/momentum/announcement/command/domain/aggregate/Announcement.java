@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Announcement {
     @Id
@@ -38,14 +39,6 @@ public class Announcement {
 
     @Enumerated(EnumType.STRING)
     private IsDeleted isDeleted;
-
-    @Builder
-    public Announcement(Long empId, String title, String content, IsDeleted isDeleted) {
-        this.empId = empId;
-        this.title = title;
-        this.content = content;
-        this.isDeleted = isDeleted;
-    }
 
     public void validateAuthor(Long empId) {
         if (!empId.equals(this.empId)) {
