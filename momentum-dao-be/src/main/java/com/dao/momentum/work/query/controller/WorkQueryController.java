@@ -1,6 +1,7 @@
 package com.dao.momentum.work.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import com.dao.momentum.work.query.service.WorkQueryService;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,18 +38,19 @@ public class WorkQueryController {
         );
     }
 
-//    @GetMapping
-//    @Operation(summary = "관리자 출퇴근 조회", description = "관리자가 특정 사원의 출퇴근 내역을 조회합니다.")
-//    public ResponseEntity<ApiResponse<WorkListResponse>> getWorks(
-//            @AuthenticationPrincipal UserDetails userDetails, @ModelAttribute AdminWorkSearchRequest adminWorkSearchRequest
-//    ) {
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.success(
-//                        workQueryService.getWorks(userDetails, adminWorkSearchRequest)
-//                )
-//        );
-//    }
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('MASTER', 'HR_MANAGER')")
+    @Operation(summary = "관리자 출퇴근 조회", description = "관리자가 특정 사원의 출퇴근 내역을 조회합니다.")
+    public ResponseEntity<ApiResponse<WorkListResponse>> getWorks(
+            @ModelAttribute AdminWorkSearchRequest adminWorkSearchRequest
+    ) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getWorks(adminWorkSearchRequest)
+                )
+        );
+    }
 
 
 
