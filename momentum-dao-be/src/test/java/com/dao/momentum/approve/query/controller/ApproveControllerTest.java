@@ -1,20 +1,15 @@
 package com.dao.momentum.approve.query.controller;
 
 import com.dao.momentum.approve.query.dto.ApproveDTO;
-import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
-import com.dao.momentum.approve.query.dto.request.PageRequest;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
-import com.dao.momentum.approve.query.service.AdminApproveService;
 import com.dao.momentum.approve.query.service.ApproveService;
 import com.dao.momentum.common.dto.Pagination;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -40,22 +35,28 @@ class ApproveControllerTest {
     private List<ApproveDTO> getDummyApproves() {
         ApproveDTO dummy1 = ApproveDTO.builder()
                 .approveId(1L)
-                .approveTitle("점심 비용 신청")
-                .approveType("RECEIPT")
+                .parentApproveId(null)
+                .statusType("ACCEPTED")
                 .empId(1L)
+                .approveTitle("점심 식사 영수증")
+                .approveType("RECEIPT")
+                .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
+                .completeAt(null)
                 .employeeName("장도윤")
                 .departmentName("백엔드팀")
-                .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .build();
 
         ApproveDTO dummy2 = ApproveDTO.builder()
                 .approveId(2L)
-                .approveTitle("저녁 비용 신청")
-                .approveType("RECEIPT")
+                .parentApproveId(null)
+                .statusType("ACCEPTED")
                 .empId(2L)
+                .approveTitle("출장 택시비")
+                .approveType("RECEIPT")
+                .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
+                .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")
                 .departmentName("프론트엔드팀")
-                .createAt(LocalDateTime.of(2025, 6, 2, 0, 0))
                 .build();
 
         return List.of(dummy1, dummy2);
@@ -65,13 +66,6 @@ class ApproveControllerTest {
     @WithMockUser(username = "1") // 임의로 인증 정보 넣기
     @Test
     void getReceivedApprovalTest() throws Exception {
-        ApproveListRequest request = ApproveListRequest.builder()
-                .tab("RECEIPT")
-                .build();
-
-        Long empId = 1L;
-
-        PageRequest pageRequest = new PageRequest(1, 10);
 
         List<ApproveDTO> dummyList = getDummyApproves();
 
@@ -84,7 +78,7 @@ class ApproveControllerTest {
                         .build())
                 .build();
 
-        Mockito.when(approveService.getReceivedApprove(request, empId, pageRequest))
+        Mockito.when(approveService.getReceivedApprove(Mockito.any(), Mockito.any() ,Mockito.any()))
                 .thenReturn(approveResponse);
 
         mockMvc.perform(
@@ -95,6 +89,8 @@ class ApproveControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.approveDTO[0].approveTitle").value("점심 식사 영수증"))
+                .andExpect(jsonPath("$.data.approveDTO[1].approveTitle").value("출장 택시비"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andDo(print());
 
