@@ -54,6 +54,17 @@ public class AnnouncementCommandController {
                 .ok(ApiResponse.success(announcementModifyResponse));
     }
 
+    @DeleteMapping("{announcementId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAnnouncement(
+            @PathVariable("announcementId") Long announcementId,
+            @AuthenticationPrincipal UserDetails userDetails)
+    {
+        announcementCommandService.delete(announcementId, userDetails);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
+    }
+
     @ExceptionHandler(AnnouncementAccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAnnouncementAccessDeniedException(AnnouncementAccessDeniedException e) {
         ErrorCode errorCode = e.getErrorCode();

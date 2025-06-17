@@ -71,7 +71,7 @@ public class AnnouncementCommandService {
             }
         }
 
-        log.info("공지사항 작성 - empId={}, title={}", empId, announcementCreateRequest.getTitle());
+        log.info("공지사항 작성 - empId={}, announcementId={}, title={}", empId, savedAnnouncement.getAnnouncementId(), savedAnnouncement.getTitle());
 
         return announcementMapper.toCreateResponse(savedAnnouncement);
     }
@@ -135,8 +135,28 @@ public class AnnouncementCommandService {
             }
         }
 
-        log.info("공지사항 수정 - empId={}, title={}", empId, announcementModifyRequest.getTitle());
+        log.info("공지사항 수정 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), announcementModifyRequest.getTitle());
 
         return announcementMapper.toModifyResponse(announcement);
+    }
+
+    @Transactional
+    public void delete(Long announcementId, UserDetails userDetails) {
+        Long empId = Long.valueOf(userDetails.getUsername());
+
+        // 공지사항 존재 여부 확인
+        Announcement announcement = announcementRepository.findById(announcementId)
+                        .orElseThrow(() -> new NoSuchAnnouncementException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
+
+        // 작성자 검증
+        announcement.validateAuthor(empId);
+
+        // 공지사항에 첨부된 파일들 hard delete
+        List<File> files = fileRepository.findAllByAnnouncementId(announcementId);
+        files.forEach(file -> fileRepository.deleteById(file.getAttachmentId()));
+
+        log.info("공지사항 삭제 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), announcement.getTitle());
+
+        announcementRepository.delete(announcement);
     }
 }
