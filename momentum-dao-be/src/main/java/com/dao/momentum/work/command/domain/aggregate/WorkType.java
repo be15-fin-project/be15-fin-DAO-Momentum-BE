@@ -1,9 +1,12 @@
 package com.dao.momentum.work.command.domain.aggregate;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @Entity
 @Table(name = "work_type")
 public class WorkType {
@@ -12,4 +15,5 @@ public class WorkType {
 
     @Enumerated(EnumType.STRING)
     private WorkTypeName typeName;
+
 }
