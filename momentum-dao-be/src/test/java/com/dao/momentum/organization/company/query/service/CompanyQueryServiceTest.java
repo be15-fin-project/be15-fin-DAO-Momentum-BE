@@ -4,7 +4,6 @@ import com.dao.momentum.organization.company.command.domain.aggregate.Company;
 import com.dao.momentum.organization.company.query.dto.response.CompanyGetResponse;
 import com.dao.momentum.organization.company.query.dto.response.CompanyInfoDTO;
 import com.dao.momentum.organization.company.query.mapper.CompanyMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
