@@ -1,12 +1,15 @@
 package com.dao.momentum.organization.position.command.application.controller;
 
+import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionCreateRequest;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionUpdateRequest;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionCreateResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionDeleteResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionUpdateResponse;
 import com.dao.momentum.organization.position.command.application.service.PositionCommandService;
+import com.dao.momentum.organization.position.exception.PositionException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,4 +44,11 @@ public class PositionCommandController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(response));
     }
 
+    @ExceptionHandler(PositionException.class)
+    public ResponseEntity<ApiResponse<Void>> handlePositionException(PositionException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
+    }
 }

@@ -17,6 +17,9 @@ public enum ErrorCode {
     INVALID_LEVEL("10006","유효하지 않은 직위 단계입니다." , HttpStatus.BAD_REQUEST),
     POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
 
+    // 회사 오류 (11001 - 11999)
+    COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
+
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     IP_NOT_ALLOWED("20002", "출퇴근 등록이 불가능한 IP입니다.", HttpStatus.BAD_REQUEST),

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -47,5 +48,5 @@ public class Company {
     private LocalDate establishDate;
 
     @NotNull
-    private LocalDateTime workStartTime;
+    private LocalTime workStartTime;
 }
