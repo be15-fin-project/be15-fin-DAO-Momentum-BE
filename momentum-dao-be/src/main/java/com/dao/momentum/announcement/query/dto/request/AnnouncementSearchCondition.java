@@ -26,7 +26,7 @@ public class AnnouncementSearchCondition {
             .name(request.getName())
             .deptId(request.getDeptId())
             .startDate(request.getStartDate())
-            .endDate(request.getEndDate())
+            .endDate(request.getEndDate().plusDays(1))
             .sortDirection(request.getSortDirection())
             .offset(request.getOffset())
             .limit(request.getLimit())
