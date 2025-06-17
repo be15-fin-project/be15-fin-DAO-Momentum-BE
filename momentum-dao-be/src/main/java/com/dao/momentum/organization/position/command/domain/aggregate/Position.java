@@ -2,16 +2,18 @@ package com.dao.momentum.organization.position.command.domain.aggregate;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Table(name = "`position`")
+@Builder
+@SQLDelete(sql = "update `position` set is_deleted = 'Y' where position_id = ?")
 public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

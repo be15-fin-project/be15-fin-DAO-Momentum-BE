@@ -48,7 +48,7 @@ public class SecurityConfig {
                               permitAllEndpoints(auth);
 //                            employeeEndpoints(auth);
 //                            managerEndpoints(auth);
-//                            masterEndpoints(auth);
+                              masterEndpoints(auth);
 //                            hrManagerEndpoints(auth);
 //                            bookkeepingEndpoints(auth);
 
@@ -112,7 +112,8 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/employees"
+                "/position",
+                "/position/**"
         ).hasAuthority("MASTER");
     }
 

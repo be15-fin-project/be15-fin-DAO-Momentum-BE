@@ -9,10 +9,13 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public enum ErrorCode {
     //사원 오류(10001 - 199999)
-    EMPLOYEE_ALREADY_EXISTS("10001", "해당 사원이 이미 존재합니다.",HttpStatus.BAD_REQUEST),
+    EMPLOYEE_ALREADY_EXISTS("10001", "해당 사원이 이미 존재합니다.",HttpStatus.CONFLICT),
     EMPLOYEE_NOT_FOUND("10002","해당 사원을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
-    INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.FORBIDDEN),
-    POSITION_ALREADY_EXISTS("10004","이미 존재하는 직위입니다.",HttpStatus.FORBIDDEN),
+    INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.NOT_FOUND),
+    POSITION_ALREADY_EXISTS("10004","이미 존재하는 직위입니다.",HttpStatus.CONFLICT),
+    POSITION_NOT_FOUND("10005","존재하지 않는 직위입니다.",HttpStatus.NOT_FOUND),
+    INVALID_LEVEL("10006","유효하지 않은 직위 단계입니다." , HttpStatus.BAD_REQUEST),
+    POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),

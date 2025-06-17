@@ -9,5 +9,5 @@ public interface AnnouncementRepository {
 
     Optional<Announcement> findById(Long announcementId);
 
-    void deleteById(Long announcementId);
+    void delete(Announcement announcement);
 }
