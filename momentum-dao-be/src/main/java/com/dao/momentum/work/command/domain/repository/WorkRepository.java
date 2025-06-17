@@ -1,7 +1,6 @@
 package com.dao.momentum.work.command.domain.repository;
 
 import com.dao.momentum.work.command.domain.aggregate.Work;
-import com.dao.momentum.work.command.domain.aggregate.WorkType;
 import com.dao.momentum.work.command.domain.aggregate.WorkTypeName;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.Query;
@@ -60,5 +59,5 @@ public interface WorkRepository {
               AND wt.typeName = :workType
             """)
     Optional<Work> findByEmpIdAndDateAndTypeName(
-            long empId, LocalDate today, WorkType workType);
+            long empId, LocalDate date, WorkTypeName workType);
 }
