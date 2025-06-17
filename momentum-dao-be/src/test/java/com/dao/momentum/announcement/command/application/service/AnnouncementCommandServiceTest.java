@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -229,4 +230,84 @@ class AnnouncementCommandServiceTest {
                 announcementCommandService.modify(request, List.of(), announcementId, mockUserDetails)
         );
     }
+
+    @Test
+    @DisplayName("공지사항 삭제 성공")
+    void deleteAnnouncement_success() {
+        // given
+        Long announcementId = 1L;
+        Long empId = 1L;
+
+        UserDetails mockUserDetails = mock(UserDetails.class);
+        when(mockUserDetails.getUsername()).thenReturn(empId.toString());
+
+        Announcement announcement = Announcement.builder()
+                .announcementId(announcementId)
+                .empId(empId)
+                .title("삭제할 제목")
+                .build();
+
+        File file1 = File.builder().attachmentId(101L).announcementId(announcementId).build();
+        File file2 = File.builder().attachmentId(102L).announcementId(announcementId).build();
+
+        when(announcementRepository.findById(announcementId)).thenReturn(Optional.of(announcement));
+        when(fileRepository.findAllByAnnouncementId(announcementId)).thenReturn(List.of(file1, file2));
+
+        // when & then
+        assertDoesNotThrow(() -> announcementCommandService.delete(announcementId, mockUserDetails));
+
+        verify(announcementRepository).findById(announcementId);
+        verify(fileRepository).findAllByAnnouncementId(announcementId);
+        verify(fileRepository).deleteById(file1.getAttachmentId());
+        verify(fileRepository).deleteById(file2.getAttachmentId());
+        verify(announcementRepository).delete(announcement);
+    }
+
+    @Test
+    @DisplayName("공지사항 삭제 실패 - 존재하지 않는 ID")
+    void deleteAnnouncement_fail_notFound() {
+        // given
+        Long announcementId = 999L;
+        UserDetails mockUserDetails = mock(UserDetails.class);
+        when(mockUserDetails.getUsername()).thenReturn("1");
+
+        when(announcementRepository.findById(announcementId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(NoSuchAnnouncementException.class, () ->
+                announcementCommandService.delete(announcementId, mockUserDetails)
+        );
+
+        verify(announcementRepository).findById(announcementId);
+        verifyNoMoreInteractions(fileRepository, announcementRepository);
+    }
+
+    @Test
+    @DisplayName("공지사항 삭제 실패 - 작성자가 아님")
+    void deleteAnnouncement_fail_notAuthor() {
+        // given
+        Long announcementId = 1L;
+        Long actualAuthorId = 1L;
+        Long otherUserId = 2L;
+
+        UserDetails mockUserDetails = mock(UserDetails.class);
+        when(mockUserDetails.getUsername()).thenReturn(otherUserId.toString());
+
+        Announcement announcement = Announcement.builder()
+                .announcementId(announcementId)
+                .empId(actualAuthorId)
+                .title("공지사항")
+                .build();
+
+        when(announcementRepository.findById(announcementId)).thenReturn(Optional.of(announcement));
+
+        // when & then
+        assertThrows(AnnouncementAccessDeniedException.class, () ->
+                announcementCommandService.delete(announcementId, mockUserDetails)
+        );
+
+        verify(announcementRepository).findById(announcementId);
+        verifyNoMoreInteractions(fileRepository, announcementRepository);
+    }
+
 }
