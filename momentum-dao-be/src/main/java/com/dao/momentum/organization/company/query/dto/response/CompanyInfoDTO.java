@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
@@ -27,5 +27,5 @@ public class CompanyInfoDTO {
 
     private LocalDate establishDate;
 
-    private LocalDateTime workStartTime;
+    private LocalTime workStartTime;
 }
