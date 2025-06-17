@@ -1,17 +1,14 @@
 package com.dao.momentum.approve.query.controller;
 
 import com.dao.momentum.approve.query.dto.ApproveDTO;
-import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
-import com.dao.momentum.approve.query.dto.request.PageRequest;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.service.AdminApproveService;
 import com.dao.momentum.common.dto.Pagination;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,11 +23,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminApproveController.class)
-@AutoConfigureMockMvc
 class AdminApproveControllerTest {
 
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     AdminApproveService adminApproveService;
@@ -39,10 +38,10 @@ class AdminApproveControllerTest {
         ApproveDTO dummy1 = ApproveDTO.builder()
                 .approveId(1L)
                 .parentApproveId(null)
-                .statusType("RECEIPT")
+                .statusType("ACCEPTED")
                 .empId(1L)
-                .approveTitle("연차 신청")
-                .approveType("OVERTIME")
+                .approveTitle("점심 식사 영수증")
+                .approveType("RECEIPT")
                 .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .completeAt(null)
                 .employeeName("장도윤")
@@ -52,10 +51,10 @@ class AdminApproveControllerTest {
         ApproveDTO dummy2 = ApproveDTO.builder()
                 .approveId(2L)
                 .parentApproveId(null)
-                .statusType("RECEIPT")
+                .statusType("ACCEPTED")
                 .empId(2L)
-                .approveTitle("프로젝트 제안서 제출")
-                .approveType("REMOTEWORK")
+                .approveTitle("출장 택시비")
+                .approveType("RECEIPT")
                 .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
                 .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")
@@ -71,13 +70,6 @@ class AdminApproveControllerTest {
     @WithMockUser(authorities = "MASTER")
     @Test
     void getFollowListByMemberUidTest() throws Exception {
-
-        ApproveListRequest request = ApproveListRequest.builder()
-                .tab("RECEIPT")
-                .build();
-
-        PageRequest pageRequest = new PageRequest(1, 10);
-
         List<ApproveDTO> dummyList = getDummyApproves();
 
         ApproveResponse approveResponse = ApproveResponse.builder()
@@ -89,8 +81,10 @@ class AdminApproveControllerTest {
                         .build())
                 .build();
 
-        Mockito.when(adminApproveService.getApproveList(request, pageRequest))
+        Mockito.when(adminApproveService.getApproveList(Mockito.any(), Mockito.any()))
                 .thenReturn(approveResponse);
+
+        System.out.println(approveResponse);
 
         mockMvc.perform(
                         MockMvcRequestBuilders.get("/admin/approval/documents")
@@ -100,6 +94,8 @@ class AdminApproveControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.approveDTO[0].approveTitle").value("점심 식사 영수증"))
+                .andExpect(jsonPath("$.data.approveDTO[1].approveTitle").value("출장 택시비"))
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andDo(print());
 

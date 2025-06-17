@@ -38,23 +38,30 @@ class ApproveServiceImplTest {
     private List<ApproveDTO> getDummyApproves() {
         ApproveDTO dummy1 = ApproveDTO.builder()
                 .approveId(1L)
-                .approveTitle("연차 신청")
-                .approveType("OVERTIME")
+                .parentApproveId(null)
+                .statusType("ACCEPTED")
                 .empId(1L)
+                .approveTitle("점심 식사 영수증")
+                .approveType("RECEIPT")
+                .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
+                .completeAt(null)
                 .employeeName("장도윤")
                 .departmentName("백엔드팀")
-                .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .build();
 
         ApproveDTO dummy2 = ApproveDTO.builder()
                 .approveId(2L)
-                .approveTitle("재택근무 신청")
-                .approveType("REMOTEWORK")
+                .parentApproveId(null)
+                .statusType("ACCEPTED")
                 .empId(2L)
+                .approveTitle("출장 택시비")
+                .approveType("RECEIPT")
+                .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
+                .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")
                 .departmentName("프론트엔드팀")
-                .createAt(LocalDateTime.of(2025, 6, 2, 0, 0))
                 .build();
+
 
         return List.of(dummy1, dummy2);
     }
