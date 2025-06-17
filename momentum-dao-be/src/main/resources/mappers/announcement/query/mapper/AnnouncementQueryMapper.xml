@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.announcement.query.mapper.AnnouncementQueryMapper">
+
+    <!-- 게시글 목록 검색 -->
+    <select id="findAnnouncementsByCondition" resultType="com.dao.momentum.announcement.query.dto.response.AnnouncementDto">
+        SELECT a.announcement_id,
+        a.title,
+        e.name,
+        a.created_at
+        FROM announcement a
+        JOIN employee e ON a.emp_id = e.emp_id
+        <where>
+            a.is_deleted = 'N'
+
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+
+            <if test="name != null and name != ''">
+                AND e.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+
+            <if test="startDate != null">
+                AND a.created_at &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null">
+                AND a.created_at &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY a.created_at ${sortDirection}
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 게시글 목록 수 카운트 -->
+    <select id="countAnnouncementsByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM announcement a
+        JOIN employee e ON a.emp_id = e.emp_id
+        <where>
+            a.is_deleted = 'N'
+
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+
+            <if test="name != null and name != ''">
+                AND e.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+
+            <if test="startDate != null">
+                AND a.created_at &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null">
+                AND a.created_at &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+</mapper>
