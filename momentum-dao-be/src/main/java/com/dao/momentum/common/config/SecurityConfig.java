@@ -112,7 +112,8 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/position"
+                "/position",
+                "/position/**"
         ).hasAuthority("MASTER");
     }
 

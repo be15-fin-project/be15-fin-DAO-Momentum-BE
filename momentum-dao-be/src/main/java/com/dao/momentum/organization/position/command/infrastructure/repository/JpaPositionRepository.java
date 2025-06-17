@@ -23,6 +23,10 @@ public interface JpaPositionRepository extends PositionRepository, JpaRepository
     @Query("UPDATE Position p SET p.level = p.level + 1 WHERE p.level >= :level AND p.isDeleted = 'N'")
     void incrementLevelsGreaterThanEqual(@Param("level") Integer level);
 
+    @Modifying
+    @Query("UPDATE Position p SET p.level = p.level - 1 WHERE p.level > :level AND p.isDeleted = 'N'")
+    void decrementLevelsGreater(@Param("level") Integer level);
+
     @Override
     Optional<Position> findByPositionId(Integer positionId);
 
@@ -38,4 +42,6 @@ public interface JpaPositionRepository extends PositionRepository, JpaRepository
     @Query("UPDATE Position p SET p.level = p.level - 1 " +
             "WHERE p.level BETWEEN :startLevel AND :endLevel AND p.isDeleted = 'N'")
     void decrementLevelsInRange(@Param("startLevel") int startLevel, @Param("endLevel") int endLevel);
+
+    void deleteByPositionId(Integer positionId);
 }
