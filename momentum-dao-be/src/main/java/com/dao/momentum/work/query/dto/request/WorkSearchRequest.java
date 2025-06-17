@@ -12,11 +12,13 @@ public class WorkSearchRequest {
 
     private LocalDate rangeEndDate;
 
-    // EndDate에 지정한 날짜를 포함하려면 LocalDateTime 기준으로 하루 더 있어야 함
-    public void addToEndDate() {
-        if (rangeEndDate != null) {
-            rangeEndDate = rangeEndDate.plusDays(1);
-        }
+    public WorkSearchDTO toDTO() {
+        return WorkSearchDTO.builder()
+                .rangeStartDate(this.rangeStartDate)
+                // EndDate에 지정한 날짜를 포함하려면 LocalDateTime 기준으로 하루 더 있어야 함
+                .rangeEndDate(this.rangeEndDate == null ?
+                        null : this.rangeEndDate.plusDays(1))
+                .build();
     }
 
 }

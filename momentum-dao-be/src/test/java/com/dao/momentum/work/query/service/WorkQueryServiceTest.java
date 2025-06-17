@@ -1,6 +1,8 @@
 package com.dao.momentum.work.query.service;
 
+import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
+import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
 import com.dao.momentum.work.query.dto.response.WorkDTO;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
@@ -47,7 +49,7 @@ class WorkQueryServiceTest {
         List<WorkDTO> mockWorks = List.of(
                 WorkDTO.builder().workId(1L).empId(123L).build()
         );
-        when(workMapper.getMyWorks(any(WorkSearchRequest.class), eq(123L))).thenReturn(mockWorks);
+        when(workMapper.getMyWorks(any(WorkSearchDTO.class), eq(123L))).thenReturn(mockWorks);
 
         // when
         WorkListResponse response = workQueryService.getMyWorks(userDetails, request);
@@ -70,8 +72,8 @@ class WorkQueryServiceTest {
                 .mapToObj(i -> WorkDTO.builder().workId((long) i).empId(321L).build())
                 .collect(Collectors.toList());
 
-        when(workMapper.getWorks(any(AdminWorkSearchRequest.class))).thenReturn(mockWorks);
-        when(workMapper.countWorks(any(AdminWorkSearchRequest.class))).thenReturn(18L);
+        when(workMapper.getWorks(any(AdminWorkSearchDTO.class))).thenReturn(mockWorks);
+        when(workMapper.countWorks(any(AdminWorkSearchDTO.class))).thenReturn(18L);
 
         // when
         WorkListResponse response = workQueryService.getWorks(request);
