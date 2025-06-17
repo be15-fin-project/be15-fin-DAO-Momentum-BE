@@ -1,16 +1,14 @@
 package com.dao.momentum.announcement.query.controller;
 
 import com.dao.momentum.announcement.query.dto.request.AnnouncementSearchRequest;
+import com.dao.momentum.announcement.query.dto.response.AnnouncementDetailResponse;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementListResponse;
 import com.dao.momentum.announcement.query.service.AnnouncementQueryService;
 import com.dao.momentum.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,6 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnnouncementQueryController {
 
     private final AnnouncementQueryService announcementQueryService;
+
+    @GetMapping("/{announcementId}")
+    public ResponseEntity<ApiResponse<AnnouncementDetailResponse>> getAnnouncement(
+            @PathVariable("announcementId") Long announcementId
+    ) {
+        AnnouncementDetailResponse announcementDetailResponse = announcementQueryService.getAnnouncement(announcementId);
+
+        return ResponseEntity.ok(ApiResponse.success(announcementDetailResponse));
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<AnnouncementListResponse>> getAnnouncementList(

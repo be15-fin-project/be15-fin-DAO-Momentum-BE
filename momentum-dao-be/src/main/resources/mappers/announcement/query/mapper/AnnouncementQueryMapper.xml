@@ -4,6 +4,58 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.announcement.query.mapper.AnnouncementQueryMapper">
 
+    <!-- 공지사항 상세조회 -->
+    <select id="findAnnouncement" resultMap="AnnouncementDetailResultMap">
+        SELECT
+        a.announcement_id,
+        a.emp_id,
+        e.name AS employee_name,
+        e.dept_id,
+        d.name AS department_name,
+        p.name AS position_name,
+        a.title,
+        a.content,
+        a.created_at,
+        a.updated_at,
+        f.url AS file_url
+        FROM announcement a
+        JOIN employee e ON a.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN `position` p ON e.position_id = p.position_id
+        LEFT JOIN file f ON f.announcement_id = a.announcement_id
+        WHERE a.announcement_id = #{announcementId}
+        AND a.is_deleted = 'N'
+    </select>
+
+    <!-- 공지사항 : 첨부파일 리스트 1:N 매핑을 위한 resultMap -->
+    <resultMap id="AnnouncementDetailResultMap" type="com.dao.momentum.announcement.query.dto.response.AnnouncementDetailDto">
+        <!-- PK -->
+        <id property="announcementId" column="announcement_id"/>
+
+        <!-- 단일 값 매핑 -->
+        <result property="empId" column="emp_id"/>
+        <result property="employeeName" column="employee_name"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="departmentName" column="department_name"/>
+        <result property="positionName" column="position_name"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+
+        <!-- 파일 URL 목록 수집 -->
+        <collection property="urls" ofType="string" javaType="java.util.List"
+                    select="findFileUrlsByAnnouncementId" column="announcement_id"/>
+    </resultMap>
+
+    <!-- collection 태그의 column 속성은 단일 값 매핑처럼 컬럼의 값을 직접 가져오는 것이 아니라, 그룹핑 기준 또는 하위 쿼리의 파라미터 역할 -->
+    <select id="findFileUrlsByAnnouncementId" resultType="string">
+        SELECT
+        f.url
+        FROM file f
+        WHERE f.announcement_id = #{announcementId}
+    </select>
+
     <!-- 게시글 목록 검색 -->
     <select id="findAnnouncementsByCondition" resultType="com.dao.momentum.announcement.query.dto.response.AnnouncementDto">
         SELECT a.announcement_id,
