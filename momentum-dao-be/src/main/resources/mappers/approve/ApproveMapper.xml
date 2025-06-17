@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.approve.query.mapper.ApproveMapper">
+
+    <select id="findReceivedApproval" resultType="com.dao.momentum.approve.query.dto.ApproveDTO">
+        SELECT
+            a.approve_id,
+            a.parent_approve_id,
+            s.status_type,
+            a.emp_id,
+            a.approve_title,
+            a.approve_type,
+            a.create_at,
+            a.complete_at,
+            e.name AS employee_name,
+            d.name AS department_name
+        FROM approve a
+        LEFT JOIN approve aa ON a.parent_approve_id = aa.approve_id
+        JOIN employee e ON a.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN status s ON a.status_id = s.status_id
+        JOIN approve_line al ON al.approve_id = a.approve_id
+        JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id
+
+        WHERE ali.emp_id = #{empId}
+
+        <!-- 탭 조건 -->
+        <if test="req.tab == 'ATTENDANCE'">
+            AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
+            <!-- 근태 관련된 상세 필터 -->
+            <if test="req.approveType != null and req.approveType != ''">
+                AND a.approve_type = #{req.approveType}
+            </if>
+        </if>
+        <if test="req.tab == 'PROPOSAL'">
+            AND a.approve_type = 'PROPOSAL'
+        </if>
+        <if test="req.tab == 'RECEIPT'">
+            AND a.approve_type = 'RECEIPT'
+            <if test="req.receiptType != null and req.receiptType != ''">
+                AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+            </if>
+        </if>
+        <if test="req.tab == 'CANCEL'">
+            AND a.approve_type = 'CANCEL'
+        </if>
+
+        <!-- 상태  -->
+        <if test="req.status != null">
+            AND a.status_id = #{req.status}
+        </if>
+
+        <!-- 제목 -->
+        <if test="req.title != null and req.title != ''">
+            AND a.approve_title LIKE CONCAT('%', #{req.title}, '%')
+        </if>
+
+        <!-- 작성자 -->
+        <if test="req.employeeName != null and req.employeeName != ''">
+            AND e.name LIKE CONCAT('%', #{req.employeeName}, '%')
+        </if>
+
+        <!-- 작성일 -->
+        <if test="req.startDate != null and req.endDate != null">
+            AND a.create_at BETWEEN #{req.startDate} AND #{req.endDate}
+        </if>
+        <if test="req.startDate != null and req.endDate == null">
+            AND a.create_at &gt; #{req.startDate}
+        </if>
+        <if test="req.startDate == null and req.endDate != null">
+            AND a.create_at &lt; #{req.endDate}
+        </if>
+
+        <!-- 부서 -->
+        <if test="req.departmentName != null and req.departmentName != ''">
+            AND d.name LIKE CONCAT('%', #{req.departmentName}, '%')
+        </if>
+
+        <!-- 완료 날짜를 기준으로 정렬 -->
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'asc'">a.complete_at ASC</when>
+            <when test="req.sort == 'desc'">a.complete_at DESC</when>
+            <otherwise>a.complete_at DESC</otherwise>
+        </choose>
+
+        LIMIT #{pageRequest.limit} OFFSET #{pageRequest.offset}
+    </select>
+
+
+    <select id="countReceivedApproval" resultType="long">
+        SELECT COUNT(*)
+        FROM approve a
+        LEFT JOIN approve aa ON a.parent_approve_id = aa.approve_id
+        JOIN employee e ON a.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN status s ON a.status_id = s.status_id
+        JOIN approve_line al ON al.approve_id = a.approve_id
+        JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id
+
+        WHERE ali.emp_id = #{empId}
+        <if test="req.tab == 'ATTENDANCE'">
+            AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
+            <if test="req.approveType != null and req.approveType != ''">
+                AND a.approve_type = #{req.approveType}
+            </if>
+        </if>
+        <if test="req.tab == 'PROPOSAL'">
+            AND a.approve_type = 'PROPOSAL'
+        </if>
+        <if test="req.tab == 'RECEIPT'">
+            AND a.approve_type = 'RECEIPT'
+            <if test="req.receiptType != null and req.receiptType != ''">
+                AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+            </if>
+        </if>
+        <if test="req.tab == 'CANCEL'">
+            AND a.approve_type = 'CANCEL'
+        </if>
+
+        <if test="req.status != null">
+            AND a.status_id = #{req.status}
+        </if>
+
+        <if test="req.title != null and req.title != ''">
+            AND a.approve_title LIKE CONCAT('%', #{req.title}, '%')
+        </if>
+
+        <if test="req.employeeName != null and req.employeeName != ''">
+            AND e.name LIKE CONCAT('%', #{req.employeeName}, '%')
+        </if>
+
+        <if test="req.startDate != null and req.endDate != null">
+            AND a.create_at BETWEEN #{req.startDate} AND #{req.endDate}
+        </if>
+        <if test="req.startDate != null and req.endDate == null">
+            AND a.create_at &gt; #{req.startDate}
+        </if>
+        <if test="req.startDate == null and req.endDate != null">
+            AND a.create_at &lt; #{req.endDate}
+        </if>
+
+        <if test="req.departmentName != null and req.departmentName != ''">
+            AND d.name LIKE CONCAT('%', #{req.departmentName}, '%')
+        </if>
+    </select>
+
+    <!-- 존재하는 회원인지 확인하기 위한 코드 -->
+    <select id="existsByEmpId" resultType="boolean">
+        SELECT CASE WHEN EXISTS (
+            SELECT 1
+            FROM employee
+            WHERE emp_id = #{empId}
+        ) THEN TRUE ELSE FALSE END
+    </select>
+
+</mapper>
