@@ -19,4 +19,6 @@ public interface JpaEmployeeRepository extends EmployeeRepository, JpaRepository
             "ORDER BY CAST(emp_no AS UNSIGNED) DESC LIMIT 1",
             nativeQuery = true)
     String findMaxEmpNo();
+
+    Boolean existsByPositionId(Integer positionId);
 }

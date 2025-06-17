@@ -1,9 +1,11 @@
 package com.dao.momentum.organization.position.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionCreateRequest;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionUpdateRequest;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionCreateResponse;
+import com.dao.momentum.organization.position.command.application.dto.response.PositionDeleteResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionUpdateResponse;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PositionCommandService {
     private final PositionRepository positionRepository;
+    private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
 
     @Transactional
@@ -76,6 +79,27 @@ public class PositionCommandService {
         position.setLevel(requestedLevel);
 
         return new PositionUpdateResponse(position.getPositionId(), "직위가 수정되었습니다.");
+    }
+
+    @Transactional
+    public PositionDeleteResponse deletePosition(Integer positionId) {
+        //직위 존재 검사
+        Position position = positionRepository.findByPositionId(positionId).orElseThrow(
+                () ->  new PositionException(ErrorCode.POSITION_NOT_FOUND)
+        );
+
+        //해당 직위인 사원 검사
+        if(employeeRepository.existsByPositionId(positionId)){
+            throw new PositionException(ErrorCode.POSITION_IN_USE);
+        }
+
+        //직위 단계 조정
+        positionRepository.decrementLevelsGreater(position.getLevel());
+
+        //soft delete
+        positionRepository.deleteByPositionId(positionId);
+
+        return new PositionDeleteResponse(positionId, "삭제를 완료했습니다.");
     }
 
     private void validateLevelForCreate(int requestLevel) {
