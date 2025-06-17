@@ -1,16 +1,20 @@
 package com.dao.momentum.organization.position.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionCreateRequest;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionUpdateRequest;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionCreateResponse;
+import com.dao.momentum.organization.position.command.application.dto.response.PositionDeleteResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionUpdateResponse;
 import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
 import com.dao.momentum.organization.position.exception.PositionException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 
 import java.util.Optional;
@@ -22,15 +26,21 @@ import static org.mockito.Mockito.*;
 
 class PositionCommandServiceTest {
     private PositionRepository positionRepository;
+    private EmployeeRepository employeeRepository;
     private ModelMapper modelMapper;
     private PositionCommandService positionCommandService;
 
     @BeforeEach
     void setUp() {
         positionRepository = mock(PositionRepository.class);
+        employeeRepository = mock(EmployeeRepository.class);
         modelMapper = new ModelMapper();
-        positionCommandService = new PositionCommandService(positionRepository, modelMapper);
+        positionCommandService = new PositionCommandService(positionRepository, employeeRepository,modelMapper);
     }
+
+    /*
+    직위 생성 테스트
+     */
 
     //직위가_이미_존재하면_예외를_던진다
     @Test
@@ -86,6 +96,10 @@ class PositionCommandServiceTest {
 
         assertThat(response.getMessage()).isEqualTo("직위가 생성되었습니다.");
     }
+
+    /*
+    직위 수정 테스트
+     */
 
     //직위 수정시 정상 수정
     @Test
@@ -163,4 +177,73 @@ class PositionCommandServiceTest {
         assertEquals(ErrorCode.INVALID_LEVEL, exception.getErrorCode());
     }
 
+    /*
+    직위 삭제 테스트
+     */
+
+    //직위에 해당하는 사원이 없다면 정상 삭제
+    @Test
+    void shouldDeletePositionSuccessfully_whenPositionExistsAndNotInUse() {
+        // Given
+        Integer positionId = 1;
+        Position position = Position.builder()
+                .positionId(positionId)
+                .name("Manager")
+                .level(3)
+                .build();
+
+        when(positionRepository.findByPositionId(positionId))
+                .thenReturn(Optional.of(position));
+
+        when(employeeRepository.existsByPositionId(positionId))
+                .thenReturn(false);
+
+        // When
+        PositionDeleteResponse response = positionCommandService.deletePosition(positionId);
+
+        // Then
+        verify(positionRepository).decrementLevelsGreater(position.getLevel());
+        verify(positionRepository).deleteByPositionId(positionId);
+
+        Assertions.assertEquals(positionId, response.getPositionId());
+        Assertions.assertEquals("삭제를 완료했습니다.", response.getMessage());
+    }
+
+    //해당 직위가 없다면 예외처리
+    @Test
+    void shouldThrowException_whenPositionNotFound() {
+        // Given
+        Integer positionId = 1;
+        when(positionRepository.findByPositionId(positionId))
+                .thenReturn(Optional.empty());
+
+        // When & Then
+        PositionException ex = Assertions.assertThrows(PositionException.class, () ->
+                positionCommandService.deletePosition(positionId));
+
+        Assertions.assertEquals(ErrorCode.POSITION_NOT_FOUND, ex.getErrorCode());
+    }
+
+    //해당 직위인 사원이 있다면 예외처리
+    @Test
+    void shouldThrowException_whenPositionIsInUse() {
+        // Given
+        Integer positionId = 1;
+        Position position = Position.builder()
+                .positionId(positionId)
+                .name("Manager")
+                .level(3)
+                .build();
+
+        when(positionRepository.findByPositionId(positionId))
+                .thenReturn(Optional.of(position));
+        when(employeeRepository.existsByPositionId(positionId))
+                .thenReturn(true);
+
+        // When & Then
+        PositionException ex = Assertions.assertThrows(PositionException.class, () ->
+                positionCommandService.deletePosition(positionId));
+
+        Assertions.assertEquals(ErrorCode.POSITION_IN_USE, ex.getErrorCode());
+    }
 }
