@@ -27,6 +27,21 @@ public class AuthController {
                 .body(ApiResponse.success(response));
     }
 
+    @Operation(summary = "로그아웃", description = "사용자는 인증 토큰을 삭제하며 로그아웃한다.")
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken
+    ) {
+
+        authService.logout(refreshToken);
+
+        ResponseCookie deleteCookie = createDeleteRefreshTokenCookie();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(ApiResponse.success(null));
+    }
+
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
