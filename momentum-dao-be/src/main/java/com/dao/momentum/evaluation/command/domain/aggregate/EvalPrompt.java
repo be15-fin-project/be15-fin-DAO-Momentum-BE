@@ -21,4 +21,8 @@ public class EvalPrompt {
 
     @Column(name = "name", length = 30, nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_positive", nullable = false, columnDefinition = "ENUM('Y','N') DEFAULT 'Y'")
+    private UseStatus isPositive;
 }
