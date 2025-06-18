@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.service;
 
+import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.exception.NotExistTabException;
 import com.dao.momentum.approve.query.dto.ApproveDTO;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
@@ -40,7 +41,7 @@ class AdminApproveQueryServiceImplTest {
                 .statusType("ACCEPTED")
                 .empId(1L)
                 .approveTitle("점심 식사 영수증")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .completeAt(null)
                 .employeeName("장도윤")
@@ -53,7 +54,7 @@ class AdminApproveQueryServiceImplTest {
                 .statusType("ACCEPTED")
                 .empId(2L)
                 .approveTitle("출장 택시비")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
                 .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")
@@ -83,7 +84,7 @@ class AdminApproveQueryServiceImplTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getApproveDTO().get(0).getApproveTitle()).isEqualTo("점심 식사 영수증");
-        assertThat(result.getApproveDTO().get(1).getApproveType()).isEqualTo("RECEIPT");
+        assertThat(result.getApproveDTO().get(1).getApproveType()).isEqualTo(ApproveType.RECEIPT);
 
         verify(adminApproveMapper, times(1)).findAllApproval(any(), any());
 
