@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -41,7 +42,7 @@ class CompanyQueryServiceTest {
                 "contact@momentum.com",
                 25,
                 LocalDate.of(2020, 1, 1),
-                LocalDateTime.of(2024, 6, 17, 9, 0)
+                LocalTime.of(9, 0)
         );
 
         when(companyMapper.getCompanyInfo()).thenReturn(mockDto);
