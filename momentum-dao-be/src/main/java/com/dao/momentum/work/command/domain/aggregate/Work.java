@@ -2,9 +2,12 @@ package com.dao.momentum.work.command.domain.aggregate;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Entity
@@ -30,7 +33,39 @@ public class Work {
 
     private LocalDateTime endPushedAt;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     private IsNormalWork isNormalWork;
+
+    @Builder
+    public Work(long empId, int typeId, LocalDateTime startAt, LocalDateTime endAt, int breakTime, LocalDateTime startPushedAt) {
+        this.empId = empId;
+        this.typeId = typeId;
+        this.startAt = startAt;
+        this.endAt = endAt;
+        this.breakTime = breakTime;
+        this.startPushedAt = startPushedAt;
+    }
+
+    public void fromUpdate(LocalDateTime endAt, LocalDateTime endPushedAt, int breakTime) {
+        this.endAt = endAt;
+        this.endPushedAt = endPushedAt;
+        this.breakTime = breakTime;
+    }
+
+    public void fromCorrection(LocalDateTime afterStartAt, LocalDateTime afterEndAt, int breakTime) {
+        this.startAt = afterStartAt;
+        this.endAt = afterEndAt;
+        this.breakTime = breakTime;
+    }
+
+    public Duration getWorkTime() {
+        return Duration.between(this.startAt, this.endAt)
+                .minusMinutes(this.breakTime);
+    }
+
+    public boolean isNormalWork(long requiredMinutes) {
+        return this.getWorkTime().toMinutes() >= requiredMinutes;
+    }
 
 }

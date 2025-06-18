@@ -2,7 +2,92 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.dao.momentum.work.query.mapper.WorkMapper">
+    <select id="getMyWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+        SELECT
+            work.work_id,
+            work.emp_id,
+            emp.emp_no,
+            emp.name AS empName,
+            work.type_id,
+            wt.type_name,
+            work.start_at,
+            work.end_at,
+            work.is_normal_work
+        FROM work AS work
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE work.emp_id = #{empId}
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
+        </if>
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
+        </if>
+        ORDER BY work.start_at ASC;
+    </select>
 
+    <select id="getWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+        SELECT
+            work.work_id,
+            work.emp_id,
+            emp.emp_no,
+            emp.name AS empName,
+            work.type_id,
+            wt.type_name,
+            work.start_at,
+            work.end_at,
+            work.is_normal_work
+        FROM work AS work
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE 1 = 1
+        <if test="request.empNo != null">
+            AND emp.emp_no = #{request.empNo}
+        </if>
+        <if test="request.empName != null and request.empName != ''">
+            AND emp.name = #{request.empName}
+        </if>
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
+        </if>
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
+        </if>
+        <if test="request.typeName != null and request.typeName != ''">
+            AND wt.type_name = #{request.typeName}
+        </if>
+        <if test="request.order == null or request.order.name() != 'DESC'">
+            ORDER BY work.start_at ASC
+        </if>
+        <if test="request.order != null and request.order.name() == 'DESC'">
+            ORDER BY work.start_at DESC
+        </if>
+        LIMIT #{request.limit} OFFSET #{request.offset};
+    </select>
+
+    <select id="countWorks" resultType="java.lang.Long">
+        SELECT
+        COUNT(work.work_id)
+        FROM work AS work
+        JOIN employee AS emp ON work.emp_id = emp.emp_id
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE 1 = 1
+        <if test="request.empNo != null">
+            AND emp.emp_no = #{request.empNo}
+        </if>
+        <if test="request.empName != null and request.empName != ''">
+            AND emp.name = #{request.empName}
+        </if>
+        <if test="request.rangeStartDate != null">
+            AND work.start_at <![CDATA[ >= ]]> #{request.rangeStartDate}
+        </if>
+        <if test="request.rangeEndDate != null">
+            AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
+        </if>
+        <if test="request.typeName != null and request.typeName != ''">
+            AND wt.type_name = #{request.typeName}
+        </if>
+        ;
+    </select>
 </mapper>

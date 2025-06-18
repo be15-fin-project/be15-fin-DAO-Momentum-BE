@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
@@ -14,7 +15,7 @@ import lombok.*;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long attachmentId;
+    private Long attachmentId;
 
     private Long announcementId;
 
@@ -22,7 +23,9 @@ public class File {
 
     private Long contractId;
 
+    @NotBlank
     private String url;
 
+    @NotBlank
     private String type;
 }

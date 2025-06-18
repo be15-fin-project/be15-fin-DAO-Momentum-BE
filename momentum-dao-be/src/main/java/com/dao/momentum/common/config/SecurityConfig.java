@@ -7,6 +7,7 @@ import com.dao.momentum.common.jwt.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,7 +49,7 @@ public class SecurityConfig {
                               permitAllEndpoints(auth);
 //                            employeeEndpoints(auth);
 //                            managerEndpoints(auth);
-//                            masterEndpoints(auth);
+                              masterEndpoints(auth);
 //                            hrManagerEndpoints(auth);
 //                            bookkeepingEndpoints(auth);
 
@@ -112,7 +113,12 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/employees"
+                "/position",
+                "/position/**"
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers( HttpMethod.PUT,
+                "/company"
         ).hasAuthority("MASTER");
     }
 
