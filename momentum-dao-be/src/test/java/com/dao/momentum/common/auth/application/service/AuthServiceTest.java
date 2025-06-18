@@ -10,6 +10,7 @@ import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
+import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -142,7 +143,7 @@ class AuthServiceTest {
         String refreshToken = "refresh-token";
         String userId = "userId@example.com";
         //when
-        doNothing().when(jwtTokenProvider.validateToken(refreshToken));
+        when(jwtTokenProvider.validateToken(refreshToken)).thenReturn(true);
         when(jwtTokenProvider.getUsernameFromJWT(refreshToken)).thenReturn(userId);
         authService.logout(refreshToken);
 
@@ -152,5 +153,22 @@ class AuthServiceTest {
         verify(redisTemplate).delete(userId);
     }
 
+    @Test
+    @DisplayName("로그아웃 실패_만료된 토큰")
+    void logout_invalidToken_throwsException() {
+        // given
+        String invalidToken = "invalid-token";
 
+        doThrow(new JwtException("Invalid token"))
+                .when(jwtTokenProvider).validateToken(invalidToken);
+
+        // when & then
+        JwtException exception = assertThrows(JwtException.class, () -> {
+            authService.logout(invalidToken);
+        });
+
+        assertEquals("Invalid token", exception.getMessage());
+        verify(jwtTokenProvider).validateToken(invalidToken);
+        verify(redisTemplate, never()).delete((String) any());
+    }
 }
