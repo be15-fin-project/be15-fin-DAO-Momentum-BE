@@ -12,10 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+
+import static com.dao.momentum.work.command.application.service.WorkTimeService.DEFAULT_WORK_HOURS;
 
 @Slf4j
 @Service
@@ -76,17 +75,76 @@ public class ApprovedWorkCommandService {
         saveMultiDayWork(empId, workType, startDate, endDate);
     }
 
+    private void applyHalfDayoff(long empId, VacationType vacationType, LocalDate startDate) {
+        WorkType vacationWorkType = getWorkType(WorkTypeName.VACATION);
+
+        boolean isAMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.AM_HALF_DAYOFF;
+        boolean isPMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.PM_HALF_DAYOFF;
+
+        LocalTime startTime = workTimeService.getStartTime();
+        LocalTime midTime = workTimeService.getMidTime();
+        LocalTime endTime = workTimeService.getEndTime();
+
+        LocalDateTime halfDayStart = isAMHalfDayoff ?
+                startDate.atTime(midTime) : startDate.atTime(startTime);
+        LocalDateTime halfDayEnd = isPMHalfDayoff ?
+                startDate.atTime(midTime) : startDate.atTime(endTime);
+
+        final int requiredWorkMinutes = DEFAULT_WORK_HOURS * 60 / 2;
+
+        // 1. 기존 출근 기록 조회 후 있으면 수정
+        workRepository.findByEmpIdAndDateAndTypeName(empId, startDate, WorkTypeName.WORK)
+                .ifPresent(work -> {
+                    if (isAMHalfDayoff) {
+                        LocalDateTime adjustedStart = work.getStartAt().isBefore(halfDayStart) ?
+                                halfDayStart : work.getStartAt();
+                        LocalDateTime endAt = work.getEndAt();
+                        int breakTime = workTimeService.getBreakTime(adjustedStart, endAt);
+                        work.fromCorrection(adjustedStart, endAt, breakTime);
+                        IsNormalWork isNormalWork = work.isNormalWork(requiredWorkMinutes) ?
+                                IsNormalWork.Y : IsNormalWork.N;
+                        work.setIsNormalWork(isNormalWork);
+                    } else if (isPMHalfDayoff) {
+                        LocalDateTime adjustedEnd = work.getEndAt().isAfter(halfDayEnd) ?
+                                halfDayEnd : work.getEndAt();
+                        LocalDateTime startAt = work.getStartAt();
+                        int breakTime = workTimeService.getBreakTime(startAt, adjustedEnd);
+                        work.fromCorrection(startAt, adjustedEnd, breakTime);
+                        IsNormalWork isNormalWork = work.isNormalWork(requiredWorkMinutes) ?
+                                IsNormalWork.Y : IsNormalWork.N;
+                        work.setIsNormalWork(isNormalWork);
+                    }
+                    workRepository.save(work);
+                });
+
+        // 2. 휴가 기록 새로 삽입
+        LocalDateTime vacationStartAt = getStartAt(vacationType, startDate);
+        LocalDateTime vacationEndAt = getEndAt(vacationType, startDate);
+
+        Work newVacationWork = Work.builder()
+                .empId(empId)
+                .typeId(vacationWorkType.getTypeId())
+                .startAt(vacationStartAt)
+                .endAt(vacationEndAt)
+                .breakTime(workTimeService.getBreakTime(vacationStartAt, vacationEndAt))
+                .build();
+        IsNormalWork isNormalWork = newVacationWork.isNormalWork(requiredWorkMinutes) ?
+                IsNormalWork.Y : IsNormalWork.N;
+        newVacationWork.setIsNormalWork(isNormalWork);
+        workRepository.save(newVacationWork);
+    }
+
     private void applyVacation(long empId, VacationType vacationType, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.VACATION);
 
-        // 반일 휴가 처리 시 startDate == endDate 가 보장되어 있다고 가정
-        if (vacationType.getVacationType() == VacationTypeEnum.AM_HALF_DAYOFF || vacationType.getVacationType() == VacationTypeEnum.PM_HALF_DAYOFF) {
-            LocalDateTime startAt = getStartAt(vacationType, startDate);
-            LocalDateTime endAt = getEndAt(vacationType, startDate);
-            saveWork(empId, workType, startAt, endAt);
-        } else {
-            saveMultiDayWork(empId, workType, startDate, endDate);
+        boolean isAMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.AM_HALF_DAYOFF;
+        boolean isPMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.PM_HALF_DAYOFF;
+
+        if (isAMHalfDayoff || isPMHalfDayoff) {
+            applyHalfDayoff(empId, vacationType, startDate);
+            return;
         }
+        saveMultiDayWork(empId, workType, startDate, endDate);
     }
 
     private void applyWorkCorrection(long empId, LocalDateTime afterStartAt, LocalDateTime afterEndAt, long workId) {
@@ -103,7 +161,7 @@ public class ApprovedWorkCommandService {
         final boolean hasAMHalfDayoff = workCreateValidator.hasAMHalfDayOff(empId, correctDate);
         final boolean hasPMHalfDayoff = workCreateValidator.hasPMHalfDayOff(empId, correctDate);
 
-        int requiredWorkMinutes = WorkTimeService.DEFAULT_WORK_HOURS;
+        int requiredWorkMinutes = DEFAULT_WORK_HOURS;
         if (hasAMHalfDayoff || hasPMHalfDayoff) {
             requiredWorkMinutes /= 2;
         }
