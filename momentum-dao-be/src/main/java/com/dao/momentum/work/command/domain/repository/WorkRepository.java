@@ -3,9 +3,11 @@ package com.dao.momentum.work.command.domain.repository;
 import com.dao.momentum.work.command.domain.aggregate.Work;
 import com.dao.momentum.work.command.domain.aggregate.WorkTypeName;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,4 +64,27 @@ public interface WorkRepository {
             long empId, LocalDate date, WorkTypeName workType);
 
     Optional<Work> findById(long workId);
+
+    @Modifying
+    @Query("""
+    DELETE FROM Work w
+    WHERE w.empId = :empId
+      AND w.startAt >= :searchStartAt
+      AND w.endAt < :searchEndAt
+      AND w.typeId = :typeId
+""")
+    void deleteByEmployeeIdAndDateRangeAndWorkType(long empId, LocalDateTime searchStartAt, LocalDateTime searchEndAt, int typeId);
+
+    @Query("""
+                SELECT
+                  CASE WHEN EXISTS (
+                  SELECT 1
+                    FROM Work w
+                   WHERE w.empId = :empId
+                  AND w.startAt >= :searchStartAt
+                  AND w.endAt < :searchEndAt
+                  AND w.typeId = :typeId
+                  ) THEN TRUE ELSE FALSE END
+            """)
+    boolean existsByEmpIdAndDateRangeAndWorkType(long empId, LocalDateTime searchStartAt, LocalDateTime searchEndAt, int typeId);
 }

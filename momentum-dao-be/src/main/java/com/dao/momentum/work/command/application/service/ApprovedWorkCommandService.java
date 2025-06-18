@@ -22,24 +22,14 @@ import static com.dao.momentum.work.command.application.service.WorkTimeService.
 public class ApprovedWorkCommandService {
     private static final int BREAK_TIME_UNIT = 30;
     private static final int MINUTES_IN_HOUR = 60;
-    private static final int ADD_BREAK_TIME_INTERVAL = 4 * MINUTES_IN_HOUR * BREAK_TIME_UNIT;
+    private static final int ADD_BREAK_TIME_INTERVAL = 4 * MINUTES_IN_HOUR + BREAK_TIME_UNIT;
 
     private final WorkTypeRepository workTypeRepository;
     private final WorkRepository workRepository;
     private final WorkTimeService workTimeService;
     private final WorkCreateValidator workCreateValidator;
 
-    // ApproveType: WORKCORRECTION, VACATION, BUSINESSTRIP, REMOTEWORK, OVERTIME, CANCEL
-
-    // VacationType: PAID_ETC, UNPAID_ETC, DAYOFF, REFRESH, MILITARY_TRAINING, LIFE_EVENT, (AM_HALF_DAYOFF, PM_HALF_DAYOFF)
-
-    // WorkTypeName: WORK("근무"),
-    //    REMOTE_WORK("재택근무"),
-    //    VACATION("휴가"),
-    //    OVERTIME("연장근무"),
-    //    NIGHT("야간근무"),
-    //    HOLIDAY("휴일근무"),
-    //    BUSINESS_TRIP("출장");
+    // 재택, 출장, 휴가 등: 요청된 기간에 휴일, 주말 포함 여부도 검증 필요
 
     @Transactional
     public void applyApprovedWork(
@@ -67,11 +57,17 @@ public class ApprovedWorkCommandService {
 
     private void applyRemoteWork(long empId, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.REMOTE_WORK);
+        if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
+            deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
+        }
         saveMultiDayWork(empId, workType, startDate, endDate);
     }
 
     private void applyBusinessTrip(long empId, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.BUSINESS_TRIP);
+        if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
+            deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
+        }
         saveMultiDayWork(empId, workType, startDate, endDate);
     }
 
@@ -144,6 +140,12 @@ public class ApprovedWorkCommandService {
             applyHalfDayoff(empId, vacationType, startDate);
             return;
         }
+
+        // 기존 근무 데이터 삭제
+        if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
+            deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
+        }
+        // 휴가 기록 새로 저장
         saveMultiDayWork(empId, workType, startDate, endDate);
     }
 
@@ -170,6 +172,7 @@ public class ApprovedWorkCommandService {
                 IsNormalWork.Y : IsNormalWork.N;
 
         foundWork.setIsNormalWork(isNormalWork);
+        workRepository.save(foundWork);
     }
 
     private void applyOvertime(long empId, LocalDateTime startAt, LocalDateTime endAt, int requestedBreakTime) {
@@ -251,6 +254,28 @@ public class ApprovedWorkCommandService {
             saveWork(empId, workType, startAt, endAt);
             date = date.plusDays(1);
         }
+    }
+
+    private void deleteExistingWork(long empId, LocalDate startDate, LocalDate endDate, WorkTypeName workTypeName) {
+        WorkType workType = getWorkType(workTypeName);
+
+        workRepository.deleteByEmployeeIdAndDateRangeAndWorkType(
+                empId,
+                startDate.atStartOfDay(),
+                endDate.plusDays(1).atStartOfDay(),
+                workType.getTypeId()
+        );
+    }
+
+    private boolean existsWork(long empId, LocalDate startDate, LocalDate endDate, WorkTypeName workTypeName) {
+        WorkType workType = getWorkType(workTypeName);
+
+        return workRepository.existsByEmpIdAndDateRangeAndWorkType(
+                empId,
+                startDate.atStartOfDay(),
+                endDate.plusDays(1).atStartOfDay(),
+                workType.getTypeId()
+        );
     }
 
     private void validateRequestedDates(LocalDate startDate, LocalDate endDate) {
