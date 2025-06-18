@@ -60,4 +60,6 @@ public interface WorkRepository {
             """)
     Optional<Work> findByEmpIdAndDateAndTypeName(
             long empId, LocalDate date, WorkTypeName workType);
+
+    Optional<Work> findById(long workId);
 }

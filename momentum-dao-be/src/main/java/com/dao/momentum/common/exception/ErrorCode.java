@@ -29,6 +29,7 @@ public enum ErrorCode {
     ACCEPTED_WORK_ALREADY_RECORDED("20006", "재택근무/휴가/출장이 승인된 날짜입니다.", HttpStatus.BAD_REQUEST),
     WORKING_52H_NOT_ALLOWED("20007", "주 52시간 이상의 근무는 불가능합니다.", HttpStatus.BAD_REQUEST),
     WORK_NOT_FOUND("20008", "시스템 오류입니다." ,HttpStatus.NOT_FOUND),
+    NOT_ENOUGH_BREAK_TIME("20009", "법정 휴게시간을 준수하지 않은 요청입니다.", HttpStatus.BAD_REQUEST),
 
     // 결재 오류 (30001 ~ 39999)
     NOT_EXIST_TAB("30001", "존재하지 않는 결재 탭입니다.", HttpStatus.BAD_REQUEST),
