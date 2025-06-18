@@ -58,4 +58,13 @@ public class AuthService {
                 .userRoles(employeeRoleArray)
                 .build();
     }
+
+    public void logout(String refreshToken) {
+        if(refreshToken == null)
+            return;
+        // refresh token의 서명 및 만료 검증
+        jwtTokenProvider.validateToken(refreshToken);
+        String userId = jwtTokenProvider.getUsernameFromJWT(refreshToken);
+        redisTemplate.delete(userId);
+    }
 }
