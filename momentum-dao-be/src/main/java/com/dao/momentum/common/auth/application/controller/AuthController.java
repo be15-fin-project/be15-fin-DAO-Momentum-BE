@@ -6,6 +6,8 @@ import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -77,5 +79,13 @@ public class AuthController {
                 .maxAge(0)
                 .sameSite("Strict")
                 .build();
+    }
+
+    @ExceptionHandler(EmployeeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmployeeException(EmployeeException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
     }
 }
