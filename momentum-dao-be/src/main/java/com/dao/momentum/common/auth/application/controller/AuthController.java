@@ -3,6 +3,7 @@ package com.dao.momentum.common.auth.application.controller;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
 import com.dao.momentum.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,21 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "토큰 재발급", description = "만료된 토큰을 재발급받아 재로그인 없이 인증 상태를 유지한다.")
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken
+    ) {
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // refreshToken이 없으면 401 반환
+        }
+        TokenResponse tokenResponse = authService.refreshToken(refreshToken);
+        ResponseCookie cookie = createRefreshTokenCookie(tokenResponse.getRefreshToken());  // refreshToken 쿠키 생성
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success(tokenResponse));
     }
 
 
