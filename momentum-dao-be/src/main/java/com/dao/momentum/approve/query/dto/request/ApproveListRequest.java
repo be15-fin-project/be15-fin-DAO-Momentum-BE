@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.dto.request;
 
+import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -13,7 +14,7 @@ public class ApproveListRequest {
     @NotNull(message = "결재 종류는 반드시 선택해야 합니다.")
     private final String tab;
 
-    private final String approveType;
+    private final ApproveType approveType;
     private final String receiptType;
     private final Integer status;
     private final String title;
