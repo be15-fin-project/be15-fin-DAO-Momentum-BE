@@ -1,11 +1,11 @@
 package com.dao.momentum.evaluation.query.controller;
 
-import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.evaluation.exception.KpiException;
+import static com.dao.momentum.common.exception.ErrorCode.KPI_EMPLOYEE_SUMMARY_NOT_FOUND;
+import com.dao.momentum.evaluation.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
+import com.dao.momentum.evaluation.query.dto.response.*;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -110,4 +111,69 @@ class KpiQueryControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("사원별 KPI 요약 조회 - 성공 케이스")
+    @WithMockUser(authorities = "HR")
+    void getEmployeeKpiSummaries_success() throws Exception {
+        // given
+        KpiEmployeeSummaryResponseDto item = new KpiEmployeeSummaryResponseDto();
+        item.setEmpNo("HR001");
+        item.setEmployeeName("홍길동");
+        item.setDepartmentName("기획팀");
+        item.setPositionName("대리");
+        item.setTotalKpiCount(6);
+        item.setCompletedKpiCount(4);
+        item.setAverageProgress(76.5);
+        item.setCompletionRate(66.7);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(1)
+                .totalPage(1)
+                .totalItems(1)
+                .build();
+
+        KpiEmployeeSummaryResultDto resultDto = new KpiEmployeeSummaryResultDto(List.of(item), pagination);
+        Mockito.when(kpiQueryService.getEmployeeKpiSummaries(any(KpiEmployeeSummaryRequestDto.class)))
+                .thenReturn(resultDto);
+
+        // when & then
+        mockMvc.perform(get("/kpi/employee-summary")
+                        .param("year", "2025")
+                        .param("month", "6")
+                        .param("deptId", "10")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.content", hasSize(1)))
+                .andExpect(jsonPath("$.data.content[0].empNo").value("HR001"))
+                .andExpect(jsonPath("$.data.content[0].employeeName").value("홍길동"))
+                .andExpect(jsonPath("$.data.content[0].departmentName").value("기획팀"))
+                .andExpect(jsonPath("$.data.content[0].positionName").value("대리"))
+                .andExpect(jsonPath("$.data.content[0].totalKpiCount").value(6))
+                .andExpect(jsonPath("$.data.content[0].completedKpiCount").value(4))
+                .andExpect(jsonPath("$.data.content[0].averageProgress").value(76.5))
+                .andExpect(jsonPath("$.data.content[0].completionRate").value(66.7))
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("사원별 KPI 요약 조회 - 실패 케이스 (데이터 없음)")
+    @WithMockUser(authorities = "HR")
+    void getEmployeeKpiSummaries_notFound() throws Exception {
+        Mockito.when(kpiQueryService.getEmployeeKpiSummaries(any(KpiEmployeeSummaryRequestDto.class)))
+                .thenThrow(new KpiException(KPI_EMPLOYEE_SUMMARY_NOT_FOUND));
+
+        mockMvc.perform(get("/kpi/employee-summary")
+                        .param("year", "2025")
+                        .param("month", "6")
+                        .param("deptId", "10")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorCode").value("KPI_EMPLOYEE_SUMMARY_NOT_FOUND"))
+                .andDo(print());
+    }
 }

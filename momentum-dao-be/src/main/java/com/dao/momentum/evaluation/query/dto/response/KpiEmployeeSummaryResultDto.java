@@ -13,7 +13,7 @@ import java.util.List;
 public class KpiEmployeeSummaryResultDto {
 
     @Schema(description = "사원별 KPI 요약 목록")
-    private List<KpiEmployeeSummaryResponseDto> list;
+    private List<KpiEmployeeSummaryResponseDto> content;
 
     @Schema(description = "페이지네이션 정보")
     private Pagination pagination;
