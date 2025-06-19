@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.query.controller;
 
 import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
@@ -122,11 +123,13 @@ class KpiStatisticsControllerTest {
 
         KpiTimeseriesResponseDto mockResponse = new KpiTimeseriesResponseDto();
         mockResponse.setYear(thisYear);
-        mockResponse.setEmpNo("EMP0001");
         mockResponse.setMonthlyStats(monthlyStats);
 
-        // year가 null로 들어오면 내부에서 thisYear로 처리하므로, Mockito 조건도 null을 사용해야 함
-        Mockito.when(kpiStatisticsService.getTimeseriesStatistics(isNull(), any()))
+        // dto 파라미터 구성
+        KpiTimeseriesRequestDto mockDto = new KpiTimeseriesRequestDto(); // year는 null
+        // empId는 컨트롤러에서 설정됨 (권한자이므로 null 유지)
+
+        Mockito.when(kpiStatisticsService.getTimeseriesStatistics(any(KpiTimeseriesRequestDto.class)))
                 .thenReturn(mockResponse);
 
         // when & then
@@ -134,9 +137,9 @@ class KpiStatisticsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.year").value(thisYear))
-                .andExpect(jsonPath("$.data.empNo").value("EMP0001"))
                 .andExpect(jsonPath("$.data.monthlyStats").isArray())
                 .andDo(print());
     }
+
 
 }

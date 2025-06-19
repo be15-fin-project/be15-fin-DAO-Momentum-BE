@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.query.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.exception.KpiException;
 import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
@@ -78,58 +79,63 @@ class KpiStatisticsServiceImplTest {
     @DisplayName("시계열 KPI 통계 조회 - 정상 케이스")
     void getTimeseriesStatistics_success() {
         // given
-        int year = 2025;
-        String empNo = "20250001";
+        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
+        requestDto.setYear(2025);
+        requestDto.setEmpId(1001L);
 
         List<KpiTimeseriesMonthlyDto> mockList = Arrays.asList(
                 new KpiTimeseriesMonthlyDto(1, 10, 4, 64.0),
                 new KpiTimeseriesMonthlyDto(2, 12, 6, 71.5)
         );
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(mockList);
+        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(mockList);
 
         // when
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year, empNo);
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
 
         // then
         assertNotNull(result);
-        assertEquals(year, result.getYear());
-        assertEquals(empNo, result.getEmpNo());
+        assertEquals(2025, result.getYear());
         assertEquals(2, result.getMonthlyStats().size());
         assertEquals(10, result.getMonthlyStats().get(0).getTotalKpiCount());
     }
+
 
     @Test
     @DisplayName("시계열 KPI 통계 조회 실패 - null 결과")
     void getTimeseriesStatistics_null_throwsException() {
         // given
-        Integer year = 2025;
-        String empNo = "20250001";
+        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
+        requestDto.setYear(2025);
+        requestDto.setEmpId(1001L);
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(null);
+        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(null);
 
         // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(year, empNo);
+            kpiStatisticsService.getTimeseriesStatistics(requestDto);
         });
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
     }
+
 
     @Test
     @DisplayName("시계열 KPI 통계 조회 실패 - 빈 결과")
     void getTimeseriesStatistics_empty_throwsException() {
         // given
-        Integer year = 2025;
-        String empNo = "20250001";
+        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
+        requestDto.setYear(2025);
+        requestDto.setEmpId(1001L);
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(Collections.emptyList());
+        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(Collections.emptyList());
 
         // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(year, empNo);
+            kpiStatisticsService.getTimeseriesStatistics(requestDto);
         });
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
     }
+
 }

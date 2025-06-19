@@ -2,6 +2,7 @@ package com.dao.momentum.evaluation.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.query.service.KpiStatisticsService;
@@ -49,11 +50,7 @@ public class KpiStatisticsController {
 
         if (!isPrivileged) {
             Long empId = Long.parseLong(empIdStr);
-            String empNo = employeeRepository.findByEmpId(empId)
-                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
-                    .getEmpNo();
-
-            requestDto.setEmpNo(empNo);
+            requestDto.setEmpId(empId);
         }
 
         KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
@@ -71,7 +68,7 @@ public class KpiStatisticsController {
             description = "연도별 월간 KPI 작성 수, 완료 수, 평균 진척률을 시계열로 조회합니다. year 미입력 시 현재 연도 기준입니다."
     )
     public ApiResponse<KpiTimeseriesResponseDto> getTimeseriesStatistics(
-            @RequestParam(value = "year", required = false) Integer year
+            @ModelAttribute KpiTimeseriesRequestDto requestDto
     ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String empIdStr = auth.getName();
@@ -80,15 +77,12 @@ public class KpiStatisticsController {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
 
-        String empNo = null;
         if (!isPrivileged) {
             Long empId = Long.parseLong(empIdStr);
-            empNo = employeeRepository.findByEmpId(empId)
-                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
-                    .getEmpNo();
+            requestDto.setEmpId(empId);
         }
 
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year, empNo);
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
         return ApiResponse.success(result);
     }
 }

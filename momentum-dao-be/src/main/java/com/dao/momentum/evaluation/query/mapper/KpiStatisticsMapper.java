@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.query.mapper;
 
 import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto;
 import org.apache.ibatis.annotations.Param;
@@ -15,5 +16,5 @@ public interface KpiStatisticsMapper {
     KpiStatisticsResponseDto getMonthlyStatistics(KpiStatisticsRequestDto dto);
 
     // KPI 시계열 통계 조회
-    List<KpiTimeseriesMonthlyDto> getTimeseriesStatistics(@Param("year") int year);
+    List<KpiTimeseriesMonthlyDto> getTimeseriesStatistics(KpiTimeseriesRequestDto dto);
 }

@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.query.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.exception.KpiException;
 import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
@@ -31,15 +32,18 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     }
 
     @Override
-    public KpiTimeseriesResponseDto getTimeseriesStatistics(Integer year, String empNo) {
-        int targetYear = (year != null) ? year : LocalDate.now().getYear();
-        List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(targetYear);
+    public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
+        if (requestDto.getYear() == null) {
+            requestDto.setYear(LocalDate.now().getYear());
+        }
 
+        List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(requestDto);
 
         if (stats == null || stats.isEmpty()) {
             throw new KpiException(ErrorCode.STATISTICS_NOT_FOUND);
         }
 
-        return new KpiTimeseriesResponseDto(targetYear, empNo, stats);
+        return new KpiTimeseriesResponseDto(requestDto.getYear(), stats);
     }
+
 }

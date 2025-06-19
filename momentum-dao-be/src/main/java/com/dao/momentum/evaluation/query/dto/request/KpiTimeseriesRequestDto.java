@@ -14,4 +14,7 @@ public class KpiTimeseriesRequestDto {
             example = "2025"
     )
     private Integer year;
+
+    @Schema(description = "사원 ID", example = "1001")
+    private Long empId;
 }
