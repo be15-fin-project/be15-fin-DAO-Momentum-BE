@@ -60,6 +60,7 @@ public class WorkTimeService {
     }
 
     LocalDateTime computeStartAt(LocalDateTime startPushedAt, boolean hasAMHalfDayOff) {
+        LocalDateTime truncatedStartPushedAt = startPushedAt.withSecond(0).withNano(0);
         LocalDate startPushedDate = startPushedAt.toLocalDate();
         LocalTime startTime = getStartTime();
         LocalDateTime startAtByPolicy = startPushedDate.atTime(startTime);
@@ -67,12 +68,13 @@ public class WorkTimeService {
         LocalDateTime startAtByPolicyForAMDayoff = startPushedDate.atTime(midTime);
 
         if (hasAMHalfDayOff) {
-            return getLaterOne(startPushedAt, startAtByPolicyForAMDayoff);
+            return getLaterOne(truncatedStartPushedAt, startAtByPolicyForAMDayoff);
         }
-        return getLaterOne(startPushedAt, startAtByPolicy);
+        return getLaterOne(truncatedStartPushedAt, startAtByPolicy);
     }
 
     LocalDateTime computeEndAt(LocalDateTime endPushedAt, boolean hasPMHalfDayOff) {
+        LocalDateTime truncatedEndPushedAt = endPushedAt.withSecond(0).withNano(0);
         LocalDate endPushedDate = endPushedAt.toLocalDate();
         LocalTime endTime = getEndTime();
         LocalDateTime endAtByPolicy = endPushedDate.atTime(endTime);
@@ -80,8 +82,8 @@ public class WorkTimeService {
         LocalDateTime endAtByPolicyForPMDayoff = endPushedDate.atTime(midTime);
 
         if (hasPMHalfDayOff) {
-            return getEarlierOne(endPushedAt, endAtByPolicyForPMDayoff);
+            return getEarlierOne(truncatedEndPushedAt, endAtByPolicyForPMDayoff);
         }
-        return getEarlierOne(endPushedAt, endAtByPolicy);
+        return getEarlierOne(truncatedEndPushedAt, endAtByPolicy);
     }
 }
