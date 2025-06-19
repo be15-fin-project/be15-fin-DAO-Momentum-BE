@@ -1,7 +1,6 @@
 package com.dao.momentum.organization.employee.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.organization.employee.query.dto.request.EmployeeDetailsRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDTO;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.response.*;
