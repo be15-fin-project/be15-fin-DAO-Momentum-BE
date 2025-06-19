@@ -3,12 +3,12 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.dao.momentum.evaluation.query.mapper.KpiQueryMapper">
+<mapper namespace="com.dao.momentum.evaluation.kpi.query.mapper.KpiQueryMapper">
 
     <!-- KPI 목록 조회 -->
     <select id="getKpiList"
-            parameterType="com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto"
-            resultType="com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto">
+            parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto"
+            resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiListResponseDto">
         SELECT
             k.kpi_id,
             e.emp_no,
@@ -50,7 +50,7 @@
 
     <!-- KPI 목록 전체 개수 조회 -->
     <select id="getKpiListCount"
-            parameterType="com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto"
+            parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto"
             resultType="long">
         SELECT COUNT(*)
         FROM kpi k
@@ -81,7 +81,7 @@
     <!-- KPI 상세 조회 -->
     <select id="getKpiDetail"
             parameterType="long"
-            resultType="com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto">
+            resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiDetailResponseDto">
         SELECT
             k.kpi_id,
             e.emp_no,
@@ -108,7 +108,7 @@
     </select>
 
     <!-- KPI 사원별 목록 -->
-    <select id="getEmployeeKpiSummary" resultType="com.dao.momentum.evaluation.query.dto.response.KpiEmployeeSummaryResponseDto">
+    <select id="getEmployeeKpiSummary" resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiEmployeeSummaryResponseDto">
         SELECT
             e.emp_no,
             e.name AS employeeName,
