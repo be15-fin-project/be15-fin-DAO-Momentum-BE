@@ -3,8 +3,10 @@ package com.dao.momentum.announcement.command.application.service;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
+import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
+import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
 import com.dao.momentum.announcement.command.domain.aggregate.File;
@@ -45,6 +47,50 @@ class AnnouncementCommandServiceTest {
 
     @InjectMocks
     private AnnouncementCommandService announcementCommandService;
+
+    @Test
+    @DisplayName("Presigned URL 생성 성공")
+    void generatePresignedUrl_success() {
+        // given
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 1024 * 1024, "image/png");
+
+        when(s3Service.extractFileExtension("test.png")).thenReturn("png");
+        when(s3Service.sanitizeFilename("test.png")).thenReturn("test.png");
+        when(s3Service.generatePresignedUploadUrlWithKey(anyString(), eq("image/png")))
+                .thenReturn(new FilePresignedUrlResponse("https://presigned.url", "announcements/uuid/test.png"));
+
+        // when
+        FilePresignedUrlResponse response = announcementCommandService.generatePresignedUrl(request);
+
+        // then
+        assertNotNull(response);
+        assertTrue(response.presignedUrl().startsWith("https://presigned.url"));
+        assertTrue(response.s3Key().startsWith("announcements/"));
+    }
+
+    @Test
+    @DisplayName("Presigned URL 생성 실패 - 파일 크기 초과")
+    void generatePresignedUrl_fail_fileTooLarge() {
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 11 * 1024 * 1024, "image/png");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> announcementCommandService.generatePresignedUrl(request));
+
+        assertEquals("파일은 10MB 이하만 업로드 가능합니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Presigned URL 생성 실패 - 허용되지 않은 확장자")
+    void generatePresignedUrl_fail_invalidExtension() {
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("malware.exe", 1024 * 1024, "application/octet-stream");
+
+        when(s3Service.extractFileExtension("malware.exe")).thenReturn("exe");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> announcementCommandService.generatePresignedUrl(request));
+
+        assertEquals("허용되지 않은 파일 확장자입니다.", exception.getMessage());
+    }
 
     @Test
     @DisplayName("공지사항 생성 성공")
