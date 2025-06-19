@@ -26,11 +26,6 @@ public class EmailService {
 
 
     public void sendPasswordResetEmail(Employee employee, String token) {
-        // 현재 시간
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String formattedNow = now.format(formatter);
-
         // 비밀번호 재설정 링크
         String resetLink = "http://localhost:5173/password/reset?token=" + token;
 
