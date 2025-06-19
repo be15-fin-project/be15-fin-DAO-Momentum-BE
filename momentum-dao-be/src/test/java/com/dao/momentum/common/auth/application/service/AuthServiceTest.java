@@ -2,6 +2,7 @@ package com.dao.momentum.common.auth.application.service;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.domain.aggregate.RefreshToken;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
@@ -21,8 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -170,5 +173,135 @@ class AuthServiceTest {
         assertEquals("Invalid token", exception.getMessage());
         verify(jwtTokenProvider).validateToken(invalidToken);
         verify(redisTemplate, never()).delete((String) any());
+    }
+
+    @Test
+    @DisplayName("토큰갱신 성공")
+    void refreshToken_success() {
+        // given
+        String oldRefreshToken = "old.refresh.token";
+        String empId = "123";
+        String newAccessToken = "new.access.token";
+        String newRefreshToken = "new.refresh.token";
+        RefreshToken storedRefreshToken = new RefreshToken("old.refresh.token");
+        Employee mockEmployee = Employee.builder()
+                .empId(123L)
+                .email("test@example.com")
+                .password("encodedPassword")
+                .build();
+
+        List<String> roles = List.of("ROLE_USER");
+
+        // mocking
+        when(jwtTokenProvider.validateToken(oldRefreshToken)).thenReturn(true);
+        when(jwtTokenProvider.getUsernameFromJWT(oldRefreshToken)).thenReturn(empId);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("123")).thenReturn(storedRefreshToken);
+        when(employeeRepository.findByEmpId(123L)).thenReturn(Optional.of(mockEmployee));
+        when(userRoleMapper.findByEmpId(123L)).thenReturn(roles);
+        when(jwtTokenProvider.createToken(empId, roles.toArray(new String[0]))).thenReturn(newAccessToken);
+        when(jwtTokenProvider.createRefreshToken(empId, roles.toArray(new String[0]))).thenReturn(newRefreshToken);
+
+        // when
+        TokenResponse response = authService.refreshToken(oldRefreshToken);
+
+        // then
+        assertEquals(newAccessToken, response.getAccessToken());
+        assertEquals(newRefreshToken, response.getRefreshToken());
+    }
+
+    @Test
+    @DisplayName("토큰갱신 실패_조회되는 리프레시토큰 없음")
+    void refreshTokenFail_refreshTokenNotFound() {
+        // given
+        String oldRefreshToken = "old.refresh.token";
+        String empId = "123";
+
+        // mocking
+        when(jwtTokenProvider.validateToken(oldRefreshToken)).thenReturn(true);
+        when(jwtTokenProvider.getUsernameFromJWT(oldRefreshToken)).thenReturn(empId);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get(empId)).thenReturn(null);
+
+        // when
+        BadCredentialsException exception = assertThrows(
+                BadCredentialsException.class,
+                () -> authService.refreshToken(oldRefreshToken)
+        );
+
+        // then
+        assertEquals("해당 유저로 조회되는 리프레시 토큰 없음", exception.getMessage());
+        verify(jwtTokenProvider).validateToken(oldRefreshToken);
+        verify(valueOperations, never()).set((String) any(),any());
+    }
+
+    @Test
+    @DisplayName("토큰갱신 실패_토큰 불일치")
+    void refreshTokenFail_tokenDiscord() {
+        // given
+        String oldRefreshToken = "old.refresh.token";
+        String empId = "123";
+        String newAccessToken = "new.access.token";
+        String newRefreshToken = "new.refresh.token";
+        RefreshToken storedRefreshToken = new RefreshToken("discord.refresh.token");
+        Employee mockEmployee = Employee.builder()
+                .empId(123L)
+                .email("test@example.com")
+                .password("encodedPassword")
+                .build();
+
+        List<String> roles = List.of("ROLE_USER");
+
+        // mocking
+        when(jwtTokenProvider.validateToken(oldRefreshToken)).thenReturn(true);
+        when(jwtTokenProvider.getUsernameFromJWT(oldRefreshToken)).thenReturn(empId);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("123")).thenReturn(storedRefreshToken);
+
+        //when
+        BadCredentialsException exception = assertThrows(
+                BadCredentialsException.class,
+                () -> authService.refreshToken(oldRefreshToken)
+        );
+
+        // then
+        assertEquals("리프레시 토큰 일치하지 않음", exception.getMessage());
+        verify(jwtTokenProvider).validateToken(oldRefreshToken);
+        verify(valueOperations, never()).set((String) any(),any());
+    }
+
+    @Test
+    @DisplayName("토큰갱신 실패_회원 조회 실패")
+    void refreshTokenFail_EmployeeNotFound() {
+        // given
+        String oldRefreshToken = "old.refresh.token";
+        String empId = "123";
+        String newAccessToken = "new.access.token";
+        String newRefreshToken = "new.refresh.token";
+        RefreshToken storedRefreshToken = new RefreshToken("old.refresh.token");
+        Employee mockEmployee = Employee.builder()
+                .empId(123L)
+                .email("test@example.com")
+                .password("encodedPassword")
+                .build();
+
+        List<String> roles = List.of("ROLE_USER");
+
+        // mocking
+        when(jwtTokenProvider.validateToken(oldRefreshToken)).thenReturn(true);
+        when(jwtTokenProvider.getUsernameFromJWT(oldRefreshToken)).thenReturn(empId);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.get("123")).thenReturn(storedRefreshToken);
+        when(employeeRepository.findByEmpId(123L)).thenReturn(Optional.empty());
+
+        // when
+        EmployeeException exception = assertThrows(
+                EmployeeException.class,
+                () -> authService.refreshToken(oldRefreshToken)
+        );
+
+        // then
+        verify(jwtTokenProvider).validateToken(oldRefreshToken);
+        verify(valueOperations, never()).set((String) any(),any());
     }
 }
