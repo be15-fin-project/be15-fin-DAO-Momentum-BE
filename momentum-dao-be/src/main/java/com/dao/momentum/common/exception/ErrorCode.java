@@ -33,6 +33,16 @@ public enum ErrorCode {
 
     // 결재 오류 (30001 ~ 39999)
     NOT_EXIST_TAB("30001", "존재하지 않는 결재 탭입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_APPROVE("30002", "존재하지 않는 결재 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_PROPOSAL("30003", "존재하지 않는 품의 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_RECEIPT("30004", "존재하지 않는 영수증 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_BUSINESS_TRIP("30005", "존재하지 않는 출장 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_OVERTIME("30006", "존재하지 않는 초과 근무 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_REMOTE_WORK("30007", "존재하지 않는 재택 근무 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_VACATION("30008", "존재하지 않는 휴가 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_WORK_CORRECTION("30009", "존재하지 않는 출퇴근 정정 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+
 
     // 평가 오류 (40001 ~ 49999)
     STATISTICS_NOT_FOUND("40001", "해당 조건에 대한 KPI 통계가 없습니다.", HttpStatus.NOT_FOUND),
