@@ -2,8 +2,11 @@ package com.dao.momentum.announcement.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
+import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
+import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
+import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
 import com.dao.momentum.announcement.command.domain.aggregate.File;
@@ -18,9 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,73 +49,101 @@ class AnnouncementCommandServiceTest {
     private AnnouncementCommandService announcementCommandService;
 
     @Test
+    @DisplayName("Presigned URL 생성 성공")
+    void generatePresignedUrl_success() {
+        // given
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 1024 * 1024, "image/png");
+
+        when(s3Service.extractFileExtension("test.png")).thenReturn("png");
+        when(s3Service.sanitizeFilename("test.png")).thenReturn("test.png");
+        when(s3Service.generatePresignedUploadUrlWithKey(anyString(), eq("image/png")))
+                .thenReturn(new FilePresignedUrlResponse("https://presigned.url", "announcements/uuid/test.png"));
+
+        // when
+        FilePresignedUrlResponse response = announcementCommandService.generatePresignedUrl(request);
+
+        // then
+        assertNotNull(response);
+        assertTrue(response.presignedUrl().startsWith("https://presigned.url"));
+        assertTrue(response.s3Key().startsWith("announcements/"));
+    }
+
+    @Test
+    @DisplayName("Presigned URL 생성 실패 - 파일 크기 초과")
+    void generatePresignedUrl_fail_fileTooLarge() {
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 11 * 1024 * 1024, "image/png");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> announcementCommandService.generatePresignedUrl(request));
+
+        assertEquals("파일은 10MB 이하만 업로드 가능합니다.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Presigned URL 생성 실패 - 허용되지 않은 확장자")
+    void generatePresignedUrl_fail_invalidExtension() {
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("malware.exe", 1024 * 1024, "application/octet-stream");
+
+        when(s3Service.extractFileExtension("malware.exe")).thenReturn("exe");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> announcementCommandService.generatePresignedUrl(request));
+
+        assertEquals("허용되지 않은 파일 확장자입니다.", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("공지사항 생성 성공")
-    void createAnnouncement_success() throws Exception {
+    void createAnnouncement_success() {
         // given
         AnnouncementCreateRequest request = new AnnouncementCreateRequest();
         request.setTitle("공지사항 제목");
         request.setContent("공지사항 내용");
 
+        AttachmentRequest attachment = new AttachmentRequest();
+        attachment.setS3Key("announcements/uuid/test_file.png");
+        attachment.setType("png");
+        request.setAttachments(List.of(attachment));
+
         UserDetails mockUserDetails = mock(UserDetails.class);
         when(mockUserDetails.getUsername()).thenReturn("1");
 
         Announcement announcement = Announcement.builder()
-                .title("공지사항 제목")
-                .content("공지사항 내용")
+                .title(request.getTitle())
+                .content(request.getContent())
                 .empId(1L)
                 .build();
 
         Announcement savedAnnouncement = Announcement.builder()
                 .announcementId(1L)
-                .title("공지사항 제목")
-                .content("공지사항 내용")
+                .title(request.getTitle())
+                .content(request.getContent())
                 .empId(1L)
                 .build();
 
         AnnouncementCreateResponse expectedResponse = new AnnouncementCreateResponse(1L);
 
-        MockMultipartFile file = new MockMultipartFile(
-                "files", "test file.txt", "text/plain", "파일의 내용입니다.".getBytes()
-        );
-
-        List<MultipartFile> files = List.of(file);
-
         when(announcementMapper.toCreateEntity(request, 1L)).thenReturn(announcement);
         when(announcementRepository.save(any())).thenReturn(savedAnnouncement);
         when(announcementMapper.toCreateResponse(savedAnnouncement)).thenReturn(expectedResponse);
-        when(s3Service.sanitizeFilename(any())).thenReturn("test_file.txt");
-        when(s3Service.uploadFile(any(), any(), eq("text/plain"))).thenReturn("https://cdn.test.com/announcements/1/uuid/test_file.txt");
-        when(s3Service.extractFileExtension(any())).thenReturn("txt");
 
         // when
-        AnnouncementCreateResponse actualResponse = announcementCommandService.create(request, files, mockUserDetails);
+        AnnouncementCreateResponse actualResponse = announcementCommandService.create(request, mockUserDetails);
 
         // then
         assertNotNull(actualResponse);
         assertEquals(expectedResponse.getAnnouncementId(), actualResponse.getAnnouncementId());
 
-        verify(announcementMapper).toCreateEntity(request, 1L);
-        verify(announcementRepository).save(argThat(saved ->
-                saved.getTitle().equals("공지사항 제목") &&
-                        saved.getContent().equals("공지사항 내용") &&
-                        saved.getEmpId().equals(1L)
-        ));
-        verify(announcementMapper).toCreateResponse(savedAnnouncement);
-
-        verify(s3Service).sanitizeFilename("test file.txt");
-        verify(s3Service).extractFileExtension("test file.txt");
-        verify(s3Service).uploadFile(anyString(), any(), eq("text/plain"));
-
-        verify(fileRepository).save(argThat(fileEntity ->
-                fileEntity.getAnnouncementId().equals(1L) &&
-                        fileEntity.getUrl().contains("test_file.txt") &&
-                        fileEntity.getType().equals("txt")
+        verify(fileRepository).save(argThat(file ->
+                file.getAnnouncementId().equals(1L)
+                        && file.getUrl().equals("announcements/uuid/test_file.png")
+                        && file.getType().equals("png")
         ));
     }
 
-    @DisplayName("공지사항 수정 성공")
     @Test
-    void modifyAnnouncement_success() throws Exception {
+    @DisplayName("공지사항 수정 성공")
+    void modifyAnnouncement_success() {
         // given
         Long announcementId = 1L;
         Long empId = 1L;
@@ -122,7 +151,12 @@ class AnnouncementCommandServiceTest {
         AnnouncementModifyRequest request = new AnnouncementModifyRequest();
         request.setTitle("수정된 제목");
         request.setContent("수정된 내용");
-        request.setRemainFileIdList(List.of(100L)); // 유지할 파일 ID
+        request.setRemainFileIdList(List.of(100L));
+
+        AttachmentRequest newAttachment = new AttachmentRequest();
+        newAttachment.setS3Key("announcements/uuid/new_file.pdf");
+        newAttachment.setType("pdf");
+        request.setAttachments(List.of(newAttachment));
 
         UserDetails mockUserDetails = mock(UserDetails.class);
         when(mockUserDetails.getUsername()).thenReturn(empId.toString());
@@ -137,35 +171,23 @@ class AnnouncementCommandServiceTest {
         File retainedFile = File.builder()
                 .attachmentId(100L)
                 .announcementId(announcementId)
-                .url("https://cdn.test.com/announcements/1/uuid/old.txt")
-                .type("txt")
+                .url("announcements/uuid/old_file.pdf")
+                .type("pdf")
                 .build();
 
         File deletedFile = File.builder()
                 .attachmentId(200L)
                 .announcementId(announcementId)
-                .url("https://cdn.test.com/announcements/1/uuid/delete.txt")
-                .type("txt")
+                .url("announcements/uuid/delete_file.pdf")
+                .type("pdf")
                 .build();
 
-        MockMultipartFile newFile = new MockMultipartFile(
-                "files", "new file.pdf", "application/pdf", "new content".getBytes()
-        );
-
-        List<MultipartFile> files = List.of(newFile);
-
-        when(announcementRepository.findById(announcementId)).thenReturn(java.util.Optional.of(announcement));
+        when(announcementRepository.findById(announcementId)).thenReturn(Optional.of(announcement));
         when(fileRepository.findAllByAnnouncementId(announcementId)).thenReturn(List.of(retainedFile, deletedFile));
-        when(s3Service.sanitizeFilename(any())).thenReturn("new_file.pdf");
-        when(s3Service.uploadFile(any(), any(), any())).thenReturn("https://cdn.test.com/announcements/1/uuid/new_file.pdf");
-        when(s3Service.extractFileExtension(any())).thenReturn("pdf");
-
-        when(announcementMapper.toModifyResponse(any())).thenReturn(
-                new AnnouncementModifyResponse(announcementId)
-        );
+        when(announcementMapper.toModifyResponse(announcement)).thenReturn(new AnnouncementModifyResponse(announcementId));
 
         // when
-        AnnouncementModifyResponse response = announcementCommandService.modify(request, files, announcementId, mockUserDetails);
+        AnnouncementModifyResponse response = announcementCommandService.modify(request, announcementId, mockUserDetails);
 
         // then
         assertNotNull(response);
@@ -173,12 +195,12 @@ class AnnouncementCommandServiceTest {
 
         verify(s3Service).deleteFileFromS3(deletedFile.getUrl());
         verify(fileRepository).deleteById(deletedFile.getAttachmentId());
-        verify(fileRepository).save(argThat(saved ->
-                saved.getAnnouncementId().equals(announcementId) &&
-                        saved.getType().equals("pdf") &&
-                        saved.getUrl().contains("new_file.pdf")
+
+        verify(fileRepository).save(argThat(file ->
+                file.getAnnouncementId().equals(announcementId)
+                        && file.getType().equals("pdf")
+                        && file.getUrl().equals("announcements/uuid/new_file.pdf")
         ));
-        verify(announcementMapper).toModifyResponse(announcement);
     }
 
     @Test
@@ -186,19 +208,26 @@ class AnnouncementCommandServiceTest {
     void modifyAnnouncement_fail_notFound() {
         // given
         Long announcementId = 999L;
+
         UserDetails mockUserDetails = mock(UserDetails.class);
         when(mockUserDetails.getUsername()).thenReturn("1");
 
         AnnouncementModifyRequest request = new AnnouncementModifyRequest();
         request.setTitle("수정된 제목");
         request.setContent("수정된 내용");
+        request.setRemainFileIdList(List.of(1L));
+
+        AttachmentRequest newAttachment = new AttachmentRequest();
+        newAttachment.setS3Key("announcements/uuid/new.pdf");
+        newAttachment.setType("pdf");
+        request.setAttachments(List.of(newAttachment));
 
         when(announcementRepository.findById(announcementId))
-                .thenReturn(java.util.Optional.empty());
+                .thenReturn(Optional.empty());
 
         // when & then
         assertThrows(NoSuchAnnouncementException.class, () ->
-                announcementCommandService.modify(request, List.of(), announcementId, mockUserDetails)
+                announcementCommandService.modify(request, announcementId, mockUserDetails)
         );
     }
 
@@ -207,7 +236,8 @@ class AnnouncementCommandServiceTest {
     void modifyAnnouncement_fail_notAuthor() {
         // given
         Long announcementId = 1L;
-        Long empId = 2L; // 작성자가 아님
+        Long empId = 2L; // 로그인된 사용자
+        Long actualAuthorId = 1L; // 실제 작성자
 
         UserDetails mockUserDetails = mock(UserDetails.class);
         when(mockUserDetails.getUsername()).thenReturn(empId.toString());
@@ -216,10 +246,10 @@ class AnnouncementCommandServiceTest {
                 .announcementId(announcementId)
                 .title("기존 제목")
                 .content("기존 내용")
-                .empId(1L) // 실제 작성자 ID
+                .empId(actualAuthorId)
                 .build();
 
-        when(announcementRepository.findById(announcementId)).thenReturn(java.util.Optional.of(announcement));
+        when(announcementRepository.findById(announcementId)).thenReturn(Optional.of(announcement));
 
         AnnouncementModifyRequest request = new AnnouncementModifyRequest();
         request.setTitle("수정된 제목");
@@ -227,7 +257,7 @@ class AnnouncementCommandServiceTest {
 
         // when & then
         assertThrows(AnnouncementAccessDeniedException.class, () ->
-                announcementCommandService.modify(request, List.of(), announcementId, mockUserDetails)
+                announcementCommandService.modify(request, announcementId, mockUserDetails)
         );
     }
 
@@ -247,8 +277,19 @@ class AnnouncementCommandServiceTest {
                 .title("삭제할 제목")
                 .build();
 
-        File file1 = File.builder().attachmentId(101L).announcementId(announcementId).build();
-        File file2 = File.builder().attachmentId(102L).announcementId(announcementId).build();
+        File file1 = File.builder()
+                .attachmentId(101L)
+                .announcementId(announcementId)
+                .url("announcements/uuid/file1.png")
+                .type("png")
+                .build();
+
+        File file2 = File.builder()
+                .attachmentId(102L)
+                .announcementId(announcementId)
+                .url("announcements/uuid/file2.pdf")
+                .type("pdf")
+                .build();
 
         when(announcementRepository.findById(announcementId)).thenReturn(Optional.of(announcement));
         when(fileRepository.findAllByAnnouncementId(announcementId)).thenReturn(List.of(file1, file2));
@@ -258,6 +299,8 @@ class AnnouncementCommandServiceTest {
 
         verify(announcementRepository).findById(announcementId);
         verify(fileRepository).findAllByAnnouncementId(announcementId);
+        verify(s3Service).deleteFileFromS3(file1.getUrl());
+        verify(s3Service).deleteFileFromS3(file2.getUrl());
         verify(fileRepository).deleteById(file1.getAttachmentId());
         verify(fileRepository).deleteById(file2.getAttachmentId());
         verify(announcementRepository).delete(announcement);
@@ -288,10 +331,10 @@ class AnnouncementCommandServiceTest {
         // given
         Long announcementId = 1L;
         Long actualAuthorId = 1L;
-        Long otherUserId = 2L;
+        Long loggedInUserId = 2L;
 
         UserDetails mockUserDetails = mock(UserDetails.class);
-        when(mockUserDetails.getUsername()).thenReturn(otherUserId.toString());
+        when(mockUserDetails.getUsername()).thenReturn(loggedInUserId.toString());
 
         Announcement announcement = Announcement.builder()
                 .announcementId(announcementId)
@@ -309,5 +352,4 @@ class AnnouncementCommandServiceTest {
         verify(announcementRepository).findById(announcementId);
         verifyNoMoreInteractions(fileRepository, announcementRepository);
     }
-
 }
