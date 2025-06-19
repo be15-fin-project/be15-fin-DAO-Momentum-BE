@@ -5,6 +5,7 @@ import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.query.service.KpiStatisticsService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
