@@ -16,6 +16,7 @@ public enum ErrorCode {
     POSITION_NOT_FOUND("10005","존재하지 않는 직위입니다.",HttpStatus.NOT_FOUND),
     INVALID_LEVEL("10006","유효하지 않은 직위 단계입니다." , HttpStatus.BAD_REQUEST),
     POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
+    EMAIL_SENDING_FAILED("10008", "이메일 전송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
