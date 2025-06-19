@@ -1,19 +1,14 @@
 package com.dao.momentum.organization.employee.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.organization.employee.query.dto.request.EmployeeDetailsRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeListResponse;
 import com.dao.momentum.organization.employee.query.service.AdminEmployeeQueryService;
-import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
-import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
