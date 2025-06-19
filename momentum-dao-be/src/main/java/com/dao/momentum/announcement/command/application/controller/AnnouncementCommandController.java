@@ -2,8 +2,10 @@ package com.dao.momentum.announcement.command.application.controller;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
+import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
+import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.service.AnnouncementCommandService;
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.announcement.exception.FileUploadFailedException;
@@ -16,10 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,31 +28,40 @@ public class AnnouncementCommandController {
 
     private final AnnouncementCommandService announcementCommandService;
 
+    @PostMapping("/presigned-url")
+    public ResponseEntity<ApiResponse<FilePresignedUrlResponse>> generatePresignedUrl(@RequestBody FilePresignedUrlRequest request) {
+        FilePresignedUrlResponse response =
+                announcementCommandService.generatePresignedUrl(request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<AnnouncementCreateResponse>> createAnnouncement(
-            @RequestPart("announcement") @Valid AnnouncementCreateRequest announcementCreateRequest,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files,
-            @AuthenticationPrincipal UserDetails userDetails)
-    {
-        AnnouncementCreateResponse announcementCreateResponse = announcementCommandService.create(announcementCreateRequest, files, userDetails);
+            @RequestBody @Valid AnnouncementCreateRequest announcementCreateRequest,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        AnnouncementCreateResponse response =
+                announcementCommandService.create(announcementCreateRequest, userDetails);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success(announcementCreateResponse));
+                .body(ApiResponse.success(response));
     }
+
 
     @PutMapping("{announcementId}")
     public ResponseEntity<ApiResponse<AnnouncementModifyResponse>> modifyAnnouncement(
-            @RequestPart("announcement") @Valid AnnouncementModifyRequest announcementModifyRequest,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @RequestBody @Validated AnnouncementModifyRequest announcementModifyRequest,
             @PathVariable("announcementId") Long announcementId,
-            @AuthenticationPrincipal UserDetails userDetails)
-    {
-        AnnouncementModifyResponse announcementModifyResponse = announcementCommandService.modify(announcementModifyRequest, files, announcementId, userDetails);
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        return ResponseEntity
-                .ok(ApiResponse.success(announcementModifyResponse));
+        AnnouncementModifyResponse response =
+                announcementCommandService.modify(announcementModifyRequest, announcementId, userDetails);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
     @DeleteMapping("{announcementId}")
     public ResponseEntity<ApiResponse<Void>> deleteAnnouncement(

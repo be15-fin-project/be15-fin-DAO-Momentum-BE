@@ -1,7 +1,10 @@
 package com.dao.momentum.announcement.query.service;
 
+import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.announcement.query.dto.request.AnnouncementSearchRequest;
 import com.dao.momentum.announcement.query.dto.request.SortDirection;
+import com.dao.momentum.announcement.query.dto.response.AnnouncementDetailDto;
+import com.dao.momentum.announcement.query.dto.response.AnnouncementDetailResponse;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementDto;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementListResponse;
 import com.dao.momentum.announcement.query.mapper.AnnouncementQueryMapper;
@@ -18,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
@@ -96,8 +100,8 @@ class AnnouncementQueryServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getAnnouncements()).hasSize(1);
         AnnouncementDto dto = result.getAnnouncements().get(0);
-        assertThat(dto.getTitle()).contains("복지");
-        assertThat(dto.getName()).contains("김현우");
+        assertThat(dto.getTitle()).isEqualTo("복지 혜택 안내");
+        assertThat(dto.getName()).isEqualTo("김현우");
         assertThat(dto.getCreatedAt()).isBetween(
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atTime(23, 59, 59)
@@ -112,4 +116,57 @@ class AnnouncementQueryServiceTest {
         verify(announcementQueryMapper).findAnnouncementsByCondition(any());
         verify(announcementQueryMapper).countAnnouncementsByCondition(any());
     }
+
+    @DisplayName("공지사항 상세 조회 - 성공")
+    @Test
+    void shouldReturnAnnouncementDetail_whenIdIsValid() {
+        // given
+        Long announcementId = 1L;
+
+        AnnouncementDetailDto dto = AnnouncementDetailDto.builder()
+                .announcementId(announcementId)
+                .empId(100L)
+                .employeeName("김현우")
+                .deptId(10)
+                .departmentName("인사팀")
+                .positionName("사원")
+                .title("복지 공지")
+                .content("복지 포인트가 변경되었습니다.")
+                .createdAt(LocalDateTime.of(2025, 6, 1, 9, 0))
+                .updatedAt(LocalDateTime.of(2025, 6, 2, 10, 0))
+                .urls(List.of("https://example.com/file1.pdf", "https://example.com/file2.pdf"))
+                .build();
+
+        when(announcementQueryMapper.findAnnouncement(announcementId)).thenReturn(dto);
+
+        // when
+        AnnouncementDetailResponse result = announcementQueryService.getAnnouncement(announcementId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getAnnouncement()).isNotNull();
+        assertThat(result.getAnnouncement().getAnnouncementId()).isEqualTo(announcementId);
+        assertThat(result.getAnnouncement().getTitle()).isEqualTo("복지 공지");
+        assertThat(result.getAnnouncement().getUrls()).containsExactly(
+                "https://example.com/file1.pdf", "https://example.com/file2.pdf"
+        );
+
+        verify(announcementQueryMapper).findAnnouncement(announcementId);
+    }
+
+    @DisplayName("공지사항 상세 조회 - 존재하지 않는 ID")
+    @Test
+    void shouldThrowException_whenAnnouncementNotFound() {
+        // given
+        Long invalidId = 999L;
+        when(announcementQueryMapper.findAnnouncement(invalidId)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> announcementQueryService.getAnnouncement(invalidId))
+                .isInstanceOf(NoSuchAnnouncementException.class)
+                .hasMessageContaining("해당 공지사항 게시글을 찾을 수 없습니다.");
+
+        verify(announcementQueryMapper).findAnnouncement(invalidId);
+    }
+
 }

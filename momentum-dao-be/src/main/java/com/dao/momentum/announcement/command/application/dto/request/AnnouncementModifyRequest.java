@@ -1,5 +1,6 @@
 package com.dao.momentum.announcement.command.application.dto.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,9 @@ public class AnnouncementModifyRequest {
     @NotBlank(message = "공지사항 내용은 비어 있을 수 없습니다.")
     private String content;
 
-    private List<Long> remainFileIdList; // 유지하고 싶은 기존 파일 ID
+    @Valid
+    private List<AttachmentRequest> attachments;
+
+    private List<Long> remainFileIdList;
 }
+
