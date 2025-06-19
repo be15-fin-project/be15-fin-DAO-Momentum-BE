@@ -2,6 +2,7 @@ package com.dao.momentum.common.auth.application.controller;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
@@ -12,10 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -115,6 +114,7 @@ class AuthControllerTest {
     }
 
     @Test
+    @DisplayName("로그아웃 성공_리프레시 토큰 없어도")
     void logout_whenRefreshTokenIsNull_shouldStillSucceed() {
         // when
         ResponseEntity<ApiResponse<Void>> response = authController.logout(null);
@@ -127,5 +127,60 @@ class AuthControllerTest {
         assertNull(response.getBody().getData());
 
         verify(authService).logout(null);
+    }
+
+    @Test
+    @DisplayName("토큰 갱신_성공")
+    void refreshToken_success(){
+        //given
+        String refreshToken = "refreshToken";
+        TokenResponse tokenResponse = TokenResponse
+                .builder()
+                .accessToken("accessToken")
+                .refreshToken("newRefreshToken")
+                .build();
+
+        when(authService.refreshToken(refreshToken)).thenReturn(tokenResponse);
+
+        //when
+        ResponseEntity<ApiResponse<TokenResponse>> response = authController.refreshToken(refreshToken);
+
+        //then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isSuccess());
+        assertNotNull(response.getBody().getData());
+        assertTrue(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE).contains("refreshToken="));
+    }
+
+    @Test
+    @DisplayName("토큰 갱신 실패_조회되는 리프레시 토큰 없음")
+    void refreshTokenFail_tokenNotFound(){
+        //given
+        String refreshToken = "refreshToken";
+        BadCredentialsException exception = new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음");
+
+        when(authService.refreshToken(refreshToken)).thenThrow(BadCredentialsException.class);
+
+        //when
+        BadCredentialsException newException = assertThrows(
+                BadCredentialsException.class,
+                () -> authController.refreshToken(refreshToken));
+    }
+
+    @Test
+    @DisplayName("토큰 갱신 실패_유효하지 않은 사원")
+    void refreshTokenFail_EmployeeException() {
+        // given
+        String invalidRefreshToken = "invalid.token";
+        EmployeeException exception = new EmployeeException(ErrorCode.INVALID_CREDENTIALS);
+
+        // when
+        when(authService.refreshToken(anyString())).thenThrow(exception);
+
+        // then
+        EmployeeException newException = assertThrows(
+                EmployeeException.class,
+                () -> authController.refreshToken(invalidRefreshToken));
     }
 }

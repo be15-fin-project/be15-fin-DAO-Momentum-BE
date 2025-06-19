@@ -3,8 +3,11 @@ package com.dao.momentum.common.auth.application.controller;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -42,6 +45,21 @@ public class AuthController {
                 .body(ApiResponse.success(null));
     }
 
+    @Operation(summary = "토큰 재발급", description = "만료된 토큰을 재발급받아 재로그인 없이 인증 상태를 유지한다.")
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken
+    ) {
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // refreshToken이 없으면 401 반환
+        }
+        TokenResponse tokenResponse = authService.refreshToken(refreshToken);
+        ResponseCookie cookie = createRefreshTokenCookie(tokenResponse.getRefreshToken());  // refreshToken 쿠키 생성
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.success(tokenResponse));
+    }
+
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
@@ -61,5 +79,13 @@ public class AuthController {
                 .maxAge(0)
                 .sameSite("Strict")
                 .build();
+    }
+
+    @ExceptionHandler(EmployeeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleEmployeeException(EmployeeException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
     }
 }

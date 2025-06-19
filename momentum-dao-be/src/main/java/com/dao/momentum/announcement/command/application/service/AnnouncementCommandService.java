@@ -2,8 +2,11 @@ package com.dao.momentum.announcement.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
+import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
+import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
+import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
 import com.dao.momentum.announcement.command.domain.aggregate.File;
@@ -18,10 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,40 +36,29 @@ public class AnnouncementCommandService {
     private final FileRepository fileRepository;
 
     @Transactional
-    public AnnouncementCreateResponse create(AnnouncementCreateRequest announcementCreateRequest,
-                                             List<MultipartFile> files,
+    public AnnouncementCreateResponse create(AnnouncementCreateRequest request,
                                              UserDetails userDetails) {
         Long empId = Long.valueOf(userDetails.getUsername());
 
         // 1. 공지사항 엔티티 생성 및 저장
-        Announcement announcement = announcementMapper.toCreateEntity(announcementCreateRequest, empId);
+        Announcement announcement = announcementMapper.toCreateEntity(request, empId);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
         // 2. 첨부파일 S3 업로드 및 DB 저장
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                String originalFilename = file.getOriginalFilename();
-                String sanitizedFilename = s3Service.sanitizeFilename(originalFilename);
-                String key = "announcements/" + savedAnnouncement.getAnnouncementId() + "/" + UUID.randomUUID() + "/" + sanitizedFilename;
-
-                try (InputStream inputStream = file.getInputStream()) {
-                    String fileUrl = s3Service.uploadFile(key, inputStream, file.getContentType());
-                    String fileExtension = s3Service.extractFileExtension(originalFilename);
-
-                    File fileEntity = File.builder()
-                            .announcementId(savedAnnouncement.getAnnouncementId())
-                            .approveId(null)
-                            .contractId(null)
-                            .url(fileUrl)
-                            .type(fileExtension)
-                            .build();
-
-                    fileRepository.save(fileEntity);
-                } catch (IOException e) {
-                    throw new FileUploadFailedException(ErrorCode.FILE_UPLOAD_FAIL);
-                }
+        List<AttachmentRequest> attachments = request.getAttachments();
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AttachmentRequest attachment : attachments) {
+                File file = File.builder()
+                        .announcementId(savedAnnouncement.getAnnouncementId())
+                        .approveId(null)
+                        .contractId(null)
+                        .url(attachment.getS3Key()) // 이미 S3 업로드된 URL
+                        .type(attachment.getType())
+                        .build();
+                fileRepository.save(file);
             }
         }
+
 
         log.info("공지사항 작성 - empId={}, announcementId={}, title={}", empId, savedAnnouncement.getAnnouncementId(), savedAnnouncement.getTitle());
 
@@ -77,8 +66,7 @@ public class AnnouncementCommandService {
     }
 
     @Transactional
-    public AnnouncementModifyResponse modify(AnnouncementModifyRequest announcementModifyRequest,
-                                             List<MultipartFile> files,
+    public AnnouncementModifyResponse modify(AnnouncementModifyRequest request,
                                              Long announcementId,
                                              UserDetails userDetails) {
         Long empId = Long.valueOf(userDetails.getUsername());
@@ -91,10 +79,10 @@ public class AnnouncementCommandService {
         announcement.validateAuthor(empId);
 
         // 제목/내용 수정
-        announcement.modify(announcementModifyRequest.getTitle(), announcementModifyRequest.getContent());
+        announcement.modify(request.getTitle(), request.getContent());
 
         // 파일 유지 리스트
-        List<Long> remainFileIdList = announcementModifyRequest.getRemainFileIdList();
+        List<Long> remainFileIdList = request.getRemainFileIdList();
         // 기존에 공지사항에 첨부되어 있던 파일 리스트
         List<File> existingFiles = fileRepository.findAllByAnnouncementId(announcementId);
 
@@ -110,32 +98,28 @@ public class AnnouncementCommandService {
         });
 
         // 새로 추가된 파일 업로드 및 저장
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                String originalFilename = file.getOriginalFilename();
-                String sanitizedFilename = s3Service.sanitizeFilename(originalFilename);
-                String key = "announcements/" + announcementId + "/" + UUID.randomUUID() + "/" + sanitizedFilename;
-
-                try (InputStream inputStream = file.getInputStream()) {
-                    String fileUrl = s3Service.uploadFile(key, inputStream, file.getContentType());
-                    String fileExtension = s3Service.extractFileExtension(originalFilename);
-
+        List<AttachmentRequest> newAttachments = request.getAttachments();
+        if (newAttachments != null && !newAttachments.isEmpty()) {
+            for (AttachmentRequest attachment : newAttachments) {
+                try {
                     File fileEntity = File.builder()
                             .announcementId(announcementId)
                             .approveId(null)
                             .contractId(null)
-                            .url(fileUrl)
-                            .type(fileExtension)
+                            .url(attachment.getS3Key())  // 현재는 URL 필드를 s3Key로 사용 중
+                            .type(attachment.getType())
                             .build();
 
                     fileRepository.save(fileEntity);
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    log.error("첨부파일 저장 중 예외 발생 - s3Key={}, type={}, error={}",
+                            attachment.getS3Key(), attachment.getType(), e.getMessage(), e);
                     throw new FileUploadFailedException(ErrorCode.FILE_UPLOAD_FAIL);
                 }
             }
         }
 
-        log.info("공지사항 수정 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), announcementModifyRequest.getTitle());
+        log.info("공지사항 수정 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), request.getTitle());
 
         return announcementMapper.toModifyResponse(announcement);
     }
@@ -162,4 +146,28 @@ public class AnnouncementCommandService {
 
         announcementRepository.delete(announcement);
     }
+
+    public FilePresignedUrlResponse generatePresignedUrl(FilePresignedUrlRequest request) {
+        final long MAX_SIZE = 10 * 1024 * 1024; // 10MB 제한
+        if (request.sizeInBytes() > MAX_SIZE) {
+            throw new IllegalArgumentException("파일은 10MB 이하만 업로드 가능합니다.");
+        }
+
+        String extension = s3Service.extractFileExtension(request.fileName());
+        if (extension == null || !List.of(
+                "jpg", "jpeg", "png",   // 이미지
+                "pdf", "docx", "txt",   // 문서
+                "hwp", "hwpx",          // 한글
+                "xlsx", "xls",          // 엑셀
+                "pptx", "ppt"           // 파워포인트
+        ).contains(extension)) {
+            throw new IllegalArgumentException("허용되지 않은 파일 확장자입니다.");
+        }
+
+        String sanitizedFilename = s3Service.sanitizeFilename(request.fileName());
+        String key = "announcements/" + UUID.randomUUID() + "/" + sanitizedFilename;
+
+        return s3Service.generatePresignedUploadUrlWithKey(key, request.contentType());
+    }
+
 }
