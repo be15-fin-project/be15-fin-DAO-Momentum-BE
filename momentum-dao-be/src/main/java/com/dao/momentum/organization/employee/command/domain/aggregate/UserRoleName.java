@@ -5,5 +5,9 @@ public enum UserRoleName {
     HR_MANAGER,
     MANAGER,
     EMPLOYEE,
-    BOOKKEEPER
+    BOOKKEEPING;
+
+    public static UserRoleName fromString(String string) {
+        return valueOf(string.toUpperCase());
+    }
 }
