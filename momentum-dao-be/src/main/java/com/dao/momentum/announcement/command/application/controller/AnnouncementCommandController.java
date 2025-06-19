@@ -29,8 +29,11 @@ public class AnnouncementCommandController {
     private final AnnouncementCommandService announcementCommandService;
 
     @PostMapping("/presigned-url")
-    public ResponseEntity<FilePresignedUrlResponse> generatePresignedUrl(@RequestBody FilePresignedUrlRequest request) {
-        return ResponseEntity.ok(announcementCommandService.generatePresignedUrl(request));
+    public ResponseEntity<ApiResponse<FilePresignedUrlResponse>> generatePresignedUrl(@RequestBody FilePresignedUrlRequest request) {
+        FilePresignedUrlResponse response =
+                announcementCommandService.generatePresignedUrl(request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PostMapping
