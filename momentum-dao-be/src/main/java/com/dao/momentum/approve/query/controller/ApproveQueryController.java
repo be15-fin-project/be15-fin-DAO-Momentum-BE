@@ -3,6 +3,7 @@ package com.dao.momentum.approve.query.controller;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
+import com.dao.momentum.approve.query.dto.response.ApproveDetailResponse;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
 import com.dao.momentum.approve.query.service.ApproveQueryService;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,5 +62,18 @@ public class ApproveQueryController {
         return ResponseEntity.ok(ApiResponse.success(draftApproveResponse));
     }
 
+    /* 문서 상제 조회 기능 */
+    @GetMapping("/documents/{documentId}")
+    @Operation(summary = "결재 문서 상세 조회", description = "결재 문서를 상세 조회합니다.")
+    public ResponseEntity<ApiResponse<ApproveDetailResponse>> getDraftApprovals(
+            @PathVariable Long documentId
+    ) {
+
+        ApproveDetailResponse approveDetailResponse
+                = approveQueryService.getApproveDetail(documentId);
+
+
+        return ResponseEntity.ok(ApiResponse.success(approveDetailResponse));
+    }
 
 }
