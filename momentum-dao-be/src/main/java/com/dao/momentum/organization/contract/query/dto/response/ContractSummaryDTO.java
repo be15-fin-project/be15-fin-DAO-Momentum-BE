@@ -15,9 +15,9 @@ public class ContractSummaryDTO {
 
     private Long empNo;
 
-    private ContractType type;
-
     private String empName;
+
+    private ContractType type;
 
     private BigDecimal salary;
 
