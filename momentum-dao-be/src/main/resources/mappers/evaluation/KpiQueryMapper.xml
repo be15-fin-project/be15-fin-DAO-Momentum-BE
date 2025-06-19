@@ -78,4 +78,33 @@
         </where>
     </select>
 
+    <!-- KPI 상세 조회 -->
+    <select id="getKpiDetail"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto">
+        SELECT
+            k.kpi_id,
+            e.emp_no,
+            e.name AS employeeName,
+            d.name AS departmentName,
+            p.name AS positionName,
+            k.goal,
+            k.goal_value,
+            k.kpi_progress,
+            k.progress_25,
+            k.progress_50,
+            k.progress_75,
+            k.progress_100,
+            s.status_type AS statusType,
+            DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
+            DATE_FORMAT(k.deadline, '%Y-%m-%d') AS deadline
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        WHERE k.kpi_id = #{kpiId}
+        AND k.is_deleted = 'N'
+    </select>
+
 </mapper>

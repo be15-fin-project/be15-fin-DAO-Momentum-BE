@@ -5,6 +5,7 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.exception.KpiException;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto;
+import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
 import com.dao.momentum.evaluation.query.mapper.KpiQueryMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     private final KpiQueryMapper kpiQueryMapper;
 
+    // KPI 전체 조회
     @Override
     public KpiListResultDto getKpiList(KpiListRequestDto requestDto) {
         long total = kpiQueryMapper.getKpiListCount(requestDto);
@@ -35,5 +37,15 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .build();
 
         return new KpiListResultDto(list, pagination);
+    }
+
+    // KPI 세부 조회
+    @Override
+    public KpiDetailResponseDto getKpiDetail(Long kpiId) {
+        KpiDetailResponseDto detail = kpiQueryMapper.getKpiDetail(kpiId);
+        if (detail == null) {
+            throw new KpiException(ErrorCode.KPI_NOT_FOUND);
+        }
+        return detail;
     }
 }

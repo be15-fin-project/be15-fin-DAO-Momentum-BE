@@ -2,6 +2,7 @@ package com.dao.momentum.evaluation.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,5 +30,20 @@ public class KpiQueryController {
     )
     public ApiResponse<KpiListResultDto> getKpiList(@ModelAttribute KpiListRequestDto requestDto) {
         return ApiResponse.success(kpiQueryService.getKpiList(requestDto));
+    }
+
+    /**
+     * KPI 세부 조회
+     * - 관리자 및 인사팀은 KPI 목록에서 특정 항목 클릭 시 세부 정보 조회
+     * - 반환 정보: 목표, 진척 기준, 목표 수치, 작성자, 부서/직위, 기간 등
+     */
+    @GetMapping("/{kpiId}")
+    @Operation(
+            summary = "KPI 세부 조회",
+            description = "KPI ID로 KPI 상세 정보를 조회합니다. 목표, 진척 기준, 작성자 정보, 부서/직위, 기간 등을 포함합니다."
+    )
+    public ApiResponse<KpiDetailResponseDto> getKpiDetail(@PathVariable Long kpiId) {
+        KpiDetailResponseDto result = kpiQueryService.getKpiDetail(kpiId);
+        return ApiResponse.success(result);
     }
 }
