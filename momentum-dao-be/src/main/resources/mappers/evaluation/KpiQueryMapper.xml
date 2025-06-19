@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.query.mapper.KpiQueryMapper">
+
+    <!-- KPI 목록 조회 -->
+    <select id="getKpiList"
+            parameterType="com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto"
+            resultType="com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto">
+        SELECT
+        k.kpi_id,
+        e.emp_no,
+        e.name AS employeeName,
+        d.name AS departmentName,
+        p.name AS positionName,
+        k.goal,
+        k.goal_value,
+        k.kpi_progress,
+        s.status_type AS statusName,
+        DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
+        DATE_FORMAT(k.deadline, '%Y-%m-%d') AS deadline
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        <where>
+            k.is_deleted = 'N'
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+            <if test="statusId != null">
+                AND k.status_id = #{statusId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND k.created_at BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        ORDER BY k.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- KPI 목록 전체 개수 조회 -->
+    <select id="getKpiListCount"
+            parameterType="com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        <where>
+            k.is_deleted = 'N'
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+            <if test="statusId != null">
+                AND k.status_id = #{statusId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND k.created_at BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>
