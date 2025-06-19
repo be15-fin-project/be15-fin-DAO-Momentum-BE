@@ -53,6 +53,12 @@ public class Work {
         this.breakTime = breakTime;
     }
 
+    public void fromCorrection(LocalDateTime afterStartAt, LocalDateTime afterEndAt, int breakTime) {
+        this.startAt = afterStartAt;
+        this.endAt = afterEndAt;
+        this.breakTime = breakTime;
+    }
+
     public Duration getWorkTime() {
         return Duration.between(this.startAt, this.endAt)
                 .minusMinutes(this.breakTime);

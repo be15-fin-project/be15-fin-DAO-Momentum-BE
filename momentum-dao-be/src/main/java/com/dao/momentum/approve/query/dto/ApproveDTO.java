@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.dto;
 
+import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,7 @@ public class ApproveDTO {
     private String statusType;
     private Long empId;
     private String approveTitle;
-    private String approveType;
+    private ApproveType approveType;
     private LocalDateTime createAt;
     private LocalDateTime completeAt;
     private String employeeName;

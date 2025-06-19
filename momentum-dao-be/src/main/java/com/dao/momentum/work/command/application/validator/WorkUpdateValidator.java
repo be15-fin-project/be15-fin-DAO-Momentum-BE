@@ -30,7 +30,7 @@ public class WorkUpdateValidator extends WorkCommandValidator {
         LocalDate pushedDate = endPushedAt.toLocalDate();
 
         if (!pushedDate.isEqual(today)) {
-            log.warn("잘못된 퇴근 요청 - 퇴근 시각이 오늘 날짜가 아님: {}", startAt.toLocalDate());
+            log.warn("잘못된 퇴근 요청 - 퇴근 시각이 오늘 날짜가 아님: endAt={}, today={}", endAt.toLocalDate(), today);
             throw new WorkException(ErrorCode.INVALID_WORK_TIME);
         }
 

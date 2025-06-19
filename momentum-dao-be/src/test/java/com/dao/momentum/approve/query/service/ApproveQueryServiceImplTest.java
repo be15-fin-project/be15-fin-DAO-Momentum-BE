@@ -1,13 +1,17 @@
 package com.dao.momentum.approve.query.service;
 
+import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.exception.NotExistTabException;
-import com.dao.momentum.approve.query.dto.ApproveDTO;
-import com.dao.momentum.approve.query.dto.DraftApproveDTO;
+import com.dao.momentum.approve.query.dto.*;
+import com.dao.momentum.approve.query.dto.approveTypeDTO.ApproveCancelDTO;
+import com.dao.momentum.approve.query.dto.approveTypeDTO.ApproveProposalDTO;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
+import com.dao.momentum.approve.query.dto.response.ApproveDetailResponse;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
+import com.dao.momentum.approve.query.mapper.ApproveDetailMapper;
 import com.dao.momentum.approve.query.mapper.ReceivedApproveMapper;
 import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -19,9 +23,10 @@ import org.mockito.Mock;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,6 +39,9 @@ class ApproveQueryServiceImplTest {
 
     @Mock
     private DraftApproveMapper draftApproveMapper;
+
+    @Mock
+    private ApproveDetailMapper approveDetailMapper;
 
     @InjectMocks
     private ApproveQueryServiceImpl approveService;
@@ -146,6 +154,56 @@ class ApproveQueryServiceImplTest {
                 () -> approveService.getDraftApprove(request, empId, pageRequest));
     }
 
+    @Test
+    @DisplayName("결재 상세 조회 테스트")
+    void testGetNormalApproveDetail() {
+        Long approveId = 1L;
+
+        ApproveDTO approveDTO = ApproveDTO.builder()
+                .approveId(1L)
+                .approveType(ApproveType.PROPOSAL)
+                .parentApproveId(null)
+                .build();
+
+        List<ApproveLineDTO> lineList = List.of(
+                ApproveLineDTO.builder()
+                        .approveId(1L)
+                        .approveLineId(100L)
+                        .approveLineOrder(1)
+                        .build()
+        );
+
+        List<ApproveLineListDTO> lineListDetail = List.of(
+                ApproveLineListDTO.builder()
+                        .approveLineId(100L)
+                        .statusType("PENDING")
+                        .build()
+        );
+
+        List<ApproveRefDTO> refList = List.of(
+                ApproveRefDTO.builder()
+                        .employeeDisplayName("정유진")
+                        .isConfirmed("N")
+                        .build()
+        );
+
+        ApproveProposalDTO formDetail = ApproveProposalDTO.builder()
+                .content("결재 더미 데이터")
+                .build();
+
+        when(approveDetailMapper.getApproveDTO(approveId)).thenReturn(Optional.of(approveDTO));
+        when(approveDetailMapper.getApproveLines(approveId)).thenReturn(lineList);
+        when(approveDetailMapper.getApproveLineList(any())).thenReturn(lineListDetail);
+        when(approveDetailMapper.getApproveRefs(approveId)).thenReturn(refList);
+        when(approveDetailMapper.getProposalDetail(approveId)).thenReturn(Optional.of(formDetail));
+
+        ApproveDetailResponse result = approveService.getApproveDetail(approveId);
+
+        assertNotNull(result);
+        assertEquals(approveDTO, result.getApproveDTO());
+        assertEquals(formDetail, result.getFormDetail());
+    }
+
 
     /* 받은 결재 문서 테스트를 위한 더미 데이터 */
     private List<ApproveDTO> getDummyApproves() {
@@ -155,7 +213,7 @@ class ApproveQueryServiceImplTest {
                 .statusType("ACCEPTED")
                 .empId(1L)
                 .approveTitle("점심 식사 영수증")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .completeAt(null)
                 .employeeName("장도윤")
@@ -168,7 +226,7 @@ class ApproveQueryServiceImplTest {
                 .statusType("ACCEPTED")
                 .empId(2L)
                 .approveTitle("출장 택시비")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
                 .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")
