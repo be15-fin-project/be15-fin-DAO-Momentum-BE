@@ -1,8 +1,7 @@
-package com.dao.momentum.evaluation.query.controller;
+package com.dao.momentum.evaluation.kpi.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
 
-import com.dao.momentum.evaluation.kpi.query.controller.KpiQueryController;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;

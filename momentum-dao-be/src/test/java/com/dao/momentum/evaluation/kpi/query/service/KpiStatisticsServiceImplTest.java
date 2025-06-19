@@ -1,4 +1,4 @@
-package com.dao.momentum.evaluation.query.service;
+package com.dao.momentum.evaluation.kpi.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
@@ -8,7 +8,6 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseD
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
-import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
