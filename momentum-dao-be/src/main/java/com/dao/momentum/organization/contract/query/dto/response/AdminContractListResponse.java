@@ -8,8 +8,8 @@ import java.util.List;
 
 @Getter
 @Builder
-public class ContractListResponse {
-    private List<ContractDTO> contracts;
+public class AdminContractListResponse {
+    private List<AdminContractDTO> contracts;
 
     private Pagination pagination;
 }
