@@ -1,6 +1,7 @@
 package com.dao.momentum.announcement.query.controller;
 
-import com.dao.momentum.announcement.query.dto.request.AnnouncementSearchRequest;
+import com.dao.momentum.announcement.query.dto.response.AnnouncementDetailDto;
+import com.dao.momentum.announcement.query.dto.response.AnnouncementDetailResponse;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementDto;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementListResponse;
 import com.dao.momentum.announcement.query.service.AnnouncementQueryService;
@@ -34,13 +35,49 @@ class AnnouncementQueryControllerTest {
     private AnnouncementQueryService announcementQueryService;
 
     @Test
+    @DisplayName("공지사항 상세 조회 성공")
+    void getAnnouncementDetail_success() throws Exception {
+        // given
+        Long announcementId = 100L;
+
+        AnnouncementDetailDto dto = AnnouncementDetailDto.builder()
+                .announcementId(announcementId)
+                .empId(1L)
+                .employeeName("김현우")
+                .deptId(10)
+                .departmentName("인사팀")
+                .positionName("사원")
+                .title("복지제도 변경 안내")
+                .content("복지포인트가 늘어났습니다.")
+                .createdAt(LocalDateTime.of(2025, 6, 1, 10, 0))
+                .updatedAt(LocalDateTime.of(2025, 6, 2, 12, 0))
+                .urls(List.of("https://example.com/file1.pdf", "https://example.com/file2.pdf"))
+                .build();
+
+        AnnouncementDetailResponse response = AnnouncementDetailResponse.builder()
+                .announcement(dto)
+                .build();
+
+        when(announcementQueryService.getAnnouncement(announcementId)).thenReturn(response);
+
+        // when & then
+        mockMvc.perform(get("/announcement/{announcementId}", announcementId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.announcement.announcementId").value(announcementId))
+                .andExpect(jsonPath("$.data.announcement.employeeName").value("김현우"))
+                .andExpect(jsonPath("$.data.announcement.departmentName").value("인사팀"))
+                .andExpect(jsonPath("$.data.announcement.title").value("복지제도 변경 안내"))
+                .andExpect(jsonPath("$.data.announcement.urls[0]").value("https://example.com/file1.pdf"))
+                .andExpect(jsonPath("$.data.announcement.urls[1]").value("https://example.com/file2.pdf"))
+                .andExpect(jsonPath("$.errorCode").doesNotExist())
+                .andExpect(jsonPath("$.message").doesNotExist());
+    }
+
+    @Test
     @DisplayName("공지사항 목록 조회 성공")
     void getAnnouncementList_success() throws Exception {
         // given
-        AnnouncementSearchRequest request = new AnnouncementSearchRequest();
-        request.setPage(4);
-        request.setSize(10);
-
         List<AnnouncementDto> announcements = List.of(
                 AnnouncementDto.builder()
                         .announcementId(2L)
