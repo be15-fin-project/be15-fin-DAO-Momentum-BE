@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.controller;
 
+import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.query.dto.ApproveDTO;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.service.AdminApproveQueryService;
@@ -41,7 +42,7 @@ class AdminApproveQueryControllerTest {
                 .statusType("ACCEPTED")
                 .empId(1L)
                 .approveTitle("점심 식사 영수증")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 1, 0, 0))
                 .completeAt(null)
                 .employeeName("장도윤")
@@ -54,7 +55,7 @@ class AdminApproveQueryControllerTest {
                 .statusType("ACCEPTED")
                 .empId(2L)
                 .approveTitle("출장 택시비")
-                .approveType("RECEIPT")
+                .approveType(ApproveType.RECEIPT)
                 .createAt(LocalDateTime.of(2025, 6, 9, 0, 0))
                 .completeAt(LocalDateTime.of(2025, 6, 13, 0, 0))
                 .employeeName("김하윤")

@@ -19,15 +19,21 @@ public class HrWeight {
     @Column(name = "round_id", nullable = false)
     private Integer roundId;
 
-    @Column(name = "kpi_wt", nullable = false)
-    private Integer kpiWeight;
+    @Column(name = "perform_wt", nullable = false)
+    private Integer performWt;
 
-    @Column(name = "peer_wt", nullable = false)
-    private Integer peerWeight;
+    @Column(name = "team_wt", nullable = false)
+    private Integer teamWt;
 
-    @Column(name = "rank_wt", nullable = false)
-    private Integer rankWeight;
+    @Column(name = "attitude_wt", nullable = false)
+    private Integer attitudeWt;
 
-    @Column(name = "attend_wt", nullable = false)
-    private Integer attendWeight;
+    @Column(name = "growth_wt", nullable = false)
+    private Integer growthWt;
+
+    @Column(name = "engagement_wt", nullable = false)
+    private Integer engagementWt;
+
+    @Column(name = "result_wt", nullable = false)
+    private Integer resultWt;
 }

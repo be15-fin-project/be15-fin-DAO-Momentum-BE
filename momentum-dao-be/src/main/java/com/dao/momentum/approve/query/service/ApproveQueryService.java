@@ -3,6 +3,7 @@ package com.dao.momentum.approve.query.service;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
+import com.dao.momentum.approve.query.dto.response.ApproveDetailResponse;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
 
@@ -21,5 +22,8 @@ public interface ApproveQueryService {
             Long empId,
             PageRequest pageRequest
     );
+
+    /* 결재 상세 조회 메서드 */
+    ApproveDetailResponse getApproveDetail(Long approveId);
 
 }

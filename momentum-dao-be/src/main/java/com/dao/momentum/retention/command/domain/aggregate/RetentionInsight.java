@@ -28,8 +28,6 @@ public class RetentionInsight {
     @Column(name = "round_id", nullable = false)
     private Integer roundId;
 
-    @Column(name = "eval_month", nullable = false)
-    private Integer evalMonth;
 
     @Column(name = "retention_score", nullable = false)
     private Integer retentionScore;
