@@ -1,13 +1,16 @@
 package com.dao.momentum.evaluation.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.evaluation.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
+import com.dao.momentum.evaluation.query.dto.response.KpiEmployeeSummaryResultDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -44,6 +47,22 @@ public class KpiQueryController {
     )
     public ApiResponse<KpiDetailResponseDto> getKpiDetail(@PathVariable Long kpiId) {
         KpiDetailResponseDto result = kpiQueryService.getKpiDetail(kpiId);
+        return ApiResponse.success(result);
+    }
+
+    /**
+     * 사원별 KPI 진척 현황 조회
+     * - 관리자/인사팀이 부서 및 기간 필터로 사원 KPI 요약 통계 조회
+     */
+    @GetMapping("/employee-summary")
+    @Operation(
+            summary = "사원별 KPI 진척 현황 조회",
+            description = "부서, 연도, 월 기준으로 사원별 KPI 통계를 조회합니다. 평균 진척도, 완료 KPI 수, 완료율 등을 반환합니다."
+    )
+    public ApiResponse<KpiEmployeeSummaryResultDto> getEmployeeKpiSummaries(
+            @ParameterObject @ModelAttribute KpiEmployeeSummaryRequestDto requestDto
+    ) {
+        KpiEmployeeSummaryResultDto result = kpiQueryService.getEmployeeKpiSummaries(requestDto);
         return ApiResponse.success(result);
     }
 }

@@ -1,6 +1,8 @@
 package com.dao.momentum.evaluation.query.mapper;
 
+import com.dao.momentum.evaluation.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.query.dto.response.KpiEmployeeSummaryResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -19,7 +21,9 @@ public interface KpiQueryMapper {
     KpiDetailResponseDto getKpiDetail(Long kpiId);
 
     // 사원별 KPI 조회
-    // List<KpiListResponseDto> getKpiListByEmployee(Long empId);
+    List<KpiEmployeeSummaryResponseDto> getEmployeeKpiSummary(KpiEmployeeSummaryRequestDto requestDto);
+
+    long countEmployeeKpiSummary(KpiEmployeeSummaryRequestDto requestDto);
 
     // KPI 제목/키워드 목록 (간략 목록용)
     // List<KpiSimpleResponseDto> getSimpleKpiList();
