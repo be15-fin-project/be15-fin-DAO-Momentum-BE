@@ -6,12 +6,18 @@ import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiEmployeeSummaryResultDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class KpiQueryController {
 
     private final KpiQueryService kpiQueryService;
+    private final EmployeeRepository employeeRepository;
 
     /**
      * KPI 전체 내역 조회
@@ -31,8 +38,25 @@ public class KpiQueryController {
             summary = "KPI 전체 내역 조회",
             description = "사번, 부서 ID, 직위 ID, 상태 ID, 작성일 범위로 KPI를 조회합니다. 페이징 지원."
     )
-    public ApiResponse<KpiListResultDto> getKpiList(@ModelAttribute KpiListRequestDto requestDto) {
-        return ApiResponse.success(kpiQueryService.getKpiList(requestDto));
+    public ApiResponse<KpiListResultDto> getKpiList(@ModelAttribute KpiListRequestDto request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String empIdStr = auth.getName(); // JWT subject = emp_id (Long)
+
+        boolean isPrivileged = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+
+        if (!isPrivileged) {
+            Long empId = Long.parseLong(empIdStr);
+            // 사번 조회
+            String empNo = employeeRepository.findByEmpId(empId)
+                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
+                    .getEmpNo();
+
+            request.setEmpNo(empNo);
+        }
+
+        return ApiResponse.success(kpiQueryService.getKpiList(request));
     }
 
     /**

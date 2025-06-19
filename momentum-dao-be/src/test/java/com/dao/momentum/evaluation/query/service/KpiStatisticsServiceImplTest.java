@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -80,6 +79,8 @@ class KpiStatisticsServiceImplTest {
     void getTimeseriesStatistics_success() {
         // given
         int year = 2025;
+        String empNo = "20250001";
+
         List<KpiTimeseriesMonthlyDto> mockList = Arrays.asList(
                 new KpiTimeseriesMonthlyDto(1, 10, 4, 64.0),
                 new KpiTimeseriesMonthlyDto(2, 12, 6, 71.5)
@@ -88,11 +89,12 @@ class KpiStatisticsServiceImplTest {
         when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(mockList);
 
         // when
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year);
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year, empNo);
 
         // then
         assertNotNull(result);
-        assertEquals(2025, result.getYear());
+        assertEquals(year, result.getYear());
+        assertEquals(empNo, result.getEmpNo());
         assertEquals(2, result.getMonthlyStats().size());
         assertEquals(10, result.getMonthlyStats().get(0).getTotalKpiCount());
     }
@@ -101,11 +103,14 @@ class KpiStatisticsServiceImplTest {
     @DisplayName("시계열 KPI 통계 조회 실패 - null 결과")
     void getTimeseriesStatistics_null_throwsException() {
         // given
-        when(kpiStatisticsMapper.getTimeseriesStatistics(anyInt())).thenReturn(null);
+        Integer year = 2025;
+        String empNo = "20250001";
+
+        when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(null);
 
         // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(2025);
+            kpiStatisticsService.getTimeseriesStatistics(year, empNo);
         });
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
@@ -115,11 +120,14 @@ class KpiStatisticsServiceImplTest {
     @DisplayName("시계열 KPI 통계 조회 실패 - 빈 결과")
     void getTimeseriesStatistics_empty_throwsException() {
         // given
-        when(kpiStatisticsMapper.getTimeseriesStatistics(anyInt())).thenReturn(Collections.emptyList());
+        Integer year = 2025;
+        String empNo = "20250001";
+
+        when(kpiStatisticsMapper.getTimeseriesStatistics(year)).thenReturn(Collections.emptyList());
 
         // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(2025);
+            kpiStatisticsService.getTimeseriesStatistics(year, empNo);
         });
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());

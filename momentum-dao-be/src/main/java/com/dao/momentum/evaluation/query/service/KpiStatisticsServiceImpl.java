@@ -31,7 +31,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     }
 
     @Override
-    public KpiTimeseriesResponseDto getTimeseriesStatistics(Integer year) {
+    public KpiTimeseriesResponseDto getTimeseriesStatistics(Integer year, String empNo) {
         int targetYear = (year != null) ? year : LocalDate.now().getYear();
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(targetYear);
 
@@ -40,6 +40,6 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
             throw new KpiException(ErrorCode.STATISTICS_NOT_FOUND);
         }
 
-        return new KpiTimeseriesResponseDto(targetYear, stats);
+        return new KpiTimeseriesResponseDto(targetYear, empNo, stats);
     }
 }

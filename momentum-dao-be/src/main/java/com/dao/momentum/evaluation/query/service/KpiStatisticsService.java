@@ -10,5 +10,5 @@ public interface KpiStatisticsService {
     KpiStatisticsResponseDto getStatistics(KpiStatisticsRequestDto requestDto);
 
     // KPI 시계열 통계 조회
-    KpiTimeseriesResponseDto getTimeseriesStatistics(Integer year);
+    KpiTimeseriesResponseDto getTimeseriesStatistics(Integer year, String empNo);
 }

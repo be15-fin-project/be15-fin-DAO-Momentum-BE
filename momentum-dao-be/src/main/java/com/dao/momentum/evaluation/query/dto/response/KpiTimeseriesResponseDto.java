@@ -18,6 +18,9 @@ public class KpiTimeseriesResponseDto {
     @Schema(description = "조회 기준 연도", example = "2025")
     private int year;
 
+    @Schema(description = "사원 번호", example = "20250001")
+    private String empNo;
+
     @Schema(description = "월별 KPI 통계 리스트")
     private List<KpiTimeseriesMonthlyDto> monthlyStats;
 }

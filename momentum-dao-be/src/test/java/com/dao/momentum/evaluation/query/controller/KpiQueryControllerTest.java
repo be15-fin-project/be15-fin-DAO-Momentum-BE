@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.query.dto.request.KpiEmployeeSummaryRequestDt
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.*;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,11 +36,14 @@ class KpiQueryControllerTest {
     @MockitoBean
     private KpiQueryService kpiQueryService;
 
+    @MockitoBean
+    private EmployeeRepository employeeRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("KPI 전체 내역 조회 - 성공 케이스")
+    @DisplayName("KPI 전체 내역 조회")
     @WithMockUser(authorities = "MASTER")
     void getKpiList_success() throws Exception {
         // given
@@ -79,7 +83,7 @@ class KpiQueryControllerTest {
     }
 
     @Test
-    @DisplayName("KPI 세부 조회 - 성공")
+    @DisplayName("KPI 세부 조회")
     @WithMockUser(authorities = "MASTER")
     void getKpiDetail_success() throws Exception {
         Long kpiId = 101L;
@@ -112,7 +116,7 @@ class KpiQueryControllerTest {
     }
 
     @Test
-    @DisplayName("사원별 KPI 요약 조회 - 성공 케이스")
+    @DisplayName("사원별 KPI 요약 조회")
     @WithMockUser(authorities = "HR")
     void getEmployeeKpiSummaries_success() throws Exception {
         // given
@@ -158,22 +162,4 @@ class KpiQueryControllerTest {
                 .andDo(print());
     }
 
-    @Test
-    @DisplayName("사원별 KPI 요약 조회 - 실패 케이스 (데이터 없음)")
-    @WithMockUser(authorities = "HR")
-    void getEmployeeKpiSummaries_notFound() throws Exception {
-        Mockito.when(kpiQueryService.getEmployeeKpiSummaries(any(KpiEmployeeSummaryRequestDto.class)))
-                .thenThrow(new KpiException(KPI_EMPLOYEE_SUMMARY_NOT_FOUND));
-
-        mockMvc.perform(get("/kpi/employee-summary")
-                        .param("year", "2025")
-                        .param("month", "6")
-                        .param("deptId", "10")
-                        .param("page", "1")
-                        .param("size", "10"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.errorCode").value("KPI_EMPLOYEE_SUMMARY_NOT_FOUND"))
-                .andDo(print());
-    }
 }

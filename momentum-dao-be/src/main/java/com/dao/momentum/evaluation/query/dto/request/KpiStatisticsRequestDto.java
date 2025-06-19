@@ -22,6 +22,9 @@ public class KpiStatisticsRequestDto {
     @Schema(description = "사원 ID", example = "1001")
     private Long empId;
 
+    @Schema(description = "사원 번호", example = "20250001")
+    private String empNo;
+
     @Schema(description = "사용자 권한 (예: MASTER, HR_MANAGER, BOOKKEEPING, MANAGER)", example = "MASTER")
     private String userRole;
 }

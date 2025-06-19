@@ -5,11 +5,17 @@ import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.query.service.KpiStatisticsService;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 public class KpiStatisticsController {
 
     private final KpiStatisticsService kpiStatisticsService;
+
+    private final EmployeeRepository employeeRepository;
 
     /**
      * KPI 통계 조회 (단일 시점)
@@ -32,6 +40,22 @@ public class KpiStatisticsController {
     public ApiResponse<KpiStatisticsResponseDto> getKpiStatistics(
             @ModelAttribute KpiStatisticsRequestDto requestDto
     ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String empIdStr = auth.getName();
+
+        boolean isPrivileged = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+
+        if (!isPrivileged) {
+            Long empId = Long.parseLong(empIdStr);
+            String empNo = employeeRepository.findByEmpId(empId)
+                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
+                    .getEmpNo();
+
+            requestDto.setEmpNo(empNo);
+        }
+
         KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
         return ApiResponse.success(result);
     }
@@ -47,8 +71,24 @@ public class KpiStatisticsController {
             description = "연도별 월간 KPI 작성 수, 완료 수, 평균 진척률을 시계열로 조회합니다. year 미입력 시 현재 연도 기준입니다."
     )
     public ApiResponse<KpiTimeseriesResponseDto> getTimeseriesStatistics(
-            @RequestParam(value = "year", required = false) Integer year) {
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year);
+            @RequestParam(value = "year", required = false) Integer year
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String empIdStr = auth.getName();
+
+        boolean isPrivileged = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+
+        String empNo = null;
+        if (!isPrivileged) {
+            Long empId = Long.parseLong(empIdStr);
+            empNo = employeeRepository.findByEmpId(empId)
+                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
+                    .getEmpNo();
+        }
+
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(year, empNo);
         return ApiResponse.success(result);
     }
 }
