@@ -2,12 +2,12 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.momentum.evaluation.query.mapper.KpiStatisticsMapper">
+<mapper namespace="com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper">
 
     <!-- KPI 종합 현황 통계 조회 -->
     <select id="getMonthlyStatistics"
-            parameterType="com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto"
-            resultType="com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto">
+            parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiStatisticsRequestDto"
+            resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseDto">
 
         SELECT
             COUNT(*) AS totalKpiCount,
@@ -34,7 +34,7 @@
 
     <!-- KPI 시계열 통계 조회 -->
     <select id="getTimeseriesStatistics"
-            resultType="com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto">
+            resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto">
 
         SELECT
             MONTH(k.created_at) AS month,

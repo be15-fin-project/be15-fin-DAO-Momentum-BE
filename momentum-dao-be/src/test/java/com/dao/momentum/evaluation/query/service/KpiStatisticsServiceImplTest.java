@@ -1,13 +1,14 @@
 package com.dao.momentum.evaluation.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.evaluation.exception.KpiException;
-import com.dao.momentum.evaluation.query.dto.request.KpiStatisticsRequestDto;
-import com.dao.momentum.evaluation.query.dto.request.KpiTimeseriesRequestDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiStatisticsResponseDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesMonthlyDto;
-import com.dao.momentum.evaluation.query.dto.response.KpiTimeseriesResponseDto;
-import com.dao.momentum.evaluation.query.mapper.KpiStatisticsMapper;
+import com.dao.momentum.evaluation.kpi.exception.KpiException;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiStatisticsRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiTimeseriesRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseDto;
+import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
+import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
+import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
+import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

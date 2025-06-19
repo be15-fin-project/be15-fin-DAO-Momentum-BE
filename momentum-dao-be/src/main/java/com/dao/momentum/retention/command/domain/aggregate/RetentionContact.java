@@ -2,7 +2,7 @@ package com.dao.momentum.retention.command.domain.aggregate;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.dao.momentum.evaluation.command.domain.aggregate.UseStatus;
+import com.dao.momentum.common.dto.UseStatus;
 
 import java.time.LocalDateTime;
 
