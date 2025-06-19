@@ -2,6 +2,7 @@ package com.dao.momentum.announcement.command.application.controller;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
+import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
 import com.dao.momentum.announcement.command.application.service.AnnouncementCommandService;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -23,8 +24,8 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AnnouncementCommandController.class)
@@ -49,19 +50,21 @@ class AnnouncementCommandControllerTest {
         request.setTitle("제목");
         request.setContent("내용");
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "announcement", null, "application/json", objectMapper.writeValueAsBytes(request));
+        // presigned URL로 업로드된 파일에 대한 정보 추가
+        AttachmentRequest attachment = new AttachmentRequest();
+        attachment.setS3Key("announcements/uuid/test.png"); // S3에 업로드된 key
+        attachment.setType("png");
 
-        MockMultipartFile file = new MockMultipartFile(
-                "files", "test.txt", "text/plain", "내용".getBytes());
+        request.setAttachments(List.of(attachment));
 
         AnnouncementCreateResponse response = new AnnouncementCreateResponse(1L);
-        when(announcementCommandService.create(any(), any(), any(UserDetails.class))).thenReturn(response);
+        when(announcementCommandService.create(any(), any(UserDetails.class))).thenReturn(response);
 
         // when & then
-        mockMvc.perform(multipart("/announcement")
-                        .file(jsonPart)
-                        .file(file))
+        mockMvc.perform(post("/announcement")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.announcementId").value(1))
                 .andExpect(jsonPath("$.success").value(true));
@@ -70,23 +73,30 @@ class AnnouncementCommandControllerTest {
     @Test
     @DisplayName("공지사항 수정 성공")
     void testModifyAnnouncement() throws Exception {
+        // given
         AnnouncementModifyRequest request = new AnnouncementModifyRequest();
         request.setTitle("수정 제목");
         request.setContent("수정 내용");
+
+        AttachmentRequest attachment1 = new AttachmentRequest();
+        attachment1.setS3Key("announcements/uuid/image1.png");
+        attachment1.setType("png");
+
+        AttachmentRequest attachment2 = new AttachmentRequest();
+        attachment2.setS3Key("announcements/uuid/doc1.pdf");
+        attachment2.setType("pdf");
+
+        request.setAttachments(List.of(attachment1, attachment2));
         request.setRemainFileIdList(List.of(1L, 2L));
 
         AnnouncementModifyResponse response = new AnnouncementModifyResponse(1L);
-        when(announcementCommandService.modify(any(), any(), eq(1L), any(UserDetails.class))).thenReturn(response);
+        when(announcementCommandService.modify(any(), eq(1L), any(UserDetails.class))).thenReturn(response);
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "announcement", null, "application/json", objectMapper.writeValueAsBytes(request));
-
-        mockMvc.perform(multipart("/announcement/{id}", 1)
-                        .file(jsonPart)
-                        .with(req -> {
-                            req.setMethod("PUT");
-                            return req;
-                        }))
+        // when & then
+        mockMvc.perform(put("/announcement/{id}", 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.announcementId").value(1))
                 .andExpect(jsonPath("$.success").value(true));
@@ -97,11 +107,11 @@ class AnnouncementCommandControllerTest {
     void testDeleteAnnouncement() throws Exception {
         // given
         Long announcementId = 1L;
-
         doNothing().when(announcementCommandService).delete(eq(announcementId), any(UserDetails.class));
 
         // when & then
-        mockMvc.perform(delete("/announcement/{announcementId}", announcementId))
+        mockMvc.perform(delete("/announcement/{announcementId}", announcementId)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").doesNotExist());
@@ -109,27 +119,37 @@ class AnnouncementCommandControllerTest {
         verify(announcementCommandService).delete(eq(announcementId), any(UserDetails.class));
     }
 
+
     @Test
     @DisplayName("공지사항 수정 - 공지사항이 존재하지 않으면 404")
     void testModifyAnnouncement_NotFound() throws Exception {
+        // given
         AnnouncementModifyRequest request = new AnnouncementModifyRequest();
-        request.setTitle("제목");
-        request.setContent("내용");
+        request.setTitle("수정 제목");
+        request.setContent("수정 내용");
 
-        when(announcementCommandService.modify(any(), any(), eq(999L), any(UserDetails.class)))
+        AttachmentRequest attachment1 = new AttachmentRequest();
+        attachment1.setS3Key("announcements/uuid/image1.png");
+        attachment1.setType("png");
+
+        AttachmentRequest attachment2 = new AttachmentRequest();
+        attachment2.setS3Key("announcements/uuid/doc1.pdf");
+        attachment2.setType("pdf");
+
+        request.setAttachments(List.of(attachment1, attachment2));
+        request.setRemainFileIdList(List.of(1L, 2L));
+
+        when(announcementCommandService.modify(any(), eq(999L), any(UserDetails.class)))
                 .thenThrow(new NoSuchAnnouncementException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "announcement", null, "application/json", objectMapper.writeValueAsBytes(request));
-
-        mockMvc.perform(multipart("/announcement/{id}", 999)
-                        .file(jsonPart)
-                        .with(req -> {
-                            req.setMethod("PUT");
-                            return req;
-                        }))
+        // when & then
+        mockMvc.perform(put("/announcement/{id}", 999)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.errorCode").value(ErrorCode.ANNOUNCEMENT_NOT_FOUND.getCode()))
                 .andExpect(jsonPath("$.message").value(ErrorCode.ANNOUNCEMENT_NOT_FOUND.getMessage()));
     }
+
 }
