@@ -6,6 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "KPI 목록 조회 요청 DTO")
 public class KpiListRequestDto {
 
     @Schema(description = "사번", example = "20240001")
@@ -17,7 +18,11 @@ public class KpiListRequestDto {
     @Schema(description = "직위 ID", example = "5")
     private Integer positionId;
 
-    @Schema(description = "KPI 상태 ID", example = "2", allowableValues = {"1", "2", "3", "4", "5"})
+    @Schema(
+            description = "KPI 상태 ID",
+            example = "2",
+            allowableValues = {"1", "2", "3", "4", "5"}
+    )
     private Integer statusId;
 
     @Schema(description = "작성일 시작일자 (yyyy-MM-dd)", example = "2025-06-01")

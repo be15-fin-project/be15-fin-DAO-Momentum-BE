@@ -6,6 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(description = "KPI 목록 응답 DTO")
 public class KpiListResponseDto {
 
     @Schema(description = "KPI 식별자", example = "101")

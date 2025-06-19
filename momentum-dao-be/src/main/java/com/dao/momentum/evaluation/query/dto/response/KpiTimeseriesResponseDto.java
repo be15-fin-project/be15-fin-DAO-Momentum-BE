@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.query.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,12 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "KPI 시계열 응답 DTO (연도별 월간 통계 포함)")
 public class KpiTimeseriesResponseDto {
-    private int year;                                      // 조회 기준 연도
-    private List<KpiTimeseriesMonthlyDto> monthlyStats;    // 월별 통계 리스트
+
+    @Schema(description = "조회 기준 연도", example = "2025")
+    private int year;
+
+    @Schema(description = "월별 KPI 통계 리스트")
+    private List<KpiTimeseriesMonthlyDto> monthlyStats;
 }
