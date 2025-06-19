@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResponseDto;
+import com.dao.momentum.evaluation.query.dto.response.KpiDetailResponseDto;
 import com.dao.momentum.evaluation.query.dto.response.KpiListResultDto;
 import com.dao.momentum.evaluation.query.service.KpiQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,4 +76,38 @@ class KpiQueryControllerTest {
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("KPI 세부 조회 - 성공")
+    @WithMockUser(authorities = "MASTER")
+    void getKpiDetail_success() throws Exception {
+        Long kpiId = 101L;
+
+        KpiDetailResponseDto dto = new KpiDetailResponseDto();
+        dto.setKpiId(kpiId);
+        dto.setEmpNo("HR001");
+        dto.setEmployeeName("정예준");
+        dto.setDepartmentName("기획팀");
+        dto.setPositionName("대리");
+        dto.setGoal("리포트 자동화");
+        dto.setGoalValue(5);
+        dto.setKpiProgress(75);
+        dto.setProgress25("템플릿 작성");
+        dto.setProgress50("API 연동");
+        dto.setProgress75("리포트 생성");
+        dto.setProgress100("운영 반영");
+        dto.setStatusType("ACCEPTED");
+        dto.setCreatedAt("2025-05-01");
+        dto.setDeadline("2025-06-30");
+
+        Mockito.when(kpiQueryService.getKpiDetail(kpiId)).thenReturn(dto);
+
+        mockMvc.perform(get("/kpi/{kpiId}", kpiId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.kpiId").value(101))
+                .andExpect(jsonPath("$.data.employeeName").value("정예준"))
+                .andDo(print());
+    }
+
 }
