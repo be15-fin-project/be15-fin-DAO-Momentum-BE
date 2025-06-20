@@ -7,6 +7,7 @@ import com.dao.momentum.organization.employee.command.application.dto.response.E
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
@@ -122,6 +123,15 @@ public class EmployeeCommandService {
     @Transactional
     public EmployeeInfoUpdateResponse updateEmployeeInfo(UserDetails userDetails, Long empId, EmployeeInfoUpdateRequest request) {
         long adminId = Long.parseLong(userDetails.getUsername());
+        Employee admin = employeeRepository.findByEmpId(adminId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        Status adminStatus = admin.getStatus();
+
+        // 관리자가 휴직 또는 퇴직 상태이면 수정 불가
+        if (adminStatus != Status.EMPLOYED) {
+            log.info("권한 없는 사용자의 요청 - 요청자 ID: {}, 요청자 상태: {}", adminId, adminStatus);
+            throw new EmployeeException(ErrorCode.NOT_EMPLOYED_USER);
+        }
 
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
