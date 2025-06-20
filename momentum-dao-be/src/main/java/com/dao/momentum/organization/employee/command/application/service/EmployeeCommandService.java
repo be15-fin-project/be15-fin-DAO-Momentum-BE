@@ -1,10 +1,13 @@
 package com.dao.momentum.organization.employee.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRoleName;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
@@ -12,12 +15,14 @@ import com.dao.momentum.organization.employee.exception.EmployeeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -115,4 +120,31 @@ public class EmployeeCommandService {
         return nextEmpNo;
     }
 
+    @Transactional
+    public EmployeeInfoUpdateResponse updateEmployeeInfo(UserDetails userDetails, Long empId, EmployeeInfoUpdateRequest request) {
+        long adminId = Long.parseLong(userDetails.getUsername());
+        Employee admin = employeeRepository.findByEmpId(adminId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        Status adminStatus = admin.getStatus();
+
+        // 관리자가 휴직 또는 퇴직 상태이면 수정 불가
+        if (adminStatus != Status.EMPLOYED) {
+            log.info("권한 없는 사용자의 요청 - 요청자 ID: {}, 요청자 상태: {}", adminId, adminStatus);
+            throw new EmployeeException(ErrorCode.NOT_EMPLOYED_USER);
+        }
+
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        employee.fromUpdateEmpInfo(request);
+        employeeRepository.save(employee);
+
+        EmployeeInfoDTO employeeInfo = EmployeeInfoDTO.fromEmployee(employee);
+        log.info("회원 정보 수정 완료 - 회원 ID: {}, 수정자(관리자) ID: {}, 수정 일시: {}", empId, adminId, LocalDateTime.now());
+
+        return EmployeeInfoUpdateResponse.builder()
+                .employeeInfo(employeeInfo)
+                .message("회원 정보 수정 완료")
+                .build();
+    }
 }
