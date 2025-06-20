@@ -11,9 +11,12 @@
             emp.name AS empName,
             con.type,
             con.salary,
-            con.created_at
+            con.created_at,
+            file.attachment_id,
+            file.url
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
+        JOIN file AS file ON con.contract_id = file.contract_id
         WHERE 1 = 1
         <if test="request.empNo != null">
             AND emp.emp_no = #{request.empNo}
@@ -28,7 +31,7 @@
             AND con.created_at &gt;= #{request.searchStartDate}
         </if>
         <if test="request.searchEndDate != null">
-            AND con.created_at &lt;= #{request.searchEndDate}
+            AND con.created_at &lt; #{request.searchEndDate}
         </if>
             ORDER BY con.created_at
         <if test="request.order == null or request.order.name() == 'DESC'">
@@ -42,6 +45,7 @@
             COUNT(con.contract_id)
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
+        JOIN file AS file ON con.contract_id = file.contract_id
         WHERE 1 = 1
         <if test="request.empNo != null">
             AND emp.emp_no = #{request.empNo}
@@ -66,9 +70,12 @@
             con.emp_id,
             con.type,
             con.salary,
-            con.created_at
+            con.created_at,
+            file.attachment_id,
+            file.url
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
+        JOIN file AS file ON con.contract_id = file.contract_id
         WHERE con.emp_id = #{empId}
         <if test="request.type != null and request.type.name() != ''">
             AND con.type = #{request.type}
@@ -82,6 +89,7 @@
             COUNT(con.contract_id)
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
+        JOIN file AS file ON con.contract_id = file.contract_id
         WHERE con.emp_id = #{empId}
         <if test="request.type != null and request.type.name() != ''">
             AND con.type = #{request.type}

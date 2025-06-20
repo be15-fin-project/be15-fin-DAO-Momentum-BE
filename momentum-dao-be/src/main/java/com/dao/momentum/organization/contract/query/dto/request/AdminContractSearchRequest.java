@@ -33,7 +33,8 @@ public class AdminContractSearchRequest {
                 .empName(request.getEmpName())
                 .type(request.getType())
                 .searchStartDate(request.getSearchStartDate())
-                .searchEndDate(request.getSearchEndDate())
+                .searchEndDate(request.getSearchEndDate() == null ?
+                        null : request.getSearchEndDate().plusDays(1))
                 .order(request.getOrder())
                 .page(request.getPage() == null ? 1 : request.getPage())
                 .size(request.getSize() == null ? 10 : request.getSize())

@@ -18,4 +18,8 @@ public class ContractDTO {
     private BigDecimal salary;
 
     private LocalDateTime createdAt;
+
+    private Long attachmentId;
+
+    private String url;
 }
