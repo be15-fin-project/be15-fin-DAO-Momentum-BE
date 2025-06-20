@@ -98,7 +98,7 @@ public class EmployeeCommandService {
         // 순서 섞기
         List<Character> pwChars = password.chars()
                 .mapToObj(c -> (char) c)
-                .collect(Collectors.toList());
+                .collect(toList());
         Collections.shuffle(pwChars, random);
 
         return pwChars.stream()
