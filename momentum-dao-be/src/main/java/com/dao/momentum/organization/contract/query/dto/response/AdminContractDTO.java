@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class ContractSummaryDTO {
+public class AdminContractDTO {
     private Long contractId;
 
     private Long empId;
@@ -22,4 +22,8 @@ public class ContractSummaryDTO {
     private BigDecimal salary;
 
     private LocalDateTime createdAt;
+
+    private Long attachmentId;
+
+    private String url;
 }
