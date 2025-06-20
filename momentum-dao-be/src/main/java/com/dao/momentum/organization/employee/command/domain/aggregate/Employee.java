@@ -1,7 +1,6 @@
 package com.dao.momentum.organization.employee.command.domain.aggregate;
 
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
