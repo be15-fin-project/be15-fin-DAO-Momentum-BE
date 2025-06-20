@@ -2,8 +2,10 @@ package com.dao.momentum.organization.employee.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -33,7 +35,7 @@ public class EmployeeCommandController {
     @PutMapping("/{empId}")
     public ResponseEntity<ApiResponse<EmployeeInfoUpdateResponse>> updateEmployeeInfo(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long empId,
+            @PathVariable long empId,
             @RequestBody EmployeeInfoUpdateRequest request){
 
         return ResponseEntity.ok(
@@ -42,4 +44,20 @@ public class EmployeeCommandController {
                 )
         );
     }
+
+    @Operation(summary = "사원 인사 정보 수정", description = "관리자는 사원의 인사 정보를 수정할 수 있다.")
+    @PutMapping("/{empId}/hr-info")
+    public ResponseEntity<ApiResponse<EmployeeRecordsUpdateResponse>> updateEmployeeRecords(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable long empId,
+            @RequestBody EmployeeRecordsUpdateRequest request){
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        employeeService.updateEmployeeRecords(userDetails, empId, request)
+                )
+        );
+    }
+
+
 }

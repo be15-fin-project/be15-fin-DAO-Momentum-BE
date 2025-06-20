@@ -14,4 +14,6 @@ public interface EmployeeRepository {
     String findMaxEmpNo();
 
     Boolean existsByPositionId(Integer positionId);
+
+    boolean existsByEmpId(Long empId);
 }
