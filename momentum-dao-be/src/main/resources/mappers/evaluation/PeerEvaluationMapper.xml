@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper">
+
+    <!-- 사원 간 평가 내역 조회 -->
+    <select id="findPeerEvaluations"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto">
+        SELECT
+            er.result_id AS resultId,
+            er.eval_id AS evalId,
+            e1.name AS evalName,
+            er.target_id AS targetId,
+            e2.name AS targetName,
+            ef.name AS formName,
+            er.score AS score,
+            r.round_no AS roundNo,
+            er.reason AS reason,
+            er.created_at AS createdAt
+        FROM eval_response er
+        JOIN employee e1 ON er.eval_id = e1.emp_id
+        JOIN employee e2 ON er.target_id = e2.emp_id
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        WHERE et.name = 'PEER'
+        <if test="evalId != null">
+            AND er.eval_id = #{evalId}
+        </if>
+        <if test="targetId != null">
+            AND er.target_id = #{targetId}
+        </if>
+        <if test="formId != null">
+            AND er.form_id = #{formId}
+        </if>
+        <if test="roundId != null">
+            AND er.round_id = #{roundId}
+        </if>
+        ORDER BY er.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPeerEvaluations"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'PEER'
+        <if test="evalId != null">
+            AND er.eval_id = #{evalId}
+        </if>
+        <if test="targetId != null">
+            AND er.target_id = #{targetId}
+        </if>
+        <if test="formId != null">
+            AND er.form_id = #{formId}
+        </if>
+        <if test="roundId != null">
+            AND er.round_id = #{roundId}
+        </if>
+    </select>
+
+</mapper>
