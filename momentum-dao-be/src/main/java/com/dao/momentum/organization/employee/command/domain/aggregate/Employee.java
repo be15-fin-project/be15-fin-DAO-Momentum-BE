@@ -1,5 +1,6 @@
 package com.dao.momentum.organization.employee.command.domain.aggregate;
 
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -60,4 +61,21 @@ public class Employee {
     public void setEmpNo(String nextEmpNo) {
         this.empNo = nextEmpNo;
     }
+
+    public void fromUpdateEmpInfo(EmployeeInfoUpdateRequest request) {
+        String newEmpNo = request.getEmpNo();
+        String newEmail = request.getEmail();
+        Status newStatus = request.getStatus();
+
+        if (!this.empNo.equals(newEmpNo)) {
+            this.empNo = newEmpNo;
+        }
+        if (!this.email.equals(newEmail)) {
+            this.email = newEmail;
+        }
+        if (this.status != newStatus) {
+            this.status = newStatus;
+        }
+    }
+
 }
