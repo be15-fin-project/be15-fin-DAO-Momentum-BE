@@ -1,6 +1,5 @@
 package com.dao.momentum.organization.employee.query.mapper;
 
-import com.dao.momentum.organization.employee.query.dto.request.EmployeeDetailsRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDTO;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeDTO;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeRecordsDTO;
