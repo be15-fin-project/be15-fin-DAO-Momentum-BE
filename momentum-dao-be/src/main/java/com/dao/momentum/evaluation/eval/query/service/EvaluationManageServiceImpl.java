@@ -1,8 +1,10 @@
-package com.dao.momentum.evaluation.manage.query.service;
+package com.dao.momentum.evaluation.eval.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
@@ -47,6 +49,12 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
                 .toList();
 
         return new EvaluationRoundListResultDto(filtered, buildPagination(request.getPage(), request.getSize(), total));
+    }
+
+    // 평가 종류 조회
+    @Override
+    public List<EvaluationFormResponseDto> getEvaluationForms(EvaluationFormListRequestDto request) {
+        return evaluationManageMapper.findEvaluationForms(request);
     }
 
     // 페이지네이션 계산

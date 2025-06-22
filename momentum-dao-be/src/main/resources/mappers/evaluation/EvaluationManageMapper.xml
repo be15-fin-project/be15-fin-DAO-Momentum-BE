@@ -51,4 +51,22 @@
             </if>
     </select>
 
+    <!-- 평가 종류 조회 -->
+    <select id="findEvaluationForms"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto">
+        SELECT
+            ef.form_id AS formId,
+            ef.name AS name,
+            ef.description AS description,
+            et.type_id AS typeId,
+            et.name AS typeName
+        FROM eval_form ef
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE ef.is_active = 'Y'
+            <if test="typeId != null">
+                AND ef.type_id = #{typeId}
+            </if>
+        ORDER BY ef.form_id ASC
+    </select>
 </mapper>

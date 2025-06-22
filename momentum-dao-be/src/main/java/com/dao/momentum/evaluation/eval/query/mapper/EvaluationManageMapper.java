@@ -1,6 +1,8 @@
 package com.dao.momentum.evaluation.eval.query.mapper;
 
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,4 +15,8 @@ public interface EvaluationManageMapper {
     List<EvaluationRoundResponseDto> findEvaluationRounds(EvaluationRoundListRequestDto request);
 
     long countEvaluationRounds(EvaluationRoundListRequestDto request);
+
+    // 평가 종류 조회
+    List<EvaluationFormResponseDto> findEvaluationForms(EvaluationFormListRequestDto request);
+
 }
