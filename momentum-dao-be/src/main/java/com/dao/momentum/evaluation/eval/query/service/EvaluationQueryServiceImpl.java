@@ -17,9 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public
-
-class EvaluationQueryServiceImpl implements EvaluationQueryService {
+public class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     private final PeerEvaluationMapper peerEvaluationMapper;
     private final OrgEvaluationMapper orgEvaluationMapper;
