@@ -3,7 +3,6 @@ package com.dao.momentum.evaluation.hr.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.MyObjectionListResultDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.ObjectionDetailResultDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto;
 import com.dao.momentum.evaluation.hr.query.service.MyObjectionQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,10 +39,10 @@ public class MyObjectionQueryController {
             summary = "본인 이의제기 상세 조회",
             description = "로그인한 사원이 본인이 제기한 특정 이의제기 건의 상세 정보를 조회합니다."
     )
-    public ApiResponse<ObjectionDetailResultDto> getMyObjectionDetail(
+    public ApiResponse<ObjectionListResultDto> getMyObjectionDetail(
             @PathVariable Long objectionId
     ) {
-        ObjectionDetailResultDto dto = service.getObjectionDetail(objectionId);
+        ObjectionListResultDto dto = service.getObjectionDetail(objectionId);
         return ApiResponse.success(dto);
     }
 }

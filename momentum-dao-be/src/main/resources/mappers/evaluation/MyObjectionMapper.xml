@@ -38,7 +38,7 @@
     <!-- 2) 이의 제기 상세 조회 -->
     <select id="findObjectionDetail"
             parameterType="long"
-            resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto">
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionDetailResultDto">
         SELECT
             o.objection_id                                 AS objectionId,
             er.result_id                                   AS resultId,

@@ -6,7 +6,6 @@ import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.service.MyObjectionQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -79,7 +78,7 @@ class MyObjectionQueryControllerTest {
     void getMyObjectionDetail_success() throws Exception {
         // given
         // 1) 기본 상세 정보
-        ObjectionListResultDto base = ObjectionListResultDto.builder()
+        ObjectionDetailResultDto base = ObjectionDetailResultDto.builder()
                 .objectionId(5001L)
                 .resultId(10001L)
                 .empNo("20250001")
@@ -111,7 +110,7 @@ class MyObjectionQueryControllerTest {
                 .score(92)
                 .build();
 
-        ObjectionDetailResultDto detailDto = ObjectionDetailResultDto.builder()
+        ObjectionListResultDto detailDto = ObjectionListResultDto.builder()
                 .list(List.of(base))
                 .factorScores(List.of(fs1, fs2))
                 .build();

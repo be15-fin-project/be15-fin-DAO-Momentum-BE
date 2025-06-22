@@ -1,7 +1,6 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
@@ -104,7 +103,7 @@ class MyObjectionQueryServiceImplTest {
     @DisplayName("정상: getObjectionDetail 호출 시 ObjectionDetailResultDto 생성")
     void getObjectionDetail_success() {
         // base DTO
-        ObjectionListResultDto base = ObjectionListResultDto.builder()
+        ObjectionDetailResultDto base = ObjectionDetailResultDto.builder()
                 .objectionId(5001L)
                 .resultId(2001L)
                 .empNo("20250001")
@@ -134,11 +133,11 @@ class MyObjectionQueryServiceImplTest {
         given(mapper.findObjectionDetail(5001L)).willReturn(base);
         given(mapper.findFactorScores(2001L)).willReturn(scores);
 
-        ObjectionDetailResultDto dto = service.getObjectionDetail(5001L);
+        ObjectionListResultDto dto = service.getObjectionDetail(5001L);
 
         // 기본 정보
         assertThat(dto.getList()).hasSize(1);
-        ObjectionListResultDto got = dto.getList().get(0);
+        ObjectionDetailResultDto got = dto.getList().get(0);
         assertThat(got.getObjectionId()).isEqualTo(5001L);
         assertThat(got.getResultId()).isEqualTo(2001L);
 

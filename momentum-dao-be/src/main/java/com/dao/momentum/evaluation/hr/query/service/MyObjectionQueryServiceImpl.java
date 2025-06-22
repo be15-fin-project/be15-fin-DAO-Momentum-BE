@@ -63,9 +63,9 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     }
 
     @Override
-    public ObjectionDetailResultDto getObjectionDetail(Long objectionId) {
+    public ObjectionListResultDto getObjectionDetail(Long objectionId) {
         // 1) 기본 상세 정보 조회 (ObjectionListResultDto 하나)
-        ObjectionListResultDto base = mapper.findObjectionDetail(objectionId);
+        ObjectionDetailResultDto base = mapper.findObjectionDetail(objectionId);
         System.out.printf("[getObjectionDetail] base=%s%n", base);
         if (base == null) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
@@ -76,7 +76,7 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
         System.out.printf("[getObjectionDetail] resultId=%d, scores=%s%n", base.getResultId(), scores);
 
         // 3) 결과 합치기
-        return ObjectionDetailResultDto.builder()
+        return ObjectionListResultDto.builder()
                 .list(Collections.singletonList(base))
                 .factorScores(scores)
                 .build();
