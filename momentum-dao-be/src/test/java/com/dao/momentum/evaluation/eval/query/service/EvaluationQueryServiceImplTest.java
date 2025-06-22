@@ -315,4 +315,61 @@ class EvaluationQueryServiceImplTest {
         verify(selfEvaluationMapper).findSelfEvaluations(requestDto);
     }
 
+    @Test
+    @DisplayName("자가 진단 평가 상세 조회 - 성공")
+    void getSelfEvaluationDetail_success() {
+        // given
+        Long resultId = 301L;
+
+        SelfEvaluationResponseDto detail = SelfEvaluationResponseDto.builder()
+                .resultId(resultId)
+                .empNo(20250001L)
+                .evalName("김하진")
+                .formName("직무 스트레스 자가진단")
+                .roundNo(1)
+                .score(75)
+                .reason("스트레스 요인 일부 존재")
+                .createdAt(LocalDateTime.of(2025, 6, 22, 9, 30))
+                .build();
+
+        List<FactorScoreDto> factorScores = List.of(
+                FactorScoreDto.builder().propertyName("스트레스 반응").score(78).build(),
+                FactorScoreDto.builder().propertyName("스트레스 요인").score(72).build()
+        );
+
+        when(selfEvaluationMapper.findSelfEvaluationDetail(resultId)).thenReturn(detail);
+        when(selfEvaluationMapper.findFactorScores(resultId)).thenReturn(factorScores);
+
+        // when
+        SelfEvaluationDetailResultDto result = evaluationQueryService.getSelfEvaluationDetail(resultId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getDetail().getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getDetail().getEvalName()).isEqualTo("김하진");
+        assertThat(result.getFactorScores()).hasSize(2);
+        assertThat(result.getFactorScores().get(1).getScore()).isEqualTo(72);
+
+        verify(selfEvaluationMapper).findSelfEvaluationDetail(resultId);
+        verify(selfEvaluationMapper).findFactorScores(resultId);
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 상세 조회 - 결과 없음 예외")
+    void getSelfEvaluationDetail_notFound_throwsException() {
+        // given
+        Long resultId = 9999L;
+
+        when(selfEvaluationMapper.findSelfEvaluationDetail(resultId)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getSelfEvaluationDetail(resultId))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
+
+        verify(selfEvaluationMapper).findSelfEvaluationDetail(resultId);
+        verify(selfEvaluationMapper, never()).findFactorScores(any());
+    }
+
+
 }
