@@ -270,7 +270,7 @@ class EvaluationQueryServiceImplTest {
         SelfEvaluationResponseDto responseDto = SelfEvaluationResponseDto.builder()
                 .resultId(201L)
                 .empNo(20250001L)
-                .evalName("김여진")
+                .evalName("김하진")
                 .formName("직업 만족도 진단")
                 .roundNo(1)
                 .score(82)
