@@ -94,11 +94,31 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
         long total = selfEvaluationMapper.countSelfEvaluations(requestDto);
         List<SelfEvaluationResponseDto> list = selfEvaluationMapper.findSelfEvaluations(requestDto);
 
+        if (list == null) {
+            throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
+        }
+
         Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
 
         return new SelfEvaluationListResultDto(list, pagination);
     }
 
+    // 자가 진단 상세 조회
+    @Override
+    public SelfEvaluationDetailResultDto getSelfEvaluationDetail(Long resultId) {
+        SelfEvaluationResponseDto detail = selfEvaluationMapper.findSelfEvaluationDetail(resultId);
+
+        if (detail == null) {
+            throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
+        }
+
+        List<FactorScoreDto> factorScores = selfEvaluationMapper.findFactorScores(resultId);
+
+        return SelfEvaluationDetailResultDto.builder()
+                .detail(detail)
+                .factorScores(factorScores)
+                .build();
+    }
 
     // 페이지네이션
     private Pagination buildPagination(int page, int size, long total) {

@@ -3,11 +3,7 @@ package com.dao.momentum.evaluation.eval.query.service;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationDetailResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationListResultDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 
 public interface EvaluationQueryService {
     // 사원 간 평가 내역 조회
@@ -24,4 +20,7 @@ public interface EvaluationQueryService {
 
     // 자가 진단 내역 조회
     SelfEvaluationListResultDto getSelfEvaluations(SelfEvaluationListRequestDto requestDto);
+
+    // 자가 진단 상세 조회
+    SelfEvaluationDetailResultDto getSelfEvaluationDetail(Long resultId);
 }

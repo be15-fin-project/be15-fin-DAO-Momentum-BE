@@ -60,4 +60,11 @@ public class EvaluationQueryController {
         return ApiResponse.success(evaluationQueryService.getSelfEvaluations(requestDto));
     }
 
+    @GetMapping("/self/{resultId}")
+    @Operation(summary = "자가 진단 평가 상세 조회", description = "자가 진단 평가의 세부 정보와 요인별 점수를 함께 조회합니다.")
+    public ApiResponse<SelfEvaluationDetailResultDto> getSelfEvaluationDetail(
+            @PathVariable Long resultId
+    ) {
+        return ApiResponse.success(evaluationQueryService.getSelfEvaluationDetail(resultId));
+    }
 }
