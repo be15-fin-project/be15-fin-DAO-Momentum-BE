@@ -3,10 +3,8 @@ package com.dao.momentum.evaluation.eval.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationDetailResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,5 +52,12 @@ public class EvaluationQueryController {
         return ApiResponse.success(evaluationQueryService.getOrgEvaluationDetail(resultId));
     }
 
+    @GetMapping("/self")
+    @Operation(summary = "자가 진단 내역 조회", description = "관리자 또는 인사팀이 자가 진단 평가 내역을 조회합니다.")
+    public ApiResponse<SelfEvaluationListResultDto> getSelfEvaluations(
+            @ModelAttribute SelfEvaluationListRequestDto requestDto
+    ) {
+        return ApiResponse.success(evaluationQueryService.getSelfEvaluations(requestDto));
+    }
 
 }

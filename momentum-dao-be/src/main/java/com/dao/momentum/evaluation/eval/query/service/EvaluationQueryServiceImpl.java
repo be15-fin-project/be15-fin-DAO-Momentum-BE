@@ -5,9 +5,11 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
+import com.dao.momentum.evaluation.eval.query.mapper.SelfEvaluationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     private final PeerEvaluationMapper peerEvaluationMapper;
     private final OrgEvaluationMapper orgEvaluationMapper;
+    private final SelfEvaluationMapper selfEvaluationMapper;
 
     // 사원 간 평가 내역 조회
     @Override
@@ -83,6 +86,17 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
                 .detail(detail)
                 .factorScores(factorScores)
                 .build();
+    }
+
+    // 자가 진단 내역 조회
+    @Override
+    public SelfEvaluationListResultDto getSelfEvaluations(SelfEvaluationListRequestDto requestDto) {
+        long total = selfEvaluationMapper.countSelfEvaluations(requestDto);
+        List<SelfEvaluationResponseDto> list = selfEvaluationMapper.findSelfEvaluations(requestDto);
+
+        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+
+        return new SelfEvaluationListResultDto(list, pagination);
     }
 
 
