@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
@@ -15,10 +16,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -123,5 +126,33 @@ class EvaluationQueryControllerTest {
                 .andExpect(jsonPath("$.data.factorScores", hasSize(2)))
                 .andExpect(jsonPath("$.data.factorScores[0].propertyName").value("문제해결"))
                 .andDo(print());
+    }
+
+    @Test
+    @DisplayName("조직 평가 목록 조회 성공")
+    @WithMockUser(authorities = "MASTER")
+    void getOrgEvaluations_success() throws Exception {
+        // given
+        OrgEvaluationResponseDto dto = OrgEvaluationResponseDto.builder()
+                .formName("조직 몰입도")
+                .roundNo(2)
+                .score(85)
+                .build();
+
+        OrgEvaluationListResultDto resultDto = new OrgEvaluationListResultDto(Collections.singletonList(dto), null);
+        given(evaluationQueryService.getOrgEvaluations(any(OrgEvaluationListRequestDto.class)))
+                .willReturn(resultDto);
+
+        // when & then
+        mockMvc.perform(get("/evaluation/results/org")
+                        .param("formId", "5")
+                        .param("roundId", "2")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.list[0].formName").value("조직 몰입도"))
+                .andExpect(jsonPath("$.data.list[0].roundNo").value(2))
+                .andExpect(jsonPath("$.data.list[0].score").value(85));
     }
 }

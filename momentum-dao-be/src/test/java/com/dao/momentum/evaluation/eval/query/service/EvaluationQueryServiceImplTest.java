@@ -3,11 +3,15 @@ package com.dao.momentum.evaluation.eval.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
+import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
+import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
@@ -15,15 +19,23 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class EvaluationQueryServiceImplTest {
 
-    private final PeerEvaluationMapper peerEvaluationMapper = mock(PeerEvaluationMapper.class);
-    private final EvaluationQueryServiceImpl evaluationQueryService = new EvaluationQueryServiceImpl(peerEvaluationMapper);
+    private EvaluationQueryServiceImpl evaluationQueryService;
+
+    private PeerEvaluationMapper peerEvaluationMapper = Mockito.mock(PeerEvaluationMapper.class);
+    private OrgEvaluationMapper orgEvaluationMapper = Mockito.mock(OrgEvaluationMapper.class);
+
+    @BeforeEach
+    void setUp() {
+        evaluationQueryService = new EvaluationQueryServiceImpl(peerEvaluationMapper, orgEvaluationMapper);
+    }
 
     @Test
-    @DisplayName("사원 간 평가 결과 조회 성공")
+    @DisplayName("사원 간 평가 결과 조회 - 성공")
     void getPeerEvaluations_success() {
         // given
         PeerEvaluationListRequestDto requestDto = new PeerEvaluationListRequestDto();
@@ -60,7 +72,7 @@ class EvaluationQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("사원 간 평가 결과가 없으면 예외 발생")
+    @DisplayName("사원 간 평가 결과 조회 - 예외 발생")
     void getPeerEvaluations_nullList_throwsException() {
         // given
         PeerEvaluationListRequestDto requestDto = new PeerEvaluationListRequestDto();
@@ -81,7 +93,7 @@ class EvaluationQueryServiceImplTest {
 
 
     @Test
-    @DisplayName("상세 조회 성공 시 평가 정보와 요인별 점수를 포함한 DTO 반환")
+    @DisplayName("사원 간 평가 상세 조회 - 성공")
     void getPeerEvaluationDetail_success() {
         // given
         Long resultId = 100L;
@@ -127,7 +139,7 @@ class EvaluationQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("상세 조회 결과가 없을 경우 EvalException 발생")
+    @DisplayName("사원 간 평가 상세 조회 - 에러 발생")
     void getPeerEvaluationDetail_notFound_throwsException() {
         // given
         Long resultId = 999L;
@@ -141,5 +153,53 @@ class EvaluationQueryServiceImplTest {
 
         verify(peerEvaluationMapper).findPeerEvaluationDetail(resultId);
         verify(peerEvaluationMapper, never()).findFactorScores(any());
+    }
+
+    @Test
+    @DisplayName("조직 평가 목록 조회 - 성공")
+    void getOrgEvaluations_success() {
+        // given
+        OrgEvaluationListRequestDto requestDto = new OrgEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        OrgEvaluationResponseDto dto = OrgEvaluationResponseDto.builder()
+                .formName("조직 문화 진단")
+                .roundNo(2)
+                .score(87)
+                .build();
+
+        given(orgEvaluationMapper.countOrgEvaluations(any())).willReturn(1L);
+        given(orgEvaluationMapper.findOrgEvaluations(any())).willReturn(List.of(dto));
+
+        // when
+        OrgEvaluationListResultDto result = evaluationQueryService.getOrgEvaluations(requestDto);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getList()).hasSize(1);
+        assertThat(result.getList().get(0).getFormName()).isEqualTo("조직 문화 진단");
+
+        Pagination pagination = result.getPagination();
+        assertThat(pagination.getCurrentPage()).isEqualTo(1);
+        assertThat(pagination.getTotalItems()).isEqualTo(1L);
+        assertThat(pagination.getTotalPage()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("조직 평가 목록 조회 - 결과 없음 예외")
+    void getOrgEvaluations_empty() {
+        // given
+        OrgEvaluationListRequestDto requestDto = new OrgEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        given(orgEvaluationMapper.countOrgEvaluations(any())).willReturn(0L);
+        given(orgEvaluationMapper.findOrgEvaluations(any())).willReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getOrgEvaluations(requestDto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
     }
 }
