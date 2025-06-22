@@ -2,10 +2,11 @@ package com.dao.momentum.evaluation.eval.query.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
+@NoArgsConstructor
 @Schema(description = "사원 간 평가 목록 조회 요청 DTO")
 public class PeerEvaluationListRequestDto {
 

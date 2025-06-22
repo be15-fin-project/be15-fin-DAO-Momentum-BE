@@ -2,12 +2,12 @@ package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,5 +25,14 @@ public class EvaluationQueryController {
     ) {
         PeerEvaluationListResultDto result = evaluationQueryService.getPeerEvaluations(requestDto);
         return ApiResponse.success(result);
+    }
+
+    @GetMapping("/peer/{resultId}")
+    @Operation(summary = "사원 간 평가 상세 조회", description = "해당 평가 결과의 요인별 점수, 사유, 종합 점수를 상세히 조회합니다.")
+    public ApiResponse<PeerEvaluationDetailResultDto> getPeerEvaluationDetail(
+            @PathVariable Long resultId
+    ) {
+        PeerEvaluationDetailResultDto detail = evaluationQueryService.getPeerEvaluationDetail(resultId);
+        return ApiResponse.success(detail);
     }
 }
