@@ -1,8 +1,8 @@
 package com.dao.momentum.evaluation.kpi.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.evaluation.kpi.query.dto.request.KpiStatisticsRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiTimeseriesRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiStatisticsRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsService;
@@ -38,7 +38,7 @@ public class KpiStatisticsController {
             description = "특정 연월/부서/사원 기준으로 KPI 통계를 조회합니다 (총 KPI 수, 완료 수, 평균 진척률)."
     )
     public ApiResponse<KpiStatisticsResponseDto> getKpiStatistics(
-            @ModelAttribute KpiStatisticsRequestDto requestDto
+            @ModelAttribute KpiStatisticsRequestDto  requestDto
     ) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String empIdStr = auth.getName();

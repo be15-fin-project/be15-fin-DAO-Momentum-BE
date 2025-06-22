@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.hr.query.mapper.HrObjectionMapper">
+
+    <!-- 이의제기 목록 조회 -->
+    <select id="findObjections"
+            parameterType="com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResponseDto">
+        SELECT
+            o.objection_id           AS objectionId,
+            e_target.emp_no          AS empNo,
+            e_target.name            AS employeeName,
+            r.round_no               AS roundNo,
+            DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+            s.status_type            AS status,
+            er.score                 AS score,
+            o.reason                 AS reason
+        FROM hr_objection o
+        JOIN eval_response er      ON er.result_id = o.result_id
+        JOIN employee e_target     ON e_target.emp_id = er.target_id
+        JOIN eval_round r          ON r.round_id = er.round_id
+        JOIN status s              ON s.status_id = o.status_id
+        <where>
+            <!-- 요청자(팀장)가 작성한 평가 결과에 대한 이의제기만 -->
+            AND er.eval_id = #{requesterEmpId}
+
+            <if test="statusId != null">
+                AND o.status_id = #{statusId}
+            </if>
+            <if test="roundNo != null">
+                AND r.round_no = #{roundNo}
+            </if>
+            <if test="startDate != null">
+                AND DATE(o.created_at) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND DATE(o.created_at) &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY o.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 이의제기 전체 개수 조회 -->
+    <select id="countObjections"
+            parameterType="com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM hr_objection o
+        JOIN eval_response er ON er.result_id = o.result_id
+        <where>
+            AND er.eval_id = #{requesterEmpId}
+
+            <if test="statusId != null">
+                AND o.status_id = #{statusId}
+            </if>
+            <if test="roundNo != null">
+                AND EXISTS (
+                SELECT 1 FROM eval_round r
+                WHERE r.round_id = er.round_id
+                AND r.round_no = #{roundNo}
+                )
+            </if>
+            <if test="startDate != null">
+                AND DATE(o.created_at) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND DATE(o.created_at) &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>
