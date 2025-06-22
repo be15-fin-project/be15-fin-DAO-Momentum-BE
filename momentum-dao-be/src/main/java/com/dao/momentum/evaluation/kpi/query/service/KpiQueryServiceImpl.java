@@ -8,6 +8,8 @@ import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiQueryMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,16 +26,12 @@ public class KpiQueryServiceImpl implements KpiQueryService {
         long total = kpiQueryMapper.getKpiListCount(requestDto);
         List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
 
-        if (list == null || list.isEmpty()) {
+        if (list == null) {
             throw new KpiException(ErrorCode.KPI_LIST_NOT_FOUND);
         }
 
-        int totalPage = (int) Math.ceil((double) total / requestDto.getSize());
-        Pagination pagination = Pagination.builder()
-                .currentPage(requestDto.getPage())
-                .totalPage(totalPage)
-                .totalItems(total)
-                .build();
+        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+
 
         return new KpiListResultDto(list, pagination);
     }
@@ -54,17 +52,51 @@ public class KpiQueryServiceImpl implements KpiQueryService {
         long total = kpiQueryMapper.countEmployeeKpiSummary(requestDto);
         List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);
 
-        if (list == null || list.isEmpty()) {
+        if (list == null) {
             throw new KpiException(ErrorCode.KPI_EMPLOYEE_SUMMARY_NOT_FOUND);
         }
 
-        int totalPage = (int) Math.ceil((double) total / requestDto.getSize());
-        Pagination pagination = Pagination.builder()
-                .currentPage(requestDto.getPage())
-                .totalPage(totalPage)
-                .totalItems(total)
-                .build();
+        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+
 
         return new KpiEmployeeSummaryResultDto(list, pagination);
     }
+
+    // 페이지네이션
+    private Pagination buildPagination(int page, int size, long total) {
+        int totalPage = (int) Math.ceil((double) total / size);
+        return Pagination.builder()
+                .currentPage(page)
+                .totalPage(totalPage)
+                .totalItems(total)
+                .build();
+    }
+
+    // 권한 반영
+    @Override
+    public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long requesterEmpId, String empNo) {
+        boolean isPrivileged = hasPrivilegedRole();
+
+        KpiListRequestDto resolved = isPrivileged
+                ? requestDto
+                : KpiListRequestDto.builder()
+                .empNo(empNo)
+                .deptId(requestDto.getDeptId())
+                .positionId(requestDto.getPositionId())
+                .statusId(requestDto.getStatusId())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .page(requestDto.getPage())
+                .size(requestDto.getSize())
+                .build();
+
+        return getKpiList(resolved);
+    }
+
+    private boolean hasPrivilegedRole() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+    }
+
 }

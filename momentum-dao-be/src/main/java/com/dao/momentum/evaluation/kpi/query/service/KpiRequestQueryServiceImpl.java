@@ -20,12 +20,21 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
 
     @Override
     public KpiRequestListResultDto getKpiRequests(Long requesterEmpId, KpiRequestListRequestDto requestDto) {
-        requestDto.setRequesterEmpId(requesterEmpId);
+        KpiRequestListRequestDto updatedDto = KpiRequestListRequestDto.builder()
+                .requesterEmpId(requesterEmpId)
+                .statusId(requestDto.getStatusId())
+                .completed(requestDto.getCompleted())
+                .empNo(requestDto.getEmpNo())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .page(requestDto.getPage())
+                .size(requestDto.getSize())
+                .build();
 
-        long total = kpiRequestMapper.countKpiRequests(requestDto);
-        List<KpiRequestListResponseDto> list = kpiRequestMapper.findKpiRequests(requestDto);
+        long total = kpiRequestMapper.countKpiRequests(updatedDto);
+        List<KpiRequestListResponseDto> list = kpiRequestMapper.findKpiRequests(updatedDto);
 
-        if (list == null || list.isEmpty()) {
+        if (list == null) {
             throw new KpiException(ErrorCode.KPI_REQUEST_NOT_FOUND);
         }
 

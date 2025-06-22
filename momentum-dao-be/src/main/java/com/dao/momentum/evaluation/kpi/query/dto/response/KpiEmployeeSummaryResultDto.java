@@ -3,11 +3,13 @@ package com.dao.momentum.evaluation.kpi.query.dto.response;
 import com.dao.momentum.common.dto.Pagination;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @Schema(description = "KPI 사원별 요약 조회 결과 DTO")
 public class KpiEmployeeSummaryResultDto {

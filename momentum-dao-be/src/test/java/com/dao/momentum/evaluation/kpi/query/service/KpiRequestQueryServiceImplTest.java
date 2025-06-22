@@ -33,17 +33,33 @@ class KpiRequestQueryServiceImplTest {
     @DisplayName("KPI 요청 목록 조회 성공")
     void getKpiRequests_success() {
         // given
-        KpiRequestListRequestDto requestDto = new KpiRequestListRequestDto();
-        requestDto.setPage(1);
-        requestDto.setSize(10);
-        requestDto.setStatusId(2);
-        requestDto.setCompleted(false);
-        requestDto.setStartDate("2025-06-01");
-        requestDto.setEndDate("2025-06-30");
+        KpiRequestListRequestDto requestDto = KpiRequestListRequestDto.builder()
+                .page(1)
+                .size(10)
+                .statusId(2)
+                .completed(false)
+                .startDate("2025-06-01")
+                .endDate("2025-06-30")
+                .build();
 
         Long requesterEmpId = 123L;
 
-        List<KpiRequestListResponseDto> mockList = List.of(new KpiRequestListResponseDto());
+        KpiRequestListResponseDto responseDto = KpiRequestListResponseDto.builder()
+                .kpiId(101L)
+                .empNo("20240001")
+                .employeeName("김현우")
+                .departmentName("기획팀")
+                .positionName("대리")
+                .goal("월간 영업 건수 10건 달성")
+                .goalValue(10)
+                .kpiProgress(40)
+                .statusName("대기중")
+                .createdAt("2025-06-01")
+                .deadline("2025-06-30")
+                .build();
+
+        List<KpiRequestListResponseDto> mockList = List.of(responseDto);
+
         when(kpiRequestMapper.countKpiRequests(any())).thenReturn(1);
         when(kpiRequestMapper.findKpiRequests(any())).thenReturn(mockList);
 
@@ -60,24 +76,27 @@ class KpiRequestQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("KPI 요청 목록 조회 실패 - 결과 없음")
-    void getKpiRequests_empty_throwsException() {
+    @DisplayName("KPI 요청 목록 조회 실패 - null 결과")
+    void getKpiRequests_null_throwsException() {
         // given
-        KpiRequestListRequestDto requestDto = new KpiRequestListRequestDto();
-        requestDto.setPage(1);
-        requestDto.setSize(10);
+        KpiRequestListRequestDto requestDto = KpiRequestListRequestDto.builder()
+                .page(1)
+                .size(10)
+                .build();
+
         Long requesterEmpId = 123L;
 
         when(kpiRequestMapper.countKpiRequests(any())).thenReturn(0);
-        when(kpiRequestMapper.findKpiRequests(any())).thenReturn(Collections.emptyList());
+        when(kpiRequestMapper.findKpiRequests(any())).thenReturn(null);
 
         // when & then
-        KpiException exception = assertThrows(KpiException.class, () -> {
-            kpiRequestQueryService.getKpiRequests(requesterEmpId, requestDto);
-        });
+        KpiException exception = assertThrows(KpiException.class, () ->
+                kpiRequestQueryService.getKpiRequests(requesterEmpId, requestDto)
+        );
 
         assertEquals(ErrorCode.KPI_REQUEST_NOT_FOUND, exception.getErrorCode());
         verify(kpiRequestMapper).countKpiRequests(any());
         verify(kpiRequestMapper).findKpiRequests(any());
     }
+
 }
