@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper">
+
+    <!-- 다면 평가 회차 목록 조회 -->
+    <select id="findEvaluationRounds"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto">
+        SELECT
+            r.round_id AS roundId,
+            r.round_no AS roundNo,
+            r.start_at AS startAt,
+            DATE_ADD(r.start_at, INTERVAL 7 DAY) AS endAt,
+            (
+                SELECT COUNT(DISTINCT er.eval_id)
+                FROM eval_response er
+                WHERE er.round_id = r.round_id
+            ) AS participantCount,
+            CASE
+                WHEN CURRENT_DATE &lt; r.start_at THEN 'BEFORE'
+                WHEN CURRENT_DATE &gt; DATE_ADD(r.start_at, INTERVAL 7 DAY) THEN 'DONE'
+                ELSE 'IN_PROGRESS'
+            END AS status
+        FROM eval_round r
+        WHERE 1 = 1
+            <if test="startDate != null">
+                AND r.start_at &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND r.start_at &lt;= #{endDate}
+            </if>
+        ORDER BY r.start_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 다면 평가 회차 총 개수 조회 -->
+    <select id="countEvaluationRounds"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM eval_round r
+        WHERE 1 = 1
+            <if test="startDate != null">
+                AND r.start_at &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND r.start_at &lt;= #{endDate}
+            </if>
+    </select>
+
+</mapper>
