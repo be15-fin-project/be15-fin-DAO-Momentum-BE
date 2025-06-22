@@ -2,46 +2,84 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.dao.momentum.evaluation.hr.query.mapper.MyObjectionMapper">
 
-    <!-- 본인 이의제기 목록 조회 (원시 점수 + ID/일시) -->
-    <select id="findMyObjections"
-            resultType="com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw">
+    <!-- 1) 이의 제기 내역 조회 -->
+    <select id="findMyObjections" resultType="com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw">
         SELECT
-            o.objection_id                                AS objectionId,
-            DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
-            er.score                                      AS overallScore,
-            s.status_type                                AS statusType
+            o.objection_id     AS objectionId,
+            er.result_id         AS resultId,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
+            s.status_type      AS status,
+            o.reason           AS objectionReason
         FROM hr_objection o
-        JOIN eval_response er
-            ON er.result_id = o.result_id
-        LEFT JOIN eval_score es
-            ON es.result_id = er.result_id
-        JOIN status s
-              ON o.status_id = s.status_id
+        JOIN eval_response er ON er.result_id = o.result_id
+        JOIN status s        ON s.status_id   = o.status_id
         WHERE er.target_id = #{empId}
             <if test="req.statusId != null">
                 AND o.status_id = #{req.statusId}
             </if>
-        GROUP BY o.objection_id, o.created_at, er.score
-        ORDER BY o.created_at DESC
+        ORDER BY o.objection_id DESC
         LIMIT #{req.size} OFFSET #{req.offset}
     </select>
 
-    <!-- 본인 이의제기 총 개수 조회 -->
-    <select id="countMyObjections"
-            resultType="long">
-        SELECT COUNT(*)
+    <select id="countMyObjections" resultType="long">
+        SELECT
+            COUNT(*)
         FROM hr_objection o
-        JOIN eval_response er
-            ON er.result_id = o.result_id
-        JOIN status s
-            ON o.status_id = s.status_id
+        JOIN eval_response er ON er.result_id = o.result_id
         WHERE er.target_id = #{empId}
             <if test="req.statusId != null">
                 AND o.status_id = #{req.statusId}
             </if>
+    </select>
+
+    <!-- 2) 이의 제기 상세 조회 -->
+    <select id="findObjectionDetail" resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto">
+        SELECT
+            o.objection_id     AS objectionId,
+            er.result_id         AS resultId,
+            e.emp_no           AS empNo,
+            e.name             AS empName,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
+
+            w.perform_wt       AS weightPerform,
+            w.team_wt          AS weightTeam,
+            w.attitude_wt      AS weightAttitude,
+            w.immersion_wt     AS weightImmersion,
+            w.result_wt        AS weightResult,
+            w.adjust_wt        AS weightAdjust,
+
+            r.rate_s           AS rateS,
+            r.rate_a           AS rateA,
+            r.rate_b           AS rateB,
+            r.rate_c           AS rateC,
+            r.rate_d           AS rateD,
+
+            o.reason           AS objectionReason,
+            s.status_type      AS status,
+            o.response         AS responseReason,
+
+            er.result_id       AS resultId
+        FROM hr_objection o
+        JOIN eval_response er ON er.result_id = o.result_id
+        JOIN employee      e ON e.emp_no      = er.target_id
+        JOIN status        s ON s.status_id   = o.status_id
+        JOIN hr_weight     w ON w.round_id    = er.round_id
+        JOIN hr_rate       r ON r.round_id    = er.round_id
+        WHERE o.objection_id = #{objectionId}
+            AND er.target_id   = #{empId}
+    </select>
+
+    <!-- 3) 요인별 점수 조회 -->
+    <select id="findFactorScores" resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
+        SELECT
+            ep.name   AS propertyName,
+            es.score  AS score
+        FROM eval_score es
+        JOIN eval_property ep ON ep.property_id = es.property_id
+        WHERE es.result_id = #{resultId}
+        ORDER BY ep.property_id
     </select>
 
 </mapper>

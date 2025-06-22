@@ -14,6 +14,9 @@ public class MyObjectionItemDto {
     @Schema(description = "이의제기 ID", example = "5001")
     private Long objectionId;
 
+    @Schema(description = "평가 결과 ID", example = "10023")
+    private Long resultId;
+
     @Schema(description = "이의제기 상태명", example = "PENDING")
     private String statusType;
 

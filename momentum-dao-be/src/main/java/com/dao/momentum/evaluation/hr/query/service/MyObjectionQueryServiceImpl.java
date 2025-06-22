@@ -4,13 +4,13 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.MyObjectionItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.MyObjectionListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
 import com.dao.momentum.evaluation.hr.query.mapper.MyObjectionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,19 +22,16 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
 
     @Override
     public MyObjectionListResultDto getMyObjections(Long empId, MyObjectionListRequestDto req) {
-        // 1) 전체 개수 조회
         long total = mapper.countMyObjections(empId, req);
         if (total == 0) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
-        // 2) 원시 점수 리스트 조회
         List<MyObjectionRaw> rawList = mapper.findMyObjections(empId, req);
         if (rawList == null || rawList.isEmpty()) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
-        // 3) Raw → Item DTO 변환
         List<MyObjectionItemDto> content = rawList.stream()
                 .map(raw -> MyObjectionItemDto.builder()
                         .objectionId(raw.getObjectionId())
@@ -45,7 +42,6 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
                 )
                 .collect(Collectors.toList());
 
-        // 4) 페이지네이션 구성
         int totalPage = (int) Math.ceil((double) total / req.getSize());
         Pagination pagination = Pagination.builder()
                 .currentPage(req.getPage())
@@ -53,7 +49,6 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
                 .totalPage(totalPage)
                 .build();
 
-        // 5) 결과 반환
         return new MyObjectionListResultDto(content, pagination);
     }
 
@@ -63,5 +58,23 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
         if (score >= 70) return "B";
         if (score >= 60) return "C";
         return "D";
+    }
+
+    @Override
+    public ObjectionDetailResultDto getObjectionDetail(Long empId, Long objectionId) {
+        // 1) 기본 상세 정보 조회 (ObjectionListResultDto 하나)
+        ObjectionListResultDto base = mapper.findObjectionDetail(empId, objectionId);
+        if (base == null) {
+            throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
+        }
+
+        // 2) 요인별 점수 조회
+        List<FactorScoreDto> scores = mapper.findFactorScores(base.getResultId());
+
+        // 3) 결과 합치기
+        return ObjectionDetailResultDto.builder()
+                .list(Collections.singletonList(base))
+                .factorScores(scores)
+                .build();
     }
 }

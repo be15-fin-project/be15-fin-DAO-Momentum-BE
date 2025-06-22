@@ -2,6 +2,8 @@ package com.dao.momentum.evaluation.hr.query.mapper;
 
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
+import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,4 +19,12 @@ public interface MyObjectionMapper {
     );
     long countMyObjections(@Param("empId") Long empId,
         @Param("req") MyObjectionListRequestDto req);
+
+    // 이의 제기 상세 조회
+    ObjectionListResultDto findObjectionDetail(
+            @Param("empId") Long empId,
+            @Param("objectionId") Long objectionId
+    );
+
+    List<FactorScoreDto> findFactorScores(@Param("resultId") Long resultId);
 }
