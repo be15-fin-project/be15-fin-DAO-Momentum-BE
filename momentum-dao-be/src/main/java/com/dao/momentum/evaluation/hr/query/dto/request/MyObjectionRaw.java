@@ -12,6 +12,9 @@ public class MyObjectionRaw {
     @Schema(description = "이의제기 ID", example = "5001")
     private Long objectionId;
 
+    @Schema(description = "평가 결과 ID", example = "10023")
+    private Long resultId;
+
     @Schema(description = "이의제기 상태 ID", example = "1")
     private Integer statusId;
 

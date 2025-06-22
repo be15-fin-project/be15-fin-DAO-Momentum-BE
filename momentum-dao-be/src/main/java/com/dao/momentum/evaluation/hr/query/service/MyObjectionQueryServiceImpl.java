@@ -28,13 +28,15 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
         }
 
         List<MyObjectionRaw> rawList = mapper.findMyObjections(empId, req);
-        if (rawList == null || rawList.isEmpty()) {
+        if (rawList == null) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
         List<MyObjectionItemDto> content = rawList.stream()
                 .map(raw -> MyObjectionItemDto.builder()
                         .objectionId(raw.getObjectionId())
+                        .resultId(raw.getResultId())
+                        .statusId(raw.getStatusId())
                         .statusType(raw.getStatusType())
                         .createdAt(raw.getCreatedAt())
                         .overallGrade(toGrade(raw.getOverallScore()))
@@ -61,15 +63,17 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     }
 
     @Override
-    public ObjectionDetailResultDto getObjectionDetail(Long empId, Long objectionId) {
+    public ObjectionDetailResultDto getObjectionDetail(Long objectionId) {
         // 1) 기본 상세 정보 조회 (ObjectionListResultDto 하나)
-        ObjectionListResultDto base = mapper.findObjectionDetail(empId, objectionId);
+        ObjectionListResultDto base = mapper.findObjectionDetail(objectionId);
+        System.out.printf("[getObjectionDetail] base=%s%n", base);
         if (base == null) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
         // 2) 요인별 점수 조회
         List<FactorScoreDto> scores = mapper.findFactorScores(base.getResultId());
+        System.out.printf("[getObjectionDetail] resultId=%d, scores=%s%n", base.getResultId(), scores);
 
         // 3) 결과 합치기
         return ObjectionDetailResultDto.builder()

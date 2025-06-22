@@ -113,16 +113,16 @@ class MyObjectionQueryServiceImplTest {
                 .weightPerform(20)
                 .weightTeam(15)
                 .weightAttitude(15)
-                .weightImmersion(25)
-                .weightResult(20)
-                .weightAdjust(5)
+                .weightGrowth(25)
+                .weightEngagement(20)
+                .weightResult(5)
                 .rateS(5)
                 .rateA(20)
                 .rateB(35)
                 .rateC(30)
                 .rateD(10)
                 .objectionReason("점수가 낮습니다.")
-                .status("PENDING")
+                .statusType("PENDING")
                 .responseReason("재검토 요청")
                 .build();
 
@@ -131,10 +131,10 @@ class MyObjectionQueryServiceImplTest {
                 FactorScoreDto.builder().propertyName("태도").score(85).build()
         );
 
-        given(mapper.findObjectionDetail(1L, 5001L)).willReturn(base);
+        given(mapper.findObjectionDetail(5001L)).willReturn(base);
         given(mapper.findFactorScores(2001L)).willReturn(scores);
 
-        ObjectionDetailResultDto dto = service.getObjectionDetail(1L, 5001L);
+        ObjectionDetailResultDto dto = service.getObjectionDetail(5001L);
 
         // 기본 정보
         assertThat(dto.getList()).hasSize(1);
@@ -153,9 +153,9 @@ class MyObjectionQueryServiceImplTest {
     @Test
     @DisplayName("findObjectionDetail null 일 때 HrException 발생")
     void getObjectionDetail_notFound_throws() {
-        given(mapper.findObjectionDetail(1L, 5001L)).willReturn(null);
+        given(mapper.findObjectionDetail(5001L)).willReturn(null);
 
-        assertThatThrownBy(() -> service.getObjectionDetail(1L, 5001L))
+        assertThatThrownBy(() -> service.getObjectionDetail(5001L))
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining("조회 가능한 인사 평가 이의제기 내역이 없습니다.");
     }

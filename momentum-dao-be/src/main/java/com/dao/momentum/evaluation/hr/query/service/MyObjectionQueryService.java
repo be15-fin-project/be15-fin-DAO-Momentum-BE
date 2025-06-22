@@ -10,5 +10,5 @@ public interface MyObjectionQueryService {
     MyObjectionListResultDto getMyObjections(Long empId, MyObjectionListRequestDto req);
 
     // 이의 제기 상세 조회
-    ObjectionDetailResultDto getObjectionDetail(Long empId, Long objectionId);
+    ObjectionDetailResultDto getObjectionDetail(Long objectionId);
 }

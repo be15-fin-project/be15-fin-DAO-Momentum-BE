@@ -88,16 +88,16 @@ class MyObjectionQueryControllerTest {
                 .weightPerform(20)
                 .weightTeam(15)
                 .weightAttitude(15)
-                .weightImmersion(25)
-                .weightResult(20)
-                .weightAdjust(5)
+                .weightGrowth(25)
+                .weightEngagement(20)
+                .weightResult(5)
                 .rateS(5)
                 .rateA(20)
                 .rateB(35)
                 .rateC(30)
                 .rateD(10)
                 .objectionReason("점수가 낮습니다.")
-                .status("PENDING")
+                .statusType("PENDING")
                 .responseReason(null)
                 .build();
 
@@ -116,7 +116,7 @@ class MyObjectionQueryControllerTest {
                 .factorScores(List.of(fs1, fs2))
                 .build();
 
-        given(service.getObjectionDetail(any(Long.class), any(Long.class)))
+        given(service.getObjectionDetail(any(Long.class)))
                 .willReturn(detailDto);
 
         // when & then

@@ -22,7 +22,6 @@ public interface MyObjectionMapper {
 
     // 이의 제기 상세 조회
     ObjectionListResultDto findObjectionDetail(
-            @Param("empId") Long empId,
             @Param("objectionId") Long objectionId
     );
 

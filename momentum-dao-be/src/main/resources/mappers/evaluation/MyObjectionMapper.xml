@@ -7,11 +7,12 @@
     <!-- 1) 이의 제기 내역 조회 -->
     <select id="findMyObjections" resultType="com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw">
         SELECT
-            o.objection_id     AS objectionId,
-            er.result_id         AS resultId,
-            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
-            s.status_type      AS status,
-            o.reason           AS objectionReason
+            o.objection_id      AS objectionId,
+            o.result_id         AS resultId,
+            o.status_id         AS statusId,
+            s.status_type       AS statusType,
+            DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+            er.score            AS overallScore
         FROM hr_objection o
         JOIN eval_response er ON er.result_id = o.result_id
         JOIN status s        ON s.status_id   = o.status_id
@@ -35,49 +36,56 @@
     </select>
 
     <!-- 2) 이의 제기 상세 조회 -->
-    <select id="findObjectionDetail" resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto">
+    <select id="findObjectionDetail"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionListResultDto">
         SELECT
-            o.objection_id     AS objectionId,
-            er.result_id         AS resultId,
-            e.emp_no           AS empNo,
-            e.name             AS empName,
+            o.objection_id                                 AS objectionId,
+            er.result_id                                   AS resultId,
+            e.emp_no                                       AS empNo,
+            e.name                                         AS empName,
             DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
 
-            w.perform_wt       AS weightPerform,
-            w.team_wt          AS weightTeam,
-            w.attitude_wt      AS weightAttitude,
-            w.immersion_wt     AS weightImmersion,
-            w.result_wt        AS weightResult,
-            w.adjust_wt        AS weightAdjust,
+            w.perform_wt                                   AS weightPerform,
+            w.team_wt                                      AS weightTeam,
+            w.attitude_wt                                  AS weightAttitude,
+            w.growth_wt                                    AS weightGrowth,
+            w.engagement_wt                                AS weightEngagement,
+            w.result_wt                                    AS weightResult,
 
-            r.rate_s           AS rateS,
-            r.rate_a           AS rateA,
-            r.rate_b           AS rateB,
-            r.rate_c           AS rateC,
-            r.rate_d           AS rateD,
+            r.rate_s                                       AS rateS,
+            r.rate_a                                       AS rateA,
+            r.rate_b                                       AS rateB,
+            r.rate_c                                       AS rateC,
+            r.rate_d                                       AS rateD,
 
-            o.reason           AS objectionReason,
-            s.status_type      AS status,
-            o.response         AS responseReason,
-
-            er.result_id       AS resultId
+            o.reason                                       AS objectionReason,
+            s.status_type                                  AS statusType,
+            o.response                                     AS responseReason
         FROM hr_objection o
-        JOIN eval_response er ON er.result_id = o.result_id
-        JOIN employee      e ON e.emp_no      = er.target_id
-        JOIN status        s ON s.status_id   = o.status_id
-        JOIN hr_weight     w ON w.round_id    = er.round_id
-        JOIN hr_rate       r ON r.round_id    = er.round_id
+        JOIN eval_response er
+            ON er.result_id = o.result_id
+        JOIN employee e
+            ON e.emp_id     = er.target_id
+        JOIN status s
+            ON s.status_id  = o.status_id
+        LEFT JOIN hr_weight w
+            ON w.round_id   = er.round_id
+        LEFT JOIN hr_rate r
+            ON r.round_id   = er.round_id
         WHERE o.objection_id = #{objectionId}
-            AND er.target_id   = #{empId}
     </select>
 
     <!-- 3) 요인별 점수 조회 -->
-    <select id="findFactorScores" resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
+    <select id="findFactorScores"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
             ep.name   AS propertyName,
             es.score  AS score
         FROM eval_score es
-        JOIN eval_property ep ON ep.property_id = es.property_id
+        JOIN eval_property ep
+            ON ep.property_id = es.property_id
         WHERE es.result_id = #{resultId}
         ORDER BY ep.property_id
     </select>

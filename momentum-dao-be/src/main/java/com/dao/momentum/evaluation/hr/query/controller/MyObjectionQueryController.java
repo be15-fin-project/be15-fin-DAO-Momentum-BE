@@ -41,11 +41,9 @@ public class MyObjectionQueryController {
             description = "로그인한 사원이 본인이 제기한 특정 이의제기 건의 상세 정보를 조회합니다."
     )
     public ApiResponse<ObjectionDetailResultDto> getMyObjectionDetail(
-            @PathVariable Long objectionId,
-            Authentication auth
+            @PathVariable Long objectionId
     ) {
-        Long empId = Long.valueOf(auth.getName());
-        ObjectionDetailResultDto dto = service.getObjectionDetail(empId, objectionId);
+        ObjectionDetailResultDto dto = service.getObjectionDetail(objectionId);
         return ApiResponse.success(dto);
     }
 }
