@@ -46,9 +46,9 @@ class EvaluationQueryControllerTest {
         // given
         PeerEvaluationResponseDto dto = PeerEvaluationResponseDto.builder()
                 .resultId(101L)
-                .evalId(20250001L)
+                .evalNo(20250001L)
                 .evalName("김현우")
-                .targetId(20250002L)
+                .targetNo(20250002L)
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -91,11 +91,11 @@ class EvaluationQueryControllerTest {
         // given
         Long resultId = 101L;
 
-        PeerEvaluationDetailResponseDto detail = PeerEvaluationDetailResponseDto.builder()
+        PeerEvaluationResponseDto detail = PeerEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .evalId(20250001L)
+                .evalNo(20250001L)
                 .evalName("김현우")
-                .targetId(20250002L)
+                .targetNo(20250002L)
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -155,4 +155,47 @@ class EvaluationQueryControllerTest {
                 .andExpect(jsonPath("$.data.list[0].roundNo").value(2))
                 .andExpect(jsonPath("$.data.list[0].score").value(85));
     }
+
+    @Test
+    @DisplayName("조직 평가 상세 조회 성공")
+    @WithMockUser(authorities = "MASTER")
+    void getOrgEvaluationDetail_success() throws Exception {
+        // given
+        Long resultId = 501L;
+
+        OrgEvaluationResponseDto detail = OrgEvaluationResponseDto.builder()
+                .resultId(resultId)
+                .empNo(20250001L)
+                .evalName("김현우")
+                .formName("조직 몰입도")
+                .roundNo(2)
+                .score(87)
+                .createdAt(LocalDateTime.of(2025, 6, 20, 15, 0))
+                .build();
+
+        List<FactorScoreDto> factorScores = List.of(
+                FactorScoreDto.builder().propertyName("몰입도").score(88).build(),
+                FactorScoreDto.builder().propertyName("책임감").score(86).build()
+        );
+
+        OrgEvaluationDetailResultDto resultDto = OrgEvaluationDetailResultDto.builder()
+                .detail(detail)
+                .factorScores(factorScores)
+                .build();
+
+        Mockito.when(evaluationQueryService.getOrgEvaluationDetail(anyLong()))
+                .thenReturn(resultDto);
+
+        // when & then
+        mockMvc.perform(get("/evaluation/results/org/{resultId}", resultId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.detail.evalName").value("김현우"))
+                .andExpect(jsonPath("$.data.detail.formName").value("조직 몰입도"))
+                .andExpect(jsonPath("$.data.factorScores", hasSize(2)))
+                .andExpect(jsonPath("$.data.factorScores[0].propertyName").value("몰입도"))
+                .andExpect(jsonPath("$.data.factorScores[1].score").value(86))
+                .andDo(print());
+    }
+
 }
