@@ -15,7 +15,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class EvaluationQueryServiceImpl implements EvaluationQueryService {
+public
+
+class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     private final PeerEvaluationMapper peerEvaluationMapper;
     private final OrgEvaluationMapper orgEvaluationMapper;
@@ -38,7 +40,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
     // 사원 간 평가 상세 조회
     @Override
     public PeerEvaluationDetailResultDto getPeerEvaluationDetail(Long resultId) {
-        PeerEvaluationDetailResponseDto detail = peerEvaluationMapper.findPeerEvaluationDetail(resultId);
+        PeerEvaluationResponseDto detail = peerEvaluationMapper.findPeerEvaluationDetail(resultId);
 
         if (detail == null) {
             throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
@@ -66,6 +68,23 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
         return new OrgEvaluationListResultDto(list, pagination);
     }
+
+    // 조직 평가 상세 조회
+    @Override
+    public OrgEvaluationDetailResultDto getOrgEvaluationDetail(Long resultId) {
+        OrgEvaluationResponseDto detail = orgEvaluationMapper.findOrgEvaluationDetail(resultId);
+        if (detail == null) {
+            throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
+        }
+
+        List<FactorScoreDto> factorScores = orgEvaluationMapper.findOrgFactorScores(resultId);
+
+        return OrgEvaluationDetailResultDto.builder()
+                .detail(detail)
+                .factorScores(factorScores)
+                .build();
+    }
+
 
     // 페이지네이션
     private Pagination buildPagination(int page, int size, long total) {

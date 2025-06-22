@@ -4,40 +4,30 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper">
 
-    <!-- 사원 간 평가 내역 조회 -->
-    <select id="findPeerEvaluations"
-            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto">
+    <!-- 사원 간 평가 목록 조회 -->
+    <select id="findPeerEvaluations" resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto">
         SELECT
             er.result_id AS resultId,
-            er.eval_id AS evalId,
+            e1.emp_no AS evalNo,
             e1.name AS evalName,
-            er.target_id AS targetId,
+            e2.emp_no AS targetNo,
             e2.name AS targetName,
             ef.name AS formName,
-            er.score AS score,
             r.round_no AS roundNo,
+            er.score AS score,
             er.reason AS reason,
             er.created_at AS createdAt
         FROM eval_response er
         JOIN employee e1 ON er.eval_id = e1.emp_id
         JOIN employee e2 ON er.target_id = e2.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id
-        JOIN eval_type et ON ef.type_id = et.type_id
         JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_type et ON ef.type_id = et.type_id
         WHERE et.name = 'PEER'
-            <if test="evalId != null">
-                AND er.eval_id = #{evalId}
-            </if>
-            <if test="targetId != null">
-                AND er.target_id = #{targetId}
-            </if>
-            <if test="formId != null">
-                AND er.form_id = #{formId}
-            </if>
-            <if test="roundId != null">
-                AND er.round_id = #{roundId}
-            </if>
+            <if test="evalNo != null">AND e1.emp_no = #{evalNo}</if>
+            <if test="targetNo != null">AND e2.emp_no = #{targetNo}</if>
+            <if test="formId != null">AND er.form_id = #{formId}</if>
+            <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
         ORDER BY er.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
@@ -47,36 +37,29 @@
             resultType="long">
         SELECT COUNT(*)
         FROM eval_response er
+        JOIN employee e1 ON er.eval_id = e1.emp_id
+        JOIN employee e2 ON er.target_id = e2.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_round r ON er.round_id = r.round_id
         JOIN eval_type et ON ef.type_id = et.type_id
         WHERE et.name = 'PEER'
-            <if test="evalId != null">
-                AND er.eval_id = #{evalId}
-            </if>
-            <if test="targetId != null">
-                AND er.target_id = #{targetId}
-            </if>
-            <if test="formId != null">
-                AND er.form_id = #{formId}
-            </if>
-            <if test="roundId != null">
-                AND er.round_id = #{roundId}
-            </if>
+            <if test="evalNo != null">AND e1.emp_no = #{evalNo}</if>
+            <if test="targetNo != null">AND e2.emp_no = #{targetNo}</if>
+            <if test="formId != null">AND er.form_id = #{formId}</if>
+            <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
     </select>
 
     <!-- 사원 간 평가 상세 조회 -->
-    <select id="findPeerEvaluationDetail"
-            parameterType="long"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResponseDto">
+    <select id="findPeerEvaluationDetail" resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto">
         SELECT
             er.result_id AS resultId,
-            er.eval_id AS evalId,
+            e1.emp_no AS evalNo,
             e1.name AS evalName,
-            er.target_id AS targetId,
+            e2.emp_no AS targetNo,
             e2.name AS targetName,
             ef.name AS formName,
-            er.score AS score,
             r.round_no AS roundNo,
+            er.score AS score,
             er.reason AS reason,
             er.created_at AS createdAt
         FROM eval_response er
@@ -88,14 +71,12 @@
     </select>
 
     <!-- 요인별 점수 조회 -->
-    <select id="findFactorScores"
-            parameterType="long"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.FactorScoreDto">
+    <select id="findFactorScores" resultType="com.dao.momentum.evaluation.eval.query.dto.response.FactorScoreDto">
         SELECT
             ep.name AS propertyName,
             es.score AS score
         FROM eval_score es
-        JOIN eval_property ep ON es.property_id = ep.property_id
+        JOIN eval_property ep ON ep.property_id = es.property_id
         WHERE es.result_id = #{resultId}
     </select>
 </mapper>

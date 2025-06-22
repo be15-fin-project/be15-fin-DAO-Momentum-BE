@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.eval.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
@@ -46,4 +47,12 @@ public class EvaluationQueryController {
         OrgEvaluationListResultDto result = evaluationQueryService.getOrgEvaluations(requestDto);
         return ApiResponse.success(result);
     }
+
+    @GetMapping("/org/{resultId}")
+    @Operation(summary = "조직 평가 상세 조회", description = "조직 평가 결과의 세부 정보를 조회합니다.")
+    public ApiResponse<OrgEvaluationDetailResultDto> getOrgEvaluationDetail(@PathVariable Long resultId) {
+        return ApiResponse.success(evaluationQueryService.getOrgEvaluationDetail(resultId));
+    }
+
+
 }
