@@ -104,7 +104,7 @@
         LEFT JOIN position p ON e.position_id = p.position_id
         JOIN status s ON k.status_id = s.status_id
         WHERE k.kpi_id = #{kpiId}
-        AND k.is_deleted = 'N'
+            AND k.is_deleted = 'N'
     </select>
 
     <!-- KPI 사원별 목록 -->
@@ -124,15 +124,15 @@
         LEFT JOIN position p ON e.position_id = p.position_id
         JOIN status s ON k.status_id = s.status_id
         WHERE k.is_deleted = 'N'
-        <if test="deptId != null">
-            AND e.dept_id = #{deptId}
-        </if>
-        <if test="year != null">
-            AND YEAR(k.created_at) = #{year}
-        </if>
-        <if test="month != null">
-            AND MONTH(k.created_at) = #{month}
-        </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="year != null">
+                AND YEAR(k.created_at) = #{year}
+            </if>
+            <if test="month != null">
+                AND MONTH(k.created_at) = #{month}
+            </if>
         GROUP BY e.emp_id
         ORDER BY averageProgress DESC
         LIMIT #{size} OFFSET #{offset}
@@ -145,15 +145,15 @@
         FROM kpi k
         JOIN employee e ON k.emp_id = e.emp_id
         WHERE k.is_deleted = 'N'
-        <if test="deptId != null">
-            AND e.dept_id = #{deptId}
-        </if>
-        <if test="year != null">
-            AND YEAR(k.created_at) = #{year}
-        </if>
-        <if test="month != null">
-            AND MONTH(k.created_at) = #{month}
-        </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="year != null">
+                AND YEAR(k.created_at) = #{year}
+            </if>
+            <if test="month != null">
+                AND MONTH(k.created_at) = #{month}
+            </if>
         GROUP BY e.emp_id
         ) AS summary
     </select>

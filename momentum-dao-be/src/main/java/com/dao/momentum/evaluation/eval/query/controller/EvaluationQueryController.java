@@ -1,7 +1,9 @@
 package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/evaluation/results")
-@Tag(name = "사원 간 평가 결과 조회", description = "동료/상향/하향/인사 평가 결과를 조회하는 API")
+@Tag(name = "평가 결과 조회", description = "사원 간 평가, 조직 평가, 자가 진단 결과를 조회하는 API")
 public class EvaluationQueryController {
 
     private final EvaluationQueryService evaluationQueryService;
@@ -34,5 +36,14 @@ public class EvaluationQueryController {
     ) {
         PeerEvaluationDetailResultDto detail = evaluationQueryService.getPeerEvaluationDetail(resultId);
         return ApiResponse.success(detail);
+    }
+
+    @GetMapping("/org")
+    @Operation(summary = "조직 평가 내역 조회", description = "조직 만족도 계열 평가 결과 목록을 조회합니다.")
+    public ApiResponse<OrgEvaluationListResultDto> getOrgEvaluations(
+            @ModelAttribute OrgEvaluationListRequestDto requestDto
+    ) {
+        OrgEvaluationListResultDto result = evaluationQueryService.getOrgEvaluations(requestDto);
+        return ApiResponse.success(result);
     }
 }

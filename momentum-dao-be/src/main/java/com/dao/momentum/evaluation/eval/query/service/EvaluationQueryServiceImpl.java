@@ -3,8 +3,10 @@ package com.dao.momentum.evaluation.eval.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
+import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
+import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 public class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     private final PeerEvaluationMapper peerEvaluationMapper;
+    private final OrgEvaluationMapper orgEvaluationMapper;
 
     // 사원 간 평가 내역 조회
     @Override
@@ -27,12 +30,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
             throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
         }
 
-        int totalPage = (int) Math.ceil((double) total / requestDto.getSize());
-        Pagination pagination = Pagination.builder()
-                .currentPage(requestDto.getPage())
-                .totalPage(totalPage)
-                .totalItems(total)
-                .build();
+        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
 
         return new PeerEvaluationListResultDto(list, pagination);
     }
@@ -54,4 +52,28 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
                 .build();
     }
 
+    // 조직 평가 내역 조회
+    @Override
+    public OrgEvaluationListResultDto getOrgEvaluations(OrgEvaluationListRequestDto requestDto) {
+        long total = orgEvaluationMapper.countOrgEvaluations(requestDto);
+        List<OrgEvaluationResponseDto> list = orgEvaluationMapper.findOrgEvaluations(requestDto);
+
+        if (list == null) {
+            throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
+        }
+
+        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+
+        return new OrgEvaluationListResultDto(list, pagination);
+    }
+
+    // 페이지네이션
+    private Pagination buildPagination(int page, int size, long total) {
+        int totalPage = (int) Math.ceil((double) total / size);
+        return Pagination.builder()
+                .currentPage(page)
+                .totalPage(totalPage)
+                .totalItems(total)
+                .build();
+    }
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper">
+
+    <select id="findOrgEvaluations"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationResponseDto">
+        SELECT
+            er.result_id AS resultId,
+            ef.name AS formName,
+            r.round_no AS roundNo,
+            er.score AS score,
+            er.created_at AS createdAt
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        WHERE et.name = 'ORG'
+            <if test="formId != null">
+                AND er.form_id = #{formId}
+            </if>
+            <if test="roundId != null">
+                AND er.round_id = #{roundId}
+            </if>
+        ORDER BY er.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countOrgEvaluations"
+            parameterType="com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'ORG'
+            <if test="formId != null">
+                AND er.form_id = #{formId}
+            </if>
+            <if test="roundId != null">
+                AND er.round_id = #{roundId}
+            </if>
+    </select>
+
+</mapper>

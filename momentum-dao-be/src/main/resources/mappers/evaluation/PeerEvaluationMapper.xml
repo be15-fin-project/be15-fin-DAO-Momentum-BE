@@ -26,18 +26,18 @@
         JOIN eval_type et ON ef.type_id = et.type_id
         JOIN eval_round r ON er.round_id = r.round_id
         WHERE et.name = 'PEER'
-        <if test="evalId != null">
-            AND er.eval_id = #{evalId}
-        </if>
-        <if test="targetId != null">
-            AND er.target_id = #{targetId}
-        </if>
-        <if test="formId != null">
-            AND er.form_id = #{formId}
-        </if>
-        <if test="roundId != null">
-            AND er.round_id = #{roundId}
-        </if>
+            <if test="evalId != null">
+                AND er.eval_id = #{evalId}
+            </if>
+            <if test="targetId != null">
+                AND er.target_id = #{targetId}
+            </if>
+            <if test="formId != null">
+                AND er.form_id = #{formId}
+            </if>
+            <if test="roundId != null">
+                AND er.round_id = #{roundId}
+            </if>
         ORDER BY er.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
@@ -50,18 +50,18 @@
         JOIN eval_form ef ON er.form_id = ef.form_id
         JOIN eval_type et ON ef.type_id = et.type_id
         WHERE et.name = 'PEER'
-        <if test="evalId != null">
-            AND er.eval_id = #{evalId}
-        </if>
-        <if test="targetId != null">
-            AND er.target_id = #{targetId}
-        </if>
-        <if test="formId != null">
-            AND er.form_id = #{formId}
-        </if>
-        <if test="roundId != null">
-            AND er.round_id = #{roundId}
-        </if>
+            <if test="evalId != null">
+                AND er.eval_id = #{evalId}
+            </if>
+            <if test="targetId != null">
+                AND er.target_id = #{targetId}
+            </if>
+            <if test="formId != null">
+                AND er.form_id = #{formId}
+            </if>
+            <if test="roundId != null">
+                AND er.round_id = #{roundId}
+            </if>
     </select>
 
     <!-- 사원 간 평가 상세 조회 -->
