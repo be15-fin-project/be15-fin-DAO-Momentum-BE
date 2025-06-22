@@ -4,9 +4,8 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.MyObjectionItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.MyObjectionListResultDto;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.MyObjectionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -42,7 +40,7 @@ class MyObjectionQueryServiceImplTest {
     @Test
     @DisplayName("정상: total>0 rawList 반환 시 MyObjectionListResultDto 생성")
     void getMyObjections_success() {
-        long total = 3L;
+        long total = 2L;
         MyObjectionRaw raw1 = new MyObjectionRaw();
         raw1.setObjectionId(101L);
         raw1.setCreatedAt("2025-06-22 17:00:00");
@@ -63,6 +61,7 @@ class MyObjectionQueryServiceImplTest {
         MyObjectionListResultDto result = service.getMyObjections(1L, req);
 
         assertThat(result.getContent()).hasSize(2);
+
         MyObjectionItemDto item1 = result.getContent().get(0);
         assertThat(item1.getObjectionId()).isEqualTo(101L);
         assertThat(item1.getCreatedAt()).isEqualTo("2025-06-22 17:00:00");
@@ -77,7 +76,7 @@ class MyObjectionQueryServiceImplTest {
         Pagination p = result.getPagination();
         assertThat(p.getCurrentPage()).isEqualTo(1);
         assertThat(p.getTotalItems()).isEqualTo(total);
-        assertThat(p.getTotalPage()).isEqualTo((int)Math.ceil((double)total/req.getSize()));
+        assertThat(p.getTotalPage()).isEqualTo((int) Math.ceil((double) total / req.getSize()));
     }
 
     @Test
@@ -102,12 +101,61 @@ class MyObjectionQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("rawList empty 일 때 HrException 발생")
-    void getMyObjections_rawListEmpty_throws() {
-        given(mapper.countMyObjections(1L, req)).willReturn(5L);
-        given(mapper.findMyObjections(1L, req)).willReturn(Collections.emptyList());
+    @DisplayName("정상: getObjectionDetail 호출 시 ObjectionDetailResultDto 생성")
+    void getObjectionDetail_success() {
+        // base DTO
+        ObjectionListResultDto base = ObjectionListResultDto.builder()
+                .objectionId(5001L)
+                .resultId(2001L)
+                .empNo("20250001")
+                .empName("김현우")
+                .evaluatedAt("2025-06-22 17:31:08")
+                .weightPerform(20)
+                .weightTeam(15)
+                .weightAttitude(15)
+                .weightImmersion(25)
+                .weightResult(20)
+                .weightAdjust(5)
+                .rateS(5)
+                .rateA(20)
+                .rateB(35)
+                .rateC(30)
+                .rateD(10)
+                .objectionReason("점수가 낮습니다.")
+                .status("PENDING")
+                .responseReason("재검토 요청")
+                .build();
 
-        assertThatThrownBy(() -> service.getMyObjections(1L, req))
+        List<FactorScoreDto> scores = List.of(
+                FactorScoreDto.builder().propertyName("커뮤니케이션").score(90).build(),
+                FactorScoreDto.builder().propertyName("태도").score(85).build()
+        );
+
+        given(mapper.findObjectionDetail(1L, 5001L)).willReturn(base);
+        given(mapper.findFactorScores(2001L)).willReturn(scores);
+
+        ObjectionDetailResultDto dto = service.getObjectionDetail(1L, 5001L);
+
+        // 기본 정보
+        assertThat(dto.getList()).hasSize(1);
+        ObjectionListResultDto got = dto.getList().get(0);
+        assertThat(got.getObjectionId()).isEqualTo(5001L);
+        assertThat(got.getResultId()).isEqualTo(2001L);
+
+        // 요인별 점수
+        assertThat(dto.getFactorScores()).hasSize(2);
+        assertThat(dto.getFactorScores().get(0).getPropertyName()).isEqualTo("커뮤니케이션");
+        assertThat(dto.getFactorScores().get(0).getScore()).isEqualTo(90);
+        assertThat(dto.getFactorScores().get(1).getPropertyName()).isEqualTo("태도");
+        assertThat(dto.getFactorScores().get(1).getScore()).isEqualTo(85);
+    }
+
+    @Test
+    @DisplayName("findObjectionDetail null 일 때 HrException 발생")
+    void getObjectionDetail_notFound_throws() {
+        given(mapper.findObjectionDetail(1L, 5001L)).willReturn(null);
+
+        assertThatThrownBy(() -> service.getObjectionDetail(1L, 5001L))
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining("조회 가능한 인사 평가 이의제기 내역이 없습니다.");
     }
