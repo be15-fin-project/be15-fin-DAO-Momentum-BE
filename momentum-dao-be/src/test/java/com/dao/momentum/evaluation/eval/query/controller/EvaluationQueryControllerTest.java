@@ -198,4 +198,48 @@ class EvaluationQueryControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("자가 진단 평가 내역 조회 성공")
+    @WithMockUser(authorities = "MASTER") // or HR_MANAGER
+    void getSelfEvaluations_success() throws Exception {
+        // given
+        SelfEvaluationResponseDto dto = SelfEvaluationResponseDto.builder()
+                .resultId(201L)
+                .empNo(20250001L)
+                .evalName("김여진")
+                .formName("직업 만족도 진단")
+                .roundNo(1)
+                .score(82)
+                .reason("업무 만족도는 보통 이상")
+                .createdAt(LocalDateTime.of(2025, 6, 21, 14, 30))
+                .build();
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(1)
+                .totalPage(1)
+                .totalItems(1)
+                .build();
+
+        SelfEvaluationListResultDto resultDto = new SelfEvaluationListResultDto(List.of(dto), pagination);
+
+        Mockito.when(evaluationQueryService.getSelfEvaluations(any()))
+                .thenReturn(resultDto);
+
+        // when & then
+        mockMvc.perform(get("/evaluation/results/self")
+                        .param("empNo", "20250001")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.list", hasSize(1)))
+                .andExpect(jsonPath("$.data.list[0].empNo").value("20250001"))
+                .andExpect(jsonPath("$.data.list[0].evalName").value("김여진"))
+                .andExpect(jsonPath("$.data.list[0].formName").value("직업 만족도 진단"))
+                .andExpect(jsonPath("$.data.list[0].roundNo").value(1))
+                .andExpect(jsonPath("$.data.list[0].score").value(82))
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
+                .andDo(print());
+    }
+
 }

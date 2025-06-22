@@ -5,6 +5,7 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
@@ -256,4 +257,62 @@ class EvaluationQueryServiceImplTest {
         verify(orgEvaluationMapper).findOrgEvaluationDetail(resultId);
         verify(orgEvaluationMapper, never()).findOrgFactorScores(any());
     }
+
+    @Test
+    @DisplayName("자가 진단 평가 결과 목록 조회 - 성공")
+    void getSelfEvaluations_success() {
+        // given
+        SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "empNo", 20250001L);
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        SelfEvaluationResponseDto responseDto = SelfEvaluationResponseDto.builder()
+                .resultId(201L)
+                .empNo(20250001L)
+                .evalName("김여진")
+                .formName("직업 만족도 진단")
+                .roundNo(1)
+                .score(82)
+                .reason("업무 만족도는 보통 이상")
+                .createdAt(LocalDateTime.of(2025, 6, 21, 14, 30))
+                .build();
+
+        when(selfEvaluationMapper.countSelfEvaluations(requestDto)).thenReturn(1L);
+        when(selfEvaluationMapper.findSelfEvaluations(requestDto)).thenReturn(List.of(responseDto));
+
+        // when
+        SelfEvaluationListResultDto result = evaluationQueryService.getSelfEvaluations(requestDto);
+
+        // then
+        assertThat(result.getList()).hasSize(1);
+        assertThat(result.getList().get(0).getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getPagination().getCurrentPage()).isEqualTo(1);
+        assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
+
+        verify(selfEvaluationMapper).countSelfEvaluations(requestDto);
+        verify(selfEvaluationMapper).findSelfEvaluations(requestDto);
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 결과 목록 조회 - 결과 없음 예외")
+    void getSelfEvaluations_notFound_throwsException() {
+        // given
+        SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "empNo", 99999999L);
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        when(selfEvaluationMapper.countSelfEvaluations(requestDto)).thenReturn(0L);
+        when(selfEvaluationMapper.findSelfEvaluations(requestDto)).thenReturn(null); // ← 여기 수정
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getSelfEvaluations(requestDto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
+
+        verify(selfEvaluationMapper).countSelfEvaluations(requestDto);
+        verify(selfEvaluationMapper).findSelfEvaluations(requestDto);
+    }
+
 }
