@@ -78,7 +78,7 @@ class MyObjectionQueryControllerTest {
     void getMyObjectionDetail_success() throws Exception {
         // given
         // 1) 기본 상세 정보
-        ObjectionDetailResultDto base = ObjectionDetailResultDto.builder()
+        ObjectionItemDto base = ObjectionItemDto.builder()
                 .objectionId(5001L)
                 .resultId(10001L)
                 .empNo("20250001")
@@ -110,7 +110,7 @@ class MyObjectionQueryControllerTest {
                 .score(92)
                 .build();
 
-        ObjectionListResultDto detailDto = ObjectionListResultDto.builder()
+        ObjectionDetailResultDto detailDto = ObjectionDetailResultDto.builder()
                 .list(List.of(base))
                 .factorScores(List.of(fs1, fs2))
                 .build();

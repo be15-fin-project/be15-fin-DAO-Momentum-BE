@@ -3,7 +3,7 @@ package com.dao.momentum.evaluation.hr.query.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResponseDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionItemDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResultDto;
 import com.dao.momentum.evaluation.hr.query.mapper.HrObjectionMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,13 +42,13 @@ class HrObjectionQueryServiceImplTest {
     void getObjections_success() {
         // given
         long total = 15;
-        HrObjectionListResponseDto dto1 = HrObjectionListResponseDto.builder()
+        HrObjectionItemDto dto1 = HrObjectionItemDto.builder()
                 .objectionId(1L)
                 .roundNo(2)
                 .employeeName("reason1")  // 적절한 필드에 매핑
                 .status(null)
                 .build();
-        HrObjectionListResponseDto dto2 = HrObjectionListResponseDto.builder()
+        HrObjectionItemDto dto2 = HrObjectionItemDto.builder()
                 .objectionId(2L)
                 .roundNo(2)
                 .employeeName("reason2")

@@ -3,13 +3,12 @@ package com.dao.momentum.evaluation.hr.query.controller;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.dto.Status;
 import com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResponseDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionItemDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResultDto;
 import com.dao.momentum.evaluation.hr.query.service.HrObjectionQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,7 +19,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -43,7 +41,7 @@ class HrObjectionQueryControllerTest {
     @WithMockUser(username = "1", roles = "MANAGER")
     void listObjections_success() throws Exception {
         // given
-        HrObjectionListResponseDto item = HrObjectionListResponseDto.builder()
+        HrObjectionItemDto item = HrObjectionItemDto.builder()
                 .objectionId(5001L)
                 .empNo("20240001")
                 .employeeName("김현우")

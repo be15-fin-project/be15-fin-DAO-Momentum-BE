@@ -4,10 +4,9 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResponseDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionItemDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResultDto;
 import com.dao.momentum.evaluation.hr.query.mapper.HrObjectionMapper;
-import com.dao.momentum.evaluation.kpi.exception.KpiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ public class HrObjectionQueryServiceImpl implements HrObjectionQueryService {
         long total = mapper.countObjections(req);
 
         // 페이징 조회
-        List<HrObjectionListResponseDto> list = mapper.findObjections(req);
+        List<HrObjectionItemDto> list = mapper.findObjections(req);
 
         if (list == null) {
             throw new HrException(ErrorCode.HR_OBJECTIONS_NOT_FOUND);

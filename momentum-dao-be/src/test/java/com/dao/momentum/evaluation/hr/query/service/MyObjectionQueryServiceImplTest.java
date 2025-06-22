@@ -103,7 +103,7 @@ class MyObjectionQueryServiceImplTest {
     @DisplayName("정상: getObjectionDetail 호출 시 ObjectionDetailResultDto 생성")
     void getObjectionDetail_success() {
         // base DTO
-        ObjectionDetailResultDto base = ObjectionDetailResultDto.builder()
+        ObjectionItemDto base = ObjectionItemDto.builder()
                 .objectionId(5001L)
                 .resultId(2001L)
                 .empNo("20250001")
@@ -133,11 +133,11 @@ class MyObjectionQueryServiceImplTest {
         given(mapper.findObjectionDetail(5001L)).willReturn(base);
         given(mapper.findFactorScores(2001L)).willReturn(scores);
 
-        ObjectionListResultDto dto = service.getObjectionDetail(5001L);
+        ObjectionDetailResultDto dto = service.getObjectionDetail(5001L);
 
         // 기본 정보
         assertThat(dto.getList()).hasSize(1);
-        ObjectionDetailResultDto got = dto.getList().get(0);
+        ObjectionItemDto got = dto.getList().get(0);
         assertThat(got.getObjectionId()).isEqualTo(5001L);
         assertThat(got.getResultId()).isEqualTo(2001L);
 

@@ -8,7 +8,7 @@
     <!-- 이의제기 목록 조회 -->
     <select id="findObjections"
             parameterType="com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto"
-            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResponseDto">
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionItemDto">
         SELECT
             o.objection_id           AS objectionId,
             e_target.emp_no          AS empNo,

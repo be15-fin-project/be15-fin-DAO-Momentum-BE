@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "인사 평가 이의제기 목록 응답 DTO")
-public class HrObjectionListResponseDto {
+public class HrObjectionItemDto {
 
     @Schema(description = "이의제기 ID", example = "5001")
     private Long objectionId;
