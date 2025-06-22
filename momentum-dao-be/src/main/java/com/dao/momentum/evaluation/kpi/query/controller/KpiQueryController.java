@@ -28,11 +28,6 @@ public class KpiQueryController {
     private final KpiQueryService kpiQueryService;
     private final EmployeeRepository employeeRepository;
 
-    /**
-     * KPI 전체 내역 조회
-     * - 사번, 부서, 직위, 상태, 작성일 기간 기준 필터링
-     * - 페이징 지원
-     */
     @GetMapping("/list")
     @Operation(
             summary = "KPI 전체 내역 조회",
@@ -59,11 +54,6 @@ public class KpiQueryController {
         return ApiResponse.success(kpiQueryService.getKpiList(request));
     }
 
-    /**
-     * KPI 세부 조회
-     * - 관리자 및 인사팀은 KPI 목록에서 특정 항목 클릭 시 세부 정보 조회
-     * - 반환 정보: 목표, 진척 기준, 목표 수치, 작성자, 부서/직위, 기간 등
-     */
     @GetMapping("/{kpiId}")
     @Operation(
             summary = "KPI 세부 조회",
@@ -74,10 +64,6 @@ public class KpiQueryController {
         return ApiResponse.success(result);
     }
 
-    /**
-     * 사원별 KPI 진척 현황 조회
-     * - 관리자/인사팀이 부서 및 기간 필터로 사원 KPI 요약 통계 조회
-     */
     @GetMapping("/employee-summary")
     @Operation(
             summary = "사원별 KPI 진척 현황 조회",

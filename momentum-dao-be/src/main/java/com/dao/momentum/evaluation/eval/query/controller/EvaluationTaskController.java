@@ -25,7 +25,7 @@ public class EvaluationTaskController {
         summary = "내 평가 태스크 조회",
         description = "인증된 사원의 DMP ID를 통해 평가(SELF, ORG, PEER) 태스크 목록을 조회합니다."
     )
-    public ResponseEntity<ApiResponse<EvaluationTaskListResultDto>> getMyTasks(
+    public ApiResponse<EvaluationTaskListResultDto> getMyTasks(
         @AuthenticationPrincipal UserDetails user,
         @ModelAttribute EvaluationTaskRequestDto req
     ) {
@@ -35,6 +35,6 @@ public class EvaluationTaskController {
         // 서비스 호출
         EvaluationTaskListResultDto result = taskService.getTasks(empId, req);
 
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return ApiResponse.success(result);
     }
 }
