@@ -40,9 +40,6 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
                         .objectionId(raw.getObjectionId())
                         .statusType(raw.getStatusType())
                         .createdAt(raw.getCreatedAt())
-                        .performanceGrade(toGrade(raw.getPerformanceScore()))
-                        .attendanceGrade(toGrade(raw.getAttendanceScore()))
-                        .otherGrade(toGrade(raw.getOtherScore()))
                         .overallGrade(toGrade(raw.getOverallScore()))
                         .build()
                 )
@@ -61,9 +58,10 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     }
 
     private String toGrade(int score) {
-        if (score >= 90) return "탁월함";
-        if (score >= 75) return "우수함";
-        if (score >= 60) return "양호함";
-        return "보통 이하";
+        if (score >= 90) return "S";
+        if (score >= 80) return "A";
+        if (score >= 70) return "B";
+        if (score >= 60) return "C";
+        return "D";
     }
 }

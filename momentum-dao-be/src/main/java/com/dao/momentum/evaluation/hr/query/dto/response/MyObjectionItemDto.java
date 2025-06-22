@@ -20,15 +20,6 @@ public class MyObjectionItemDto {
     @Schema(description = "평가 일시 (yyyy-MM-dd HH:mm:ss)", example = "2025-06-15 14:23:45")
     private String createdAt;
 
-    @Schema(description = "성과 점수 등급", example = "우수함")
-    private String performanceGrade;
-
-    @Schema(description = "근태 점수 등급", example = "탁월함")
-    private String attendanceGrade;
-
-    @Schema(description = "기타 점수 등급", example = "양호함")
-    private String otherGrade;
-
     @Schema(description = "종합 등급", example = "우수함")
     private String overallGrade;
 }

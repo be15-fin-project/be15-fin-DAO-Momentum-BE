@@ -11,9 +11,6 @@
         SELECT
             o.objection_id                                AS objectionId,
             DATE_FORMAT(o.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
-            MAX(CASE WHEN es.property_id = 1 THEN es.score END) AS performanceScore,
-            MAX(CASE WHEN es.property_id = 2 THEN es.score END) AS attendanceScore,
-            MAX(CASE WHEN es.property_id = 3 THEN es.score END) AS otherScore,
             er.score                                      AS overallScore,
             s.status_type                                AS statusType
         FROM hr_objection o
