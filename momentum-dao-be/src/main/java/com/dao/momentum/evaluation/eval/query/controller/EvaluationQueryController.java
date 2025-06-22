@@ -3,9 +3,8 @@ package com.dao.momentum.evaluation.eval.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationDetailResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationListResultDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,5 +44,27 @@ public class EvaluationQueryController {
     ) {
         OrgEvaluationListResultDto result = evaluationQueryService.getOrgEvaluations(requestDto);
         return ApiResponse.success(result);
+    }
+
+    @GetMapping("/org/{resultId}")
+    @Operation(summary = "조직 평가 상세 조회", description = "조직 평가 결과의 세부 정보를 조회합니다.")
+    public ApiResponse<OrgEvaluationDetailResultDto> getOrgEvaluationDetail(@PathVariable Long resultId) {
+        return ApiResponse.success(evaluationQueryService.getOrgEvaluationDetail(resultId));
+    }
+
+    @GetMapping("/self")
+    @Operation(summary = "자가 진단 내역 조회", description = "관리자 또는 인사팀이 자가 진단 평가 내역을 조회합니다.")
+    public ApiResponse<SelfEvaluationListResultDto> getSelfEvaluations(
+            @ModelAttribute SelfEvaluationListRequestDto requestDto
+    ) {
+        return ApiResponse.success(evaluationQueryService.getSelfEvaluations(requestDto));
+    }
+
+    @GetMapping("/self/{resultId}")
+    @Operation(summary = "자가 진단 평가 상세 조회", description = "자가 진단 평가의 세부 정보와 요인별 점수를 함께 조회합니다.")
+    public ApiResponse<SelfEvaluationDetailResultDto> getSelfEvaluationDetail(
+            @PathVariable Long resultId
+    ) {
+        return ApiResponse.success(evaluationQueryService.getSelfEvaluationDetail(resultId));
     }
 }

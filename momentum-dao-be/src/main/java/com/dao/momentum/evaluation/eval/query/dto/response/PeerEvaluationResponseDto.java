@@ -17,13 +17,13 @@ public class PeerEvaluationResponseDto {
     private Long resultId;
 
     @Schema(description = "평가자 사번", example = "20250001")
-    private Long evalId;
+    private Long evalNo;
 
     @Schema(description = "평가자 이름", example = "김현우")
     private String evalName;
 
     @Schema(description = "피평가자 사번", example = "20250002")
-    private Long targetId;
+    private Long targetNo;
 
     @Schema(description = "피평가자 이름", example = "정예준")
     private String targetName;

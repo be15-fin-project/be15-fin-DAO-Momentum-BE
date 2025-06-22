@@ -5,9 +5,11 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
+import com.dao.momentum.evaluation.eval.query.mapper.SelfEvaluationMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,10 +30,11 @@ class EvaluationQueryServiceImplTest {
 
     private PeerEvaluationMapper peerEvaluationMapper = Mockito.mock(PeerEvaluationMapper.class);
     private OrgEvaluationMapper orgEvaluationMapper = Mockito.mock(OrgEvaluationMapper.class);
+    private SelfEvaluationMapper selfEvaluationMapper = Mockito.mock(SelfEvaluationMapper.class);
 
     @BeforeEach
     void setUp() {
-        evaluationQueryService = new EvaluationQueryServiceImpl(peerEvaluationMapper, orgEvaluationMapper);
+        evaluationQueryService = new EvaluationQueryServiceImpl(peerEvaluationMapper, orgEvaluationMapper, selfEvaluationMapper);
     }
 
     @Test
@@ -44,9 +47,9 @@ class EvaluationQueryServiceImplTest {
 
         PeerEvaluationResponseDto responseDto = PeerEvaluationResponseDto.builder()
                 .resultId(1L)
-                .evalId(20250001L)
+                .evalNo(20250001L)
                 .evalName("김현우")
-                .targetId(20250002L)
+                .targetNo(20250002L)
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -98,11 +101,11 @@ class EvaluationQueryServiceImplTest {
         // given
         Long resultId = 100L;
 
-        PeerEvaluationDetailResponseDto detail = PeerEvaluationDetailResponseDto.builder()
+        PeerEvaluationResponseDto detail = PeerEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .evalId(20250001L)
+                .evalNo(20250001L)
                 .evalName("김현우")
-                .targetId(20250002L)
+                .targetNo(20250002L)
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -202,4 +205,171 @@ class EvaluationQueryServiceImplTest {
                 .isInstanceOf(EvalException.class)
                 .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
     }
+
+    @Test
+    @DisplayName("조직 평가 상세 조회 - 성공")
+    void getOrgEvaluationDetail_success() {
+        // given
+        Long resultId = 500L;
+
+        OrgEvaluationResponseDto detail = OrgEvaluationResponseDto.builder()
+                .resultId(resultId)
+                .empNo(20250001L)
+                .evalName("김현우")
+                .formName("직무 스트레스 자가진단")
+                .roundNo(2)
+                .score(80)
+                .createdAt(LocalDateTime.of(2025, 6, 20, 15, 0))
+                .build();
+
+        List<FactorScoreDto> factorScores = List.of(
+                FactorScoreDto.builder().propertyName("스트레스 요인").score(85).build(),
+                FactorScoreDto.builder().propertyName("스트레스 반응").score(75).build()
+        );
+
+        when(orgEvaluationMapper.findOrgEvaluationDetail(resultId)).thenReturn(detail);
+        when(orgEvaluationMapper.findOrgFactorScores(resultId)).thenReturn(factorScores);
+
+        // when
+        OrgEvaluationDetailResultDto result = evaluationQueryService.getOrgEvaluationDetail(resultId);
+
+        // then
+        assertThat(result.getDetail().getFormName()).isEqualTo("직무 스트레스 자가진단");
+        assertThat(result.getFactorScores()).hasSize(2);
+        assertThat(result.getFactorScores().get(0).getPropertyName()).isEqualTo("스트레스 요인");
+
+        verify(orgEvaluationMapper).findOrgEvaluationDetail(resultId);
+        verify(orgEvaluationMapper).findOrgFactorScores(resultId);
+    }
+
+    @Test
+    @DisplayName("조직 평가 상세 조회 - 결과 없음 예외")
+    void getOrgEvaluationDetail_notFound() {
+        // given
+        Long resultId = 999L;
+        when(orgEvaluationMapper.findOrgEvaluationDetail(resultId)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getOrgEvaluationDetail(resultId))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
+
+        verify(orgEvaluationMapper).findOrgEvaluationDetail(resultId);
+        verify(orgEvaluationMapper, never()).findOrgFactorScores(any());
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 결과 목록 조회 - 성공")
+    void getSelfEvaluations_success() {
+        // given
+        SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "empNo", 20250001L);
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        SelfEvaluationResponseDto responseDto = SelfEvaluationResponseDto.builder()
+                .resultId(201L)
+                .empNo(20250001L)
+                .evalName("김하진")
+                .formName("직업 만족도 진단")
+                .roundNo(1)
+                .score(82)
+                .reason("업무 만족도는 보통 이상")
+                .createdAt(LocalDateTime.of(2025, 6, 21, 14, 30))
+                .build();
+
+        when(selfEvaluationMapper.countSelfEvaluations(requestDto)).thenReturn(1L);
+        when(selfEvaluationMapper.findSelfEvaluations(requestDto)).thenReturn(List.of(responseDto));
+
+        // when
+        SelfEvaluationListResultDto result = evaluationQueryService.getSelfEvaluations(requestDto);
+
+        // then
+        assertThat(result.getList()).hasSize(1);
+        assertThat(result.getList().get(0).getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getPagination().getCurrentPage()).isEqualTo(1);
+        assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
+
+        verify(selfEvaluationMapper).countSelfEvaluations(requestDto);
+        verify(selfEvaluationMapper).findSelfEvaluations(requestDto);
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 결과 목록 조회 - 결과 없음 예외")
+    void getSelfEvaluations_notFound_throwsException() {
+        // given
+        SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
+        ReflectionTestUtils.setField(requestDto, "empNo", 99999999L);
+        ReflectionTestUtils.setField(requestDto, "page", 1);
+        ReflectionTestUtils.setField(requestDto, "size", 10);
+
+        when(selfEvaluationMapper.countSelfEvaluations(requestDto)).thenReturn(0L);
+        when(selfEvaluationMapper.findSelfEvaluations(requestDto)).thenReturn(null); // ← 여기 수정
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getSelfEvaluations(requestDto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
+
+        verify(selfEvaluationMapper).countSelfEvaluations(requestDto);
+        verify(selfEvaluationMapper).findSelfEvaluations(requestDto);
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 상세 조회 - 성공")
+    void getSelfEvaluationDetail_success() {
+        // given
+        Long resultId = 301L;
+
+        SelfEvaluationResponseDto detail = SelfEvaluationResponseDto.builder()
+                .resultId(resultId)
+                .empNo(20250001L)
+                .evalName("김하진")
+                .formName("직무 스트레스 자가진단")
+                .roundNo(1)
+                .score(75)
+                .reason("스트레스 요인 일부 존재")
+                .createdAt(LocalDateTime.of(2025, 6, 22, 9, 30))
+                .build();
+
+        List<FactorScoreDto> factorScores = List.of(
+                FactorScoreDto.builder().propertyName("스트레스 반응").score(78).build(),
+                FactorScoreDto.builder().propertyName("스트레스 요인").score(72).build()
+        );
+
+        when(selfEvaluationMapper.findSelfEvaluationDetail(resultId)).thenReturn(detail);
+        when(selfEvaluationMapper.findFactorScores(resultId)).thenReturn(factorScores);
+
+        // when
+        SelfEvaluationDetailResultDto result = evaluationQueryService.getSelfEvaluationDetail(resultId);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getDetail().getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getDetail().getEvalName()).isEqualTo("김하진");
+        assertThat(result.getFactorScores()).hasSize(2);
+        assertThat(result.getFactorScores().get(1).getScore()).isEqualTo(72);
+
+        verify(selfEvaluationMapper).findSelfEvaluationDetail(resultId);
+        verify(selfEvaluationMapper).findFactorScores(resultId);
+    }
+
+    @Test
+    @DisplayName("자가 진단 평가 상세 조회 - 결과 없음 예외")
+    void getSelfEvaluationDetail_notFound_throwsException() {
+        // given
+        Long resultId = 9999L;
+
+        when(selfEvaluationMapper.findSelfEvaluationDetail(resultId)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> evaluationQueryService.getSelfEvaluationDetail(resultId))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_RESULT_NOT_FOUND.getMessage());
+
+        verify(selfEvaluationMapper).findSelfEvaluationDetail(resultId);
+        verify(selfEvaluationMapper, never()).findFactorScores(any());
+    }
+
+
 }
