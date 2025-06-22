@@ -1,12 +1,13 @@
-package com.dao.momentum.evaluation.manage.query.service;
+package com.dao.momentum.evaluation.eval.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
-import com.dao.momentum.evaluation.manage.query.service.EvaluationManageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -117,5 +118,53 @@ class EvaluationManageServiceImplTest {
 
         verify(evaluationManageMapper).countEvaluationRounds(requestDto);
         verify(evaluationManageMapper, never()).findEvaluationRounds(any());
+    }
+
+
+    @Test
+    @DisplayName("평가 양식 목록 조회 - 성공 (typeId 필터 포함)")
+    void getEvaluationForms_success_withTypeId() {
+        // given
+        EvaluationFormListRequestDto request = new EvaluationFormListRequestDto();
+        ReflectionTestUtils.setField(request, "typeId", 2); // ORG
+
+        EvaluationFormResponseDto dto = EvaluationFormResponseDto.builder()
+                .formId(5)
+                .typeId(2)
+                .typeName("ORG")
+                .name("ORG_COMMITMENT")
+                .description("조직 몰입 척도")
+                .build();
+
+        given(evaluationManageMapper.findEvaluationForms(request))
+                .willReturn(List.of(dto));
+
+        // when
+        List<EvaluationFormResponseDto> result = evaluationManageService.getEvaluationForms(request);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTypeId()).isEqualTo(2);
+        assertThat(result.get(0).getName()).isEqualTo("ORG_COMMITMENT");
+
+        verify(evaluationManageMapper).findEvaluationForms(request);
+    }
+
+    @Test
+    @DisplayName("평가 양식 목록 조회 - 결과 없음")
+    void getEvaluationForms_empty() {
+        // given
+        EvaluationFormListRequestDto request = new EvaluationFormListRequestDto();
+        ReflectionTestUtils.setField(request, "typeId", 99); // 존재하지 않는 typeId
+
+        given(evaluationManageMapper.findEvaluationForms(request))
+                .willReturn(List.of());
+
+        // when
+        List<EvaluationFormResponseDto> result = evaluationManageService.getEvaluationForms(request);
+
+        // then
+        assertThat(result).isEmpty();
+        verify(evaluationManageMapper).findEvaluationForms(request);
     }
 }
