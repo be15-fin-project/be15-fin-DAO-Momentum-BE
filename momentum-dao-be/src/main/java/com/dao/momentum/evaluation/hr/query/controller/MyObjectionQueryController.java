@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,10 +28,10 @@ public class MyObjectionQueryController {
             description = "로그인한 사원이 본인이 제기한 인사 평가 이의제기 내역을 페이징 조회합니다."
     )
     public ApiResponse<MyObjectionListResultDto> getMyObjections(
-            @ParameterObject MyObjectionListRequestDto req,
-            Authentication auth
+            @AuthenticationPrincipal UserDetails userDetails,
+            @ParameterObject MyObjectionListRequestDto req
     ) {
-        Long empId = Long.valueOf(auth.getName());
+        Long empId = Long.parseLong(userDetails.getUsername());
         MyObjectionListResultDto result = service.getMyObjections(empId, req);
         return ApiResponse.success(result);
     }

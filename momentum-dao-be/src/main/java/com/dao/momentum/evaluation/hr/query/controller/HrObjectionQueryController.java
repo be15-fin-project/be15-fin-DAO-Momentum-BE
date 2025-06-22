@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,11 +27,11 @@ public class HrObjectionQueryController {
         description = "팀장이 자신이 작성한 사원의 인사 평가 이의제기 목록을 상태, 회차, 날짜 필터로 조회합니다."
     )
     public ApiResponse<HrObjectionListResultDto> listObjections(
-            @ParameterObject @ModelAttribute HrObjectionListRequestDto req,
-            Authentication auth
+            @AuthenticationPrincipal UserDetails userDetails,
+            @ParameterObject @ModelAttribute HrObjectionListRequestDto req
     ) {
         // JWT subject(empId)를 요청 DTO에 설정
-        req.setRequesterEmpId(Long.valueOf(auth.getName()));
+        req.setRequesterEmpId(Long.parseLong(userDetails.getUsername()));
         HrObjectionListResultDto result = service.getObjections(req);
         return ApiResponse.success(result);
     }
