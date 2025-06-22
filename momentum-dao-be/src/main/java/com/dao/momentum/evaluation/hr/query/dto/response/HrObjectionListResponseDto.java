@@ -37,7 +37,4 @@ public class HrObjectionListResponseDto {
 
     @Schema(description = "평가 점수", example = "85")
     private Integer score;
-
-    @Schema(description = "평가 등급", example = "A")
-    private String grade;
 }

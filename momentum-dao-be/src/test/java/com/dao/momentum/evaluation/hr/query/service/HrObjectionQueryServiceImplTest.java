@@ -83,7 +83,7 @@ class HrObjectionQueryServiceImplTest {
         // then
         assertThat(thrown)
                 .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.HR_OBJECTIONS_NOT_FOUND.name());
+                .hasMessageContaining(ErrorCode.HR_OBJECTIONS_NOT_FOUND.getMessage());
     }
 
     @Test

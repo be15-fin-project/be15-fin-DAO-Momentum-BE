@@ -51,7 +51,6 @@ class HrObjectionQueryControllerTest {
                 .createdAt("2025-06-15 14:23:45")
                 .status(Status.PENDING)
                 .score(85)
-                .grade("A")
                 .build();
 
         Pagination pagination = Pagination.builder()
@@ -80,7 +79,6 @@ class HrObjectionQueryControllerTest {
                 .andExpect(jsonPath("$.data.list[0].roundNo").value(2))
                 .andExpect(jsonPath("$.data.list[0].status").value("PENDING"))
                 .andExpect(jsonPath("$.data.list[0].score").value(85))
-                .andExpect(jsonPath("$.data.list[0].grade").value("A"))
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andDo(print());
     }
