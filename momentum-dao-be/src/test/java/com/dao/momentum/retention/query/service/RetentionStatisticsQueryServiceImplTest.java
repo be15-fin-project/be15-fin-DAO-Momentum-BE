@@ -76,7 +76,7 @@ class RetentionStatisticsQueryServiceImplTest {
         raw.setUnstableCount(2L);
         raw.setTotalCount(10L);
 
-        when(mapper.findStabilityDistributionByDept(2025)).thenReturn(List.of(raw));
+        when(mapper.findStabilityDistributionByDept(req)).thenReturn(List.of(raw));
 
         // when
         List<StabilityDistributionByDeptDto> result = service.getStabilityDistributionByDept(req);
@@ -96,13 +96,14 @@ class RetentionStatisticsQueryServiceImplTest {
         RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
         req.setYear(2025);
 
-        when(mapper.findStabilityDistributionByDept(2025)).thenReturn(null);
+        when(mapper.findStabilityDistributionByDept(req)).thenReturn(null);
 
         // when & then
         assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
                 .isInstanceOf(RetentionException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
+
 
     @Test
     @DisplayName("getOverallStabilityDistribution - 전체 조회 성공")
