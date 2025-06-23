@@ -22,6 +22,8 @@ public enum ErrorCode {
     INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
+    PASSWORD_NOT_CORRECT("10014", "유효하지 않은 비밀번호 변경입니다.", HttpStatus.BAD_REQUEST),
+    EMAIL_SENDING_FAILED("10015", "이메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
 
     // 회사 오류 (11001 - 11999)
