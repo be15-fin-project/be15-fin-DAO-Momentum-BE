@@ -19,6 +19,7 @@ public enum ErrorCode {
     EMAIL_SENDING_FAILED("10008", "이메일 전송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     NOT_EMPLOYED_USER("10008", "현재 재직중이지 않은 직원입니다.",HttpStatus.FORBIDDEN),
     INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST ),
+    PASSWORD_NOT_CORRECT("10011", "비밀번호가 유효하지 않습니다. 다시 입력해주세요", HttpStatus.BAD_REQUEST),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -52,6 +53,12 @@ public enum ErrorCode {
     KPI_LIST_NOT_FOUND("40002", "조회 가능한 KPI 내역이 없습니다.", HttpStatus.NOT_FOUND),
     KPI_NOT_FOUND("40003", "해당 KPI 항목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     KPI_EMPLOYEE_SUMMARY_NOT_FOUND("40004", "사원별 KPI 요약 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    KPI_REQUEST_NOT_FOUND("40005", "조회 가능한 KPI 요청 내역이 없습니다.", HttpStatus.NOT_FOUND),
+    // 평가 오류
+    EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
+    // 인사 평가 오류
+    HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
 
     //공지사항 오류(60001 - 69999)
     ANNOUNCEMENT_NOT_FOUND("60001", "해당 공지사항 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
