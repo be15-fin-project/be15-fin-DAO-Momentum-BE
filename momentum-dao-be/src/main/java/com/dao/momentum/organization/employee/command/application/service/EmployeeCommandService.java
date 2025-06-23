@@ -169,7 +169,7 @@ public class EmployeeCommandService {
                 .build();
     }
 
-    private void validateActiveAdmin(long adminId) {
+    public void validateActiveAdmin(long adminId) {
         Employee admin = employeeRepository.findByEmpId(adminId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
         Status adminStatus = admin.getStatus();

@@ -10,6 +10,7 @@ import com.dao.momentum.organization.employee.command.application.dto.response.E
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/employees")
+@Tag(name = "사원 관리", description = "사원 정보 등록, 수정, 삭제 API")
 public class EmployeeCommandController {
     private final EmployeeCommandService employeeService;
 
