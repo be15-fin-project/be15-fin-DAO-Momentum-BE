@@ -4,9 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
+@ToString
 @RequiredArgsConstructor
+@Setter
 public class PasswordResetRequest {
     @NotBlank
     @Pattern(

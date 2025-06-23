@@ -22,11 +22,19 @@ public enum ErrorCode {
     INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
+    PASSWORD_NOT_CORRECT("10014", "유효하지 않은 비밀번호 변경입니다.", HttpStatus.BAD_REQUEST),
+    EMAIL_SENDING_FAILED("10015", "이메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     DEPARTMENT_NOT_FOUND("11002", "시스템 오류입니다." , HttpStatus.NOT_FOUND),
+
+    // 계약서 오류 (12001 - 12999)
+    INVALID_SALARY_AGREEMENT("12001", "연봉계약서에는 연봉이 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_CONTRACT("12002", "연봉계약서가 아닌 경우 연봉을 작성할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    ATTACHMENT_REQUIRED("12003", "첨부파일이 없습니다.", HttpStatus.BAD_REQUEST), CONTRACT_NOT_FOUND("12004", "해당 계약서를 찾을 수 없습니다." , HttpStatus.NOT_FOUND),
+    ATTACHMENT_NOT_FOUND("12004", "첨부파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -76,6 +84,8 @@ public enum ErrorCode {
 
     // 파일 처리 오류(80001 - 89999)
     FILE_UPLOAD_FAIL("80001", "파일 업로드에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_TOO_LARGE("80002", "파일은 10MB 이하만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_EXTENSION("80003", "허용되지 않은 파일 확장자입니다.", HttpStatus.BAD_REQUEST),
 
     // 공통 오류
     VALIDATION_ERROR("90001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),

@@ -1,5 +1,6 @@
 package com.dao.momentum.common.config;
 
+import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
 import com.dao.momentum.common.auth.domain.aggregate.RefreshToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,18 @@ public class RedisConfig {
     @Bean
     public RedisTemplate<String, RefreshToken> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, RefreshToken> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+//        redisTemplate.setValueSerializer(new StringRedisSerializer());
+
+        // 값은 JSON 형태로 직렬화
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return redisTemplate;
+    }
+
+    @Bean
+    public RedisTemplate<String, PasswordResetToken> passwordResetRedisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, PasswordResetToken> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(connectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 //        redisTemplate.setValueSerializer(new StringRedisSerializer());

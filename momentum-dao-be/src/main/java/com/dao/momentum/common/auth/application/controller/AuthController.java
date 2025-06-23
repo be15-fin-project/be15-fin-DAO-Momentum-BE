@@ -2,6 +2,7 @@ package com.dao.momentum.common.auth.application.controller;
 
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
@@ -9,12 +10,15 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 
+@Slf4j
 @RestController
 @RequestMapping("/employees")
 @RequiredArgsConstructor
@@ -60,6 +64,23 @@ public class AuthController {
                 .body(ApiResponse.success(tokenResponse));
     }
 
+    @Operation(summary = "비밀번호 재설정", description = "사원은 비밀번호 재설정을 할 수 있다. 비밀번호, 확인 비밀번호, 토큰으로 요청한다.")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @RequestBody @Valid PasswordResetRequest request,
+            @RequestHeader("Authorization") String authorizationHeader
+    ){
+        // authorizationHeader 예: "Bearer eyJhbGciOiJIUzI1NiIs..."
+        String passwordResetToken = null;
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            passwordResetToken = authorizationHeader.substring(7); // "Bearer " 뒤 토큰만 추출
+        }
+
+        log.info("request = {}, token = {}",request,passwordResetToken);
+        authService.resetPassword(request, passwordResetToken);
+        return ResponseEntity.ok().body(ApiResponse.success(null));
+    }
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
