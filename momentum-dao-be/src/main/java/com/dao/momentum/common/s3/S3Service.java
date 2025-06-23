@@ -1,4 +1,4 @@
-package com.dao.momentum.common.service;
+package com.dao.momentum.common.s3;
 
 import com.dao.momentum.file.command.application.dto.response.FilePresignedUrlResponse;
 import lombok.RequiredArgsConstructor;

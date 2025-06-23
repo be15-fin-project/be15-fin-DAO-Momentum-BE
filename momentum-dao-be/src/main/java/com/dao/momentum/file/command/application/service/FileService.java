@@ -4,7 +4,7 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.file.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.file.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
-import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.common.s3.S3Service;
 import com.dao.momentum.file.exception.FileUploadFailedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -11,7 +11,7 @@ import com.dao.momentum.announcement.command.domain.repository.AnnouncementRepos
 import com.dao.momentum.file.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.common.s3.S3Service;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
 import lombok.RequiredArgsConstructor;

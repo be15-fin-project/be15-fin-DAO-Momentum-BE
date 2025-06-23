@@ -10,7 +10,7 @@ import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
 import com.dao.momentum.announcement.command.domain.repository.AnnouncementRepository;
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
-import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.common.s3.S3Service;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
 import org.junit.jupiter.api.DisplayName;
