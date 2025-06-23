@@ -2,15 +2,13 @@ package com.dao.momentum.announcement.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
-import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
-import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
-import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
 import com.dao.momentum.announcement.command.domain.repository.AnnouncementRepository;
-import com.dao.momentum.announcement.exception.FileUploadFailedException;
+import com.dao.momentum.file.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.service.S3Service;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -58,7 +55,6 @@ public class AnnouncementCommandService {
                 fileRepository.save(file);
             }
         }
-
 
         log.info("공지사항 작성 - empId={}, announcementId={}, title={}", empId, savedAnnouncement.getAnnouncementId(), savedAnnouncement.getTitle());
 
@@ -145,29 +141,6 @@ public class AnnouncementCommandService {
         log.info("공지사항 삭제 - empId={}, announcementId={}, title={}", empId, announcement.getAnnouncementId(), announcement.getTitle());
 
         announcementRepository.delete(announcement);
-    }
-
-    public FilePresignedUrlResponse generatePresignedUrl(FilePresignedUrlRequest request) {
-        final long MAX_SIZE = 10 * 1024 * 1024; // 10MB 제한
-        if (request.sizeInBytes() > MAX_SIZE) {
-            throw new IllegalArgumentException("파일은 10MB 이하만 업로드 가능합니다.");
-        }
-
-        String extension = s3Service.extractFileExtension(request.fileName());
-        if (extension == null || !List.of(
-                "jpg", "jpeg", "png",   // 이미지
-                "pdf", "docx", "txt",   // 문서
-                "hwp", "hwpx",          // 한글
-                "xlsx", "xls",          // 엑셀
-                "pptx", "ppt"           // 파워포인트
-        ).contains(extension)) {
-            throw new IllegalArgumentException("허용되지 않은 파일 확장자입니다.");
-        }
-
-        String sanitizedFilename = s3Service.sanitizeFilename(request.fileName());
-        String key = "announcements/" + UUID.randomUUID() + "/" + sanitizedFilename;
-
-        return s3Service.generatePresignedUploadUrlWithKey(key, request.contentType());
     }
 
 }
