@@ -12,14 +12,13 @@ import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.SelfEvaluationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public
-
-class EvaluationQueryServiceImpl implements EvaluationQueryService {
+public class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     private final PeerEvaluationMapper peerEvaluationMapper;
     private final OrgEvaluationMapper orgEvaluationMapper;
@@ -27,6 +26,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 사원 간 평가 내역 조회
     @Override
+    @Transactional(readOnly = true)
     public PeerEvaluationListResultDto getPeerEvaluations(PeerEvaluationListRequestDto requestDto) {
         long total = peerEvaluationMapper.countPeerEvaluations(requestDto);
         List<PeerEvaluationResponseDto> list = peerEvaluationMapper.findPeerEvaluations(requestDto);
@@ -42,6 +42,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 사원 간 평가 상세 조회
     @Override
+    @Transactional(readOnly = true)
     public PeerEvaluationDetailResultDto getPeerEvaluationDetail(Long resultId) {
         PeerEvaluationResponseDto detail = peerEvaluationMapper.findPeerEvaluationDetail(resultId);
 
@@ -59,6 +60,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 조직 평가 내역 조회
     @Override
+    @Transactional(readOnly = true)
     public OrgEvaluationListResultDto getOrgEvaluations(OrgEvaluationListRequestDto requestDto) {
         long total = orgEvaluationMapper.countOrgEvaluations(requestDto);
         List<OrgEvaluationResponseDto> list = orgEvaluationMapper.findOrgEvaluations(requestDto);
@@ -74,6 +76,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 조직 평가 상세 조회
     @Override
+    @Transactional(readOnly = true)
     public OrgEvaluationDetailResultDto getOrgEvaluationDetail(Long resultId) {
         OrgEvaluationResponseDto detail = orgEvaluationMapper.findOrgEvaluationDetail(resultId);
         if (detail == null) {
@@ -90,6 +93,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 자가 진단 내역 조회
     @Override
+    @Transactional(readOnly = true)
     public SelfEvaluationListResultDto getSelfEvaluations(SelfEvaluationListRequestDto requestDto) {
         long total = selfEvaluationMapper.countSelfEvaluations(requestDto);
         List<SelfEvaluationResponseDto> list = selfEvaluationMapper.findSelfEvaluations(requestDto);
@@ -105,6 +109,7 @@ class EvaluationQueryServiceImpl implements EvaluationQueryService {
 
     // 자가 진단 상세 조회
     @Override
+    @Transactional(readOnly = true)
     public SelfEvaluationDetailResultDto getSelfEvaluationDetail(Long resultId) {
         SelfEvaluationResponseDto detail = selfEvaluationMapper.findSelfEvaluationDetail(resultId);
 

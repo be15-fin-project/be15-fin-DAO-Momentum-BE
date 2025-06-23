@@ -27,11 +27,6 @@ public class KpiStatisticsController {
 
     private final EmployeeRepository employeeRepository;
 
-    /**
-     * KPI 통계 조회 (단일 시점)
-     * - 총 KPI 수, 완료 수, 평균 진척률
-     * - year, month, deptId, empId 필터 사용
-     */
     @GetMapping("/statistics")
     @Operation(
             summary = "KPI 통계 조회",
@@ -56,11 +51,6 @@ public class KpiStatisticsController {
         return ApiResponse.success(result);
     }
 
-    /**
-     * KPI 시계열 통계 조회
-     * - 연도별 월별 KPI 작성 수, 완료 수, 평균 진척률
-     * - year 파라미터 없으면 현재 연도 기준
-     */
     @GetMapping("/timeseries")
     @Operation(
             summary = "KPI 시계열 통계 조회",

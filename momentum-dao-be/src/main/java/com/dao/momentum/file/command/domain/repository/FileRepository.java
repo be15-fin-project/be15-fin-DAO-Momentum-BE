@@ -1,6 +1,6 @@
-package com.dao.momentum.announcement.command.domain.repository;
+package com.dao.momentum.file.command.domain.repository;
 
-import com.dao.momentum.announcement.command.domain.aggregate.File;
+import com.dao.momentum.file.command.domain.aggregate.File;
 
 import java.util.List;
 import java.util.Optional;
