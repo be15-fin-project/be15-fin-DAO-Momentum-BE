@@ -2,6 +2,7 @@ package com.dao.momentum.retention.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
 import com.dao.momentum.retention.query.service.RetentionContactQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,5 +33,15 @@ public class RetentionContactQueryController {
     ) {
         Long empId = Long.parseLong(userDetails.getUsername());
         return ApiResponse.success(service.getMyRequestedContactList(empId, req));
+    }
+
+    @GetMapping("/{retentionId}")
+    @Operation(summary = "면담 기록 상세 조회", description = "해당 retentionId에 대한 면담 기록 세부 내역 조회")
+    public ApiResponse<RetentionContactDetailDto> getContactDetail(
+            @PathVariable Long retentionId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+        return ApiResponse.success(service.getContactDetail(retentionId, empId));
     }
 }

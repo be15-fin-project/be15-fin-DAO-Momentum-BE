@@ -26,7 +26,7 @@
                 AND rc.manager_id = #{req.managerId}
             </if>
             <if test="req.managerNo != null">
-                AND t.emp_no = #{req.managerNo}
+                AND m.emp_no = #{req.managerNo}
             </if>
             <if test="req.deptId != null">
                 AND t.dept_id = #{req.deptId}
@@ -72,4 +72,27 @@
             </if>
     </select>
 
+    <!-- 면담 상세 조회 -->
+    <select id="findContactDetailById" resultType="com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto">
+        SELECT
+            rc.retention_id AS retentionId,
+            t.name AS targetName,
+            t.emp_no AS targetNo,
+            d.name AS deptName,
+            p.name AS positionName,
+            rc.manager_id AS managerId,
+            m.name AS managerName,
+            rc.reason,
+            rc.created_at,
+            rc.response,
+            rc.response_at,
+            rc.feedback
+        FROM retention_contact rc
+        JOIN employee t ON rc.target_id = t.emp_id
+        LEFT JOIN employee m ON rc.manager_id = m.emp_id
+        LEFT JOIN department d ON t.dept_id = d.dept_id
+        LEFT JOIN position p ON t.position_id = p.position_id
+        WHERE rc.retention_id = #{retentionId}
+            AND rc.is_deleted = 'N'
+    </select>
 </mapper>

@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.exception.RetentionException;
 import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactItemDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
 import com.dao.momentum.retention.query.mapper.RetentionContactMapper;
@@ -51,4 +52,36 @@ public class RetentionContactQueryServiceImpl implements RetentionContactQuerySe
                 .pagination(pagination)
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RetentionContactDetailDto getContactDetail(Long retentionId, Long requesterEmpId) {
+        RetentionContactDetailDto detail = mapper.findContactDetailById(retentionId);
+
+        if (detail == null) {
+            throw new RetentionException(ErrorCode.RETENTION_CONTACT_NOT_FOUND);
+        }
+
+        // 플래그 계산
+        boolean deletable = detail.getResponse() == null;
+        boolean feedbackWritable = detail.getResponse() != null && detail.getFeedback() == null;
+
+        return RetentionContactDetailDto.builder()
+                .retentionId(detail.getRetentionId())
+                .targetName(detail.getTargetName())
+                .targetNo(detail.getTargetNo())
+                .deptName(detail.getDeptName())
+                .positionName(detail.getPositionName())
+                .managerId(detail.getManagerId())
+                .managerName(detail.getManagerName())
+                .reason(detail.getReason())
+                .createdAt(detail.getCreatedAt())
+                .response(detail.getResponse())
+                .responseAt(detail.getResponseAt())
+                .feedback(detail.getFeedback())
+                .deletable(deletable)
+                .feedbackWritable(feedbackWritable)
+                .build();
+    }
+
 }
