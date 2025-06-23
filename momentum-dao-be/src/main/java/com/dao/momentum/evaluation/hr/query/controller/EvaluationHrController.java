@@ -2,6 +2,7 @@ package com.dao.momentum.evaluation.hr.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationCriteriaDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationDetailResultDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationListResultDto;
 import com.dao.momentum.evaluation.hr.query.service.EvaluationHrService;
@@ -43,4 +44,13 @@ public class EvaluationHrController {
         HrEvaluationDetailResultDto result = evaluationHrService.getHrEvaluationDetail(empId, resultId);
         return ApiResponse.success(result);
     }
+
+    @GetMapping("/{roundNo}/criteria")
+    @Operation(summary = "인사 평가 기준 조회")
+    public ApiResponse<HrEvaluationCriteriaDto> getEvaluationCriteria(
+            @PathVariable Integer roundNo
+    ) {
+        return ApiResponse.success(evaluationHrService.getEvaluationCriteria(roundNo));
+    }
+
 }

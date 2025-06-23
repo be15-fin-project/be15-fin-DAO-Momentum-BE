@@ -77,6 +77,14 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
                 .build();
     }
 
+    public HrEvaluationCriteriaDto getEvaluationCriteria(Integer roundNo) {
+        int targetRoundNo = (roundNo != null) ? roundNo : mapper.findLatestRoundNo();
+        RateInfo rate = mapper.findRateInfoByRoundNo(targetRoundNo);
+        WeightInfo weight = mapper.findWeightInfoByRoundNo(targetRoundNo);
+        return new HrEvaluationCriteriaDto(rate, weight);
+    }
+
+
 
     // 페이지네이션
     private Pagination buildPagination(int page, int size, long total) {

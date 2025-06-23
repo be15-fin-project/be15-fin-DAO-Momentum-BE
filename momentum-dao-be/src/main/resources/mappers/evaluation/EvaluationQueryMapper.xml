@@ -128,4 +128,33 @@
     </select>
 
 
+    <!-- 인사 평가 회차 별 인사 평가 등급 및 가중치 기준 조회 -->
+    <select id="findRateInfoByRoundNo"
+            parameterType="int"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            rate_s, rate_a, rate_b, rate_c, rate_d
+        FROM hr_rate
+        WHERE round_id = (SELECT round_id FROM eval_round WHERE round_no = #{roundNo})
+    </select>
+
+    <select id="findWeightInfoByRoundNo"
+            parameterType="int"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            perform_wt AS weightPerform,
+            team_wt    AS weightTeam,
+            attitude_wt AS weightAttitude,
+            growth_wt   AS weightGrowth,
+            engagement_wt AS weightEngagement,
+            result_wt   AS weightResult
+        FROM hr_weight
+        WHERE round_id = (SELECT round_id FROM eval_round WHERE round_no = #{roundNo})
+    </select>
+
+    <select id="findLatestRoundNo"
+            resultType="int">
+        SELECT MAX(round_no) FROM eval_round
+    </select>
+
 </mapper>

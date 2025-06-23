@@ -36,4 +36,9 @@ public interface EvaluationHrMapper {
 
     List<FactorScoreDto> findFactorScores(@Param("resultId") Long resultId);
 
+    RateInfo findRateInfoByRoundNo(@Param("roundNo") int roundNo);
+
+    WeightInfo findWeightInfoByRoundNo(@Param("roundNo") int roundNo);
+
+    int findLatestRoundNo(); // Optional: roundNo 없을 때 최신 회차용
 }
