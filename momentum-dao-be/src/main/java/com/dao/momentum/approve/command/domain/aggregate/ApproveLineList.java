@@ -35,10 +35,10 @@ public class ApproveLineList {
     private String reason;
 
     @Builder
-    public ApproveLineList(Long approveLineId, Integer statusId, Long empId,
+    public ApproveLineList(Long approveLineId, Long empId,
                            LocalDateTime completeAt, String reason) {
         this.approveLineId = approveLineId;
-        this.statusId = statusId;
+        this.statusId = 1;
         this.empId = empId;
         this.completeAt = completeAt;
         this.reason = reason;

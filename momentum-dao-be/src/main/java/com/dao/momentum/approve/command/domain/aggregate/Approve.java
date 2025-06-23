@@ -47,11 +47,11 @@ public class Approve {
 
     @Builder
     public Approve(
-            Long parentApproveId, Integer statusId, Long empId, String approveTitle,
+            Long parentApproveId, Long empId, String approveTitle,
             ApproveType approveType, LocalDateTime completeAt, LocalDateTime cancelAt
     ) {
         this.parentApproveId = parentApproveId;
-        this.statusId = statusId;
+        this.statusId = 1;
         this.empId = empId;
         this.approveTitle = approveTitle;
         this.approveType = approveType;

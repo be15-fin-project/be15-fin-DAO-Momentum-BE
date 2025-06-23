@@ -2,13 +2,11 @@ package com.dao.momentum.announcement.command.application.controller;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
-import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
-import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.service.AnnouncementCommandService;
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
-import com.dao.momentum.announcement.exception.FileUploadFailedException;
+import com.dao.momentum.file.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
@@ -27,14 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class AnnouncementCommandController {
 
     private final AnnouncementCommandService announcementCommandService;
-
-    @PostMapping("/presigned-url")
-    public ResponseEntity<ApiResponse<FilePresignedUrlResponse>> generatePresignedUrl(@RequestBody FilePresignedUrlRequest request) {
-        FilePresignedUrlResponse response =
-                announcementCommandService.generatePresignedUrl(request);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<AnnouncementCreateResponse>> createAnnouncement(

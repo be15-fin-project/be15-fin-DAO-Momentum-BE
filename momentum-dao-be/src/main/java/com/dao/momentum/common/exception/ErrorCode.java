@@ -23,6 +23,7 @@ public enum ErrorCode {
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
 
+
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     DEPARTMENT_NOT_FOUND("11002", "시스템 오류입니다." , HttpStatus.NOT_FOUND),
@@ -56,7 +57,6 @@ public enum ErrorCode {
     NOT_EXIST_WORK_CORRECTION("30009", "존재하지 않는 출퇴근 정정 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
 
-
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
     STATISTICS_NOT_FOUND("40001", "해당 조건에 대한 KPI 통계가 없습니다.", HttpStatus.NOT_FOUND),
@@ -69,6 +69,9 @@ public enum ErrorCode {
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
+    MY_OBJECTIONS_NOT_FOUND("40022", "조회 가능한 인사 평가 이의제기 내역이 없습니다.", HttpStatus.NOT_FOUND),
+    HR_EVALUATION_NOT_FOUND("40023", "인사 평가 세부 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
 
     //공지사항 오류(60001 - 69999)
     ANNOUNCEMENT_NOT_FOUND("60001", "해당 공지사항 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -76,6 +79,8 @@ public enum ErrorCode {
 
     // 파일 처리 오류(80001 - 89999)
     FILE_UPLOAD_FAIL("80001", "파일 업로드에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_TOO_LARGE("80002", "파일은 10MB 이하만 업로드 가능합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_EXTENSION("80003", "허용되지 않은 파일 확장자입니다.", HttpStatus.BAD_REQUEST),
 
     // 공통 오류
     VALIDATION_ERROR("90001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),

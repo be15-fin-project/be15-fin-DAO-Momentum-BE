@@ -17,6 +17,23 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   data:
     redis:
@@ -56,3 +73,7 @@ cloud:
       key-pair-id: K2HAOQD1EYCOQG
       domain: momentum-dao.site
       private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
+
+custom:
+  kafka:
+    notification-topic: user.notification

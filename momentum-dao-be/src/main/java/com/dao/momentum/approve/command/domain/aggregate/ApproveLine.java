@@ -36,9 +36,9 @@ public class ApproveLine {
     private LocalDateTime completeAt;
 
     @Builder
-    public ApproveLine(Integer statusId, Long approveId, Integer approveLineOrder,
+    public ApproveLine(Long approveId, Integer approveLineOrder,
                        IsRequiredAll isRequiredAll, LocalDateTime completeAt) {
-        this.statusId = statusId;
+        this.statusId = 1;
         this.approveId = approveId;
         this.approveLineOrder = approveLineOrder;
         this.isRequiredAll = isRequiredAll;

@@ -57,6 +57,18 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String createPasswordResetToken(String employeeId){
+        Date now  = new Date();
+        Date expiryDate = new Date(now.getTime()+600 * 1000);
+        return Jwts.builder()
+                .subject(employeeId)
+                .claim("type", "PASSWORD_RESET")
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(secretKey)
+                .compact();
+    }
+
     public long getRefreshExpiration() {
         return jwtRefreshExpiration;
     }
