@@ -1,9 +1,9 @@
 package com.dao.momentum.organization.contract.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
-import com.dao.momentum.announcement.command.domain.aggregate.File;
-import com.dao.momentum.announcement.command.domain.repository.FileRepository;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.file.command.domain.aggregate.File;
+import com.dao.momentum.file.command.domain.repository.FileRepository;
 import com.dao.momentum.organization.contract.command.application.dto.request.ContractCreateRequest;
 import com.dao.momentum.organization.contract.command.application.dto.response.ContractCreateResponse;
 import com.dao.momentum.organization.contract.command.domain.aggregate.Contract;
