@@ -68,7 +68,7 @@ public class ContractCommandService {
 
         File file = File.builder()
                 .contractId(contract.getContractId())
-                .url(attachment.getS3Key())
+                .s3Key(attachment.getS3Key())
                 .type(attachment.getType())
                 .build();
 
@@ -102,7 +102,7 @@ public class ContractCommandService {
                             log.warn("계약서 첨부파일 조회 실패 - contractId: {}", contractId);
                             return new ContractException(ErrorCode.ATTACHMENT_NOT_FOUND);
                         });
-        s3Service.deleteFileFromS3(file.getUrl());
+        s3Service.deleteFileFromS3(file.getS3Key());
         fileRepository.deleteById(file.getAttachmentId());
 
         contractRepository.delete(contractToDelete);
