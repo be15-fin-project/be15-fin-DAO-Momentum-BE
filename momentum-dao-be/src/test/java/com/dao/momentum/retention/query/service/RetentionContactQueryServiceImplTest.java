@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.exception.RetentionException;
 import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactItemDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
 import com.dao.momentum.retention.query.mapper.RetentionContactMapper;
@@ -103,4 +104,53 @@ class RetentionContactQueryServiceImplTest {
         assertThat(result.getItems()).hasSize(1);
         assertThat(result.getItems().get(0).getManagerName()).isEqualTo("정지우");
     }
+
+    @Test
+    @DisplayName("면담 기록 상세 조회 성공")
+    void getContactDetail_success() {
+        // given
+        Long retentionId = 1L;
+        Long requesterEmpId = 34L;
+
+        RetentionContactDetailDto raw = RetentionContactDetailDto.builder()
+                .retentionId(retentionId)
+                .targetName("김예은")
+                .targetNo("20250019")
+                .deptName("영업팀")
+                .positionName("사원")
+                .managerId(34L)
+                .managerName("김하윤")
+                .reason("근속 지수가 낮아져 상담 요청이 필요합니다.")
+                .createdAt(LocalDateTime.of(2025, 6, 23, 15, 28, 18))
+                .response("업무 만족도 향상을 위한 경로 안내")
+                .responseAt(LocalDateTime.of(2025, 6, 23, 15, 28, 18))
+                .feedback("직무 재배치 검토 중")
+                .build();
+
+        when(mapper.findContactDetailById(retentionId)).thenReturn(raw);
+
+        // when
+        RetentionContactDetailDto result = service.getContactDetail(retentionId, requesterEmpId);
+
+        // then
+        assertThat(result.getRetentionId()).isEqualTo(retentionId);
+        assertThat(result.getTargetName()).isEqualTo("김예은");
+        assertThat(result.getManagerId()).isEqualTo(34L);
+        assertThat(result.isDeletable()).isFalse();
+        assertThat(result.isFeedbackWritable()).isFalse();
+    }
+
+    @Test
+    @DisplayName("면담 기록 상세 조회 실패 - 데이터 없음")
+    void getContactDetail_notFound() {
+        // given
+        Long retentionId = 999L;
+        when(mapper.findContactDetailById(retentionId)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> service.getContactDetail(retentionId, 34L))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_NOT_FOUND.getMessage());
+    }
+
 }

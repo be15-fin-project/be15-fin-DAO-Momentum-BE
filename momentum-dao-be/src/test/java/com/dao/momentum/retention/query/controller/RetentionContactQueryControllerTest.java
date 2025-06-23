@@ -2,6 +2,7 @@ package com.dao.momentum.retention.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactItemDto;
 import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
 import com.dao.momentum.retention.query.service.RetentionContactQueryService;
@@ -19,8 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -122,4 +122,51 @@ class RetentionContactQueryControllerTest {
                 .andExpect(jsonPath("$.data.items[0].reason").value("복지 불만 비율이 높아짐"))
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("면담 기록 상세 조회 성공")
+    @WithMockUser(username = "34", authorities = "MANAGER")
+    void getContactDetail_success() throws Exception {
+        // given
+        Long retentionId = 1L;
+
+        RetentionContactDetailDto detail = RetentionContactDetailDto.builder()
+                .retentionId(retentionId)
+                .targetName("김예은")
+                .targetNo("20250019")
+                .deptName("영업팀")
+                .positionName("사원")
+                .managerId(34L)
+                .managerName("김하윤")
+                .reason("근속 지수가 낮아져 상담 요청이 필요합니다.")
+                .createdAt(LocalDateTime.of(2025, 6, 23, 15, 28, 18))
+                .response("업무 만족도 향상을 위한 경로 안내")
+                .responseAt(LocalDateTime.of(2025, 6, 23, 15, 28, 18))
+                .feedback("직무 재배치 검토 중")
+                .feedbackWritable(false)
+                .deletable(false)
+                .build();
+
+        Mockito.when(contactQueryService.getContactDetail(eq(retentionId), eq(34L)))
+                .thenReturn(detail);
+
+        // when & then
+        mockMvc.perform(get("/retention/contact/{retentionId}", retentionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.retentionId").value(1))
+                .andExpect(jsonPath("$.data.targetName").value("김예은"))
+                .andExpect(jsonPath("$.data.targetNo").value("20250019"))
+                .andExpect(jsonPath("$.data.deptName").value("영업팀"))
+                .andExpect(jsonPath("$.data.positionName").value("사원"))
+                .andExpect(jsonPath("$.data.managerId").value(34))
+                .andExpect(jsonPath("$.data.managerName").value("김하윤"))
+                .andExpect(jsonPath("$.data.reason").value("근속 지수가 낮아져 상담 요청이 필요합니다."))
+                .andExpect(jsonPath("$.data.response").value("업무 만족도 향상을 위한 경로 안내"))
+                .andExpect(jsonPath("$.data.feedback").value("직무 재배치 검토 중"))
+                .andExpect(jsonPath("$.data.feedbackWritable").value(false))
+                .andExpect(jsonPath("$.data.deletable").value(false))
+                .andDo(print());
+    }
+
 }
