@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ContractListResponse {
-    private List<ContractSummaryDTO> contracts;
+    private List<ContractDTO> contracts;
 
     private Pagination pagination;
 }

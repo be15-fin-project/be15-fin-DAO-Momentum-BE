@@ -69,7 +69,7 @@ class WorkCommandControllerTest {
                             req.setRemoteAddr("127.0.0.1");
                             return req;
                         }))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.workSummaryDTO.startAt").value("2025-06-13T09:00:00"))
                 .andExpect(jsonPath("$.data.workSummaryDTO.endAt").value("2025-06-13T18:00:00"));
@@ -103,7 +103,7 @@ class WorkCommandControllerTest {
                             req.setRemoteAddr("127.0.0.1");
                             return req;
                         }))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.workSummaryDTO.startAt").value("2025-06-13T09:10:00"))
                 .andExpect(jsonPath("$.data.workSummaryDTO.endAt").value("2025-06-13T18:00:00"));

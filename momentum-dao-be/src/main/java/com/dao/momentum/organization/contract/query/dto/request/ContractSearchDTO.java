@@ -4,22 +4,14 @@ import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
-
 @Getter
 @Builder
 public class ContractSearchDTO {
-    private Long empNo;
-
-    private String empName;
-
     private ContractType type;
 
-    private LocalDate searchStartDate;
-
-    private LocalDate searchEndDate;
-
-    private Order order;
+//    private LocalDate searchStartDate;
+//
+//    private LocalDate searchEndDate;
 
     @Min(1)
     private Integer page;

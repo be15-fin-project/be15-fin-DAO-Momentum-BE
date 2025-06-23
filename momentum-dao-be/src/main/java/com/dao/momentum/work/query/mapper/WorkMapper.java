@@ -1,7 +1,6 @@
 package com.dao.momentum.work.query.mapper;
 
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
-import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.response.WorkDTO;
 import org.apache.ibatis.annotations.Mapper;
