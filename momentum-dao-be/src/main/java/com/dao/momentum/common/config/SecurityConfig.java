@@ -92,7 +92,8 @@ public class SecurityConfig {
         // 로그인 및 토큰 관련 (모두 허용)
         auths.requestMatchers(
             "/employees/login",
-                "/employees"
+                "/employees",
+                "/employees/reset-password"
         ).permitAll();
     }
 
