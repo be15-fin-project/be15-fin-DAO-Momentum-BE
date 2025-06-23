@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.SelfEvaluationMapper">
+
+    <!-- 자가 진단 목록 조회 -->
+    <select id="findSelfEvaluations" resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationResponseDto">
+        SELECT
+            er.result_id AS resultId,
+            e.emp_no AS empNo,
+            e.name AS evalName,
+            ef.name AS formName,
+            r.round_no AS roundNo,
+            er.score AS score,
+            er.reason AS reason,
+            er.created_at AS createdAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'SELF'
+            <if test="empNo != null">AND e.emp_no = #{empNo}</if>
+            <if test="formId != null">AND ef.form_id = #{formId}</if>
+            <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+        ORDER BY er.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 자가 진단 총 개수 -->
+    <select id="countSelfEvaluations" resultType="long">
+        SELECT COUNT(*)
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'SELF'
+            <if test="empNo != null">AND e.emp_no = #{empNo}</if>
+            <if test="formId != null">AND ef.form_id = #{formId}</if>
+            <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+    </select>
+
+    <!-- 자가 진단 상세 조회 -->
+    <select id="findSelfEvaluationDetail" resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationResponseDto">
+        SELECT
+            er.result_id AS resultId,
+            e.emp_no AS empNo,
+            e.name AS evalName,
+            ef.name AS formName,
+            r.round_no AS roundNo,
+            er.score AS score,
+            er.reason AS reason,
+            er.created_at AS createdAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE er.result_id = #{resultId}
+        AND et.name = 'SELF'
+    </select>
+
+    <!-- 요인별 점수 -->
+    <select id="findFactorScores" resultType="com.dao.momentum.evaluation.eval.query.dto.response.FactorScoreDto">
+        SELECT
+            ep.name AS propertyName,
+            es.score AS score
+        FROM eval_score es
+        JOIN eval_property ep ON es.property_id = ep.property_id
+        WHERE es.result_id = #{resultId}
+    </select>
+</mapper>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.evaluation.kpi.query.mapper.KpiRequestMapper">
+
+    <select id="findKpiRequests" resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiRequestListResponseDto">
+        SELECT
+            k.kpi_id,
+            e.emp_no,
+            e.name AS employee_name,
+            d.name AS department_name,
+            p.name AS position_name,
+            k.goal,
+            k.goal_value,
+            k.kpi_progress,
+            s.status_type AS status_name,
+            k.created_at,
+            k.deadline
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN position p ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        WHERE k.is_deleted = 'N'
+
+            AND (
+            -- 부서장이면 부서원 전체 조회
+            e.dept_id IN (
+                SELECT dept_id FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId}
+            )
+
+            -- 팀장인 경우 (같은 부서, 본인 제외, 팀장 권한 보유, 부서장이 아님)
+            OR (
+            e.dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{requesterEmpId})
+            AND e.emp_id != #{requesterEmpId}
+            AND EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = #{requesterEmpId}
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId}
+            )
+            )
+
+            -- 부서장이면서 부서 내 다른 팀장들 조회
+            OR (
+            e.dept_id = (SELECT dept_id FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId})
+            AND EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = e.emp_id
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = #{requesterEmpId}
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            )
+            )
+
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+
+            <if test="statusId != null">
+                AND k.status_id = #{statusId}
+            </if>
+
+            <if test="completed != null">
+                <choose>
+                    <when test="completed">
+                        AND k.kpi_progress = 100
+                    </when>
+                    <otherwise>
+                        AND k.kpi_progress &lt; 100
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="startDate != null">
+                AND DATE(k.created_at) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND DATE(k.created_at) &lt;= #{endDate}
+            </if>
+
+        ORDER BY k.created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countKpiRequests" resultType="int">
+        SELECT COUNT(1)
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN position p ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        WHERE k.is_deleted = 'N'
+
+            AND (
+            e.dept_id IN (
+                SELECT dept_id FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId}
+            )
+
+            OR (
+                e.dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{requesterEmpId})
+                AND e.emp_id != #{requesterEmpId}
+                AND EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = #{requesterEmpId}
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId}
+            )
+            )
+
+            OR (
+                e.dept_id = (SELECT dept_id FROM dept_head dh WHERE dh.emp_id = #{requesterEmpId})
+            AND EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = e.emp_id
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM employee_roles er
+                JOIN user_role ur ON er.user_role_id = ur.user_role_id
+                WHERE er.emp_id = #{requesterEmpId}
+                    AND ur.user_role_name = 'MANAGER'
+            )
+            )
+            )
+
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+
+            <if test="statusId != null">
+                AND k.status_id = #{statusId}
+            </if>
+
+            <if test="completed != null">
+                <choose>
+                    <when test="completed">
+                        AND k.kpi_progress = 100
+                    </when>
+                    <otherwise>
+                        AND k.kpi_progress &lt; 100
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="startDate != null">
+                AND DATE(k.created_at) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND DATE(k.created_at) &lt;= #{endDate}
+            </if>
+    </select>
+
+</mapper>

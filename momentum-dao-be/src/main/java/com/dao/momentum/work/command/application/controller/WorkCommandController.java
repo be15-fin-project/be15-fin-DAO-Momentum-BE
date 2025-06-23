@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +32,7 @@ public class WorkCommandController {
     ) {
         LocalDateTime startPushedAt = LocalDateTime.now();
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.success(
                     workCommandService.createWork(userDetails, httpServletRequest, startPushedAt)
                 )
@@ -62,7 +63,7 @@ public class WorkCommandController {
             startPushedAt = workStartRequest.getStartPushedAt();
         }
 
-        return ResponseEntity.ok(
+        return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.success(
                         workCommandService.createWork(userDetails, httpServletRequest, startPushedAt)
                 )

@@ -64,4 +64,6 @@ cloud:
     s3:
       bucket: dao-momentum
     cloudfront:
-      domain: http://momentum-dao.site
+      key-pair-id: K2HAOQD1EYCOQG
+      domain: momentum-dao.site
+      private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}

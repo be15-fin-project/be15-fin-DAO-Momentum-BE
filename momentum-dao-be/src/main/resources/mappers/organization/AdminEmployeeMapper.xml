@@ -80,4 +80,43 @@
         </if>
     </select>
 
+    <select id="getEmployeeDetails" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeDTO">
+        SELECT
+            emp.emp_id,
+            emp.emp_no,
+            emp.name,
+            emp.email,
+            dept.dept_id,
+            dept.name AS deptName,
+            pos.position_id,
+            pos.name AS positionName,
+            GROUP_CONCAT(ur.user_role_name) AS userRolesInString,
+            emp.gender,
+            emp.address,
+            emp.contact,
+            emp.join_date,
+            emp.status,
+            emp.birth_date
+        FROM employee AS emp
+        JOIN department AS dept ON emp.dept_id = dept.dept_id
+        JOIN position AS pos ON emp.position_id = pos.position_id
+        LEFT JOIN employee_roles AS erole ON emp.emp_id = erole.emp_id
+        LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
+        WHERE emp.emp_id = #{empId}
+        GROUP BY emp.emp_id
+    </select>
+
+    <select id="getEmployeeRecords" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeRecordsDTO">
+        SELECT
+        record_id,
+        emp_id,
+        type,
+        organization,
+        start_date,
+        end_date,
+        name
+        FROM employee_records
+        WHERE emp_id = #{empId}
+    </select>
+
 </mapper>

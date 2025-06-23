@@ -3,11 +3,11 @@ package com.dao.momentum.organization.employee.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDTO;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
-import com.dao.momentum.organization.employee.query.dto.response.EmployeeListResponse;
-import com.dao.momentum.organization.employee.query.dto.response.EmployeeSummaryDTO;
+import com.dao.momentum.organization.employee.query.dto.response.*;
 import com.dao.momentum.organization.employee.query.mapper.AdminEmployeeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +17,7 @@ public class AdminEmployeeQueryService {
 
     private final AdminEmployeeMapper adminEmployeeMapper;
 
+    @Transactional(readOnly = true)
     public EmployeeListResponse getEmployees(EmployeeSearchRequest employeeSearchRequest) {
         EmployeeSearchDTO employeeSearchDTO = EmployeeSearchRequest.fromRequest(employeeSearchRequest);
 
@@ -37,6 +38,17 @@ public class AdminEmployeeQueryService {
                                 .totalPage(totalPages)
                                 .build()
                 )
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public EmployeeDetailsResponse getEmployeeDetails(long empId) {
+        EmployeeDTO employeeDetails = adminEmployeeMapper.getEmployeeDetails(empId);
+        List<EmployeeRecordsDTO> employeeRecords = adminEmployeeMapper.getEmployeeRecords(empId);
+
+        return EmployeeDetailsResponse.builder()
+                .employeeDetails(employeeDetails)
+                .employeeRecords(employeeRecords)
                 .build();
     }
 }
