@@ -1,4 +1,4 @@
-package com.dao.momentum.common.file.dto.response;
+package com.dao.momentum.file.command.application.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
