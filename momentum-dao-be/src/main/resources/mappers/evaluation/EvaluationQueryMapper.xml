@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.hr.query.mapper.EvaluationHrMapper">
+
+    <!-- 1) 페이징된 HR 평가 내역 목록 조회 -->
+    <select id="findHrEvaluations"
+            parameterType="map"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto">
+        SELECT
+            r.round_no              AS round_no,
+            CASE
+                WHEN er.score >= 95 THEN 'S'
+                WHEN er.score >= 85 THEN 'A'
+                WHEN er.score >= 70 THEN 'B'
+                WHEN er.score >= 60 THEN 'C'
+                ELSE 'D'
+            END                     AS overall_grade,
+            er.created_at           AS evaluated_at,
+            er.result_id            AS result_id
+        FROM eval_response er
+        JOIN eval_round r  ON er.round_id = r.round_id
+        JOIN eval_form  f  ON er.form_id  = f.form_id
+        WHERE er.eval_id = #{empId}
+            AND f.name = 'HR_REVIEW'
+            <if test="req.startDate != null">
+                AND r.start_at <![CDATA[>=]]> #{req.startDate}
+            </if>
+            <if test="req.endDate != null">
+                AND r.start_at <![CDATA[<=]]> #{req.endDate}
+            </if>
+        ORDER BY r.start_at DESC
+        LIMIT #{req.offset}, #{req.size}
+    </select>
+
+    <!-- 2) 전체 건수 조회 -->
+    <select id="countHrEvaluations"
+            parameterType="map"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM eval_response er
+        JOIN eval_round r  ON er.round_id = r.round_id
+        JOIN eval_form  f  ON er.form_id  = f.form_id
+        WHERE er.eval_id = #{empId}
+            AND f.name = 'HR_REVIEW'
+            <if test="req.startDate != null">
+                AND r.start_at <![CDATA[>=]]> #{req.startDate}
+            </if>
+            <if test="req.endDate != null">
+                AND r.start_at <![CDATA[<=]]> #{req.endDate}
+            </if>
+    </select>
+
+    <!-- 3) 단일 평가 결과에 대한 요인별 점수 목록 조회 -->
+    <select id="findFactorScores"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
+        SELECT
+            p.name      AS property_name,
+            CASE
+                WHEN s.score >= 95 THEN '탁월'
+                WHEN s.score >= 85 THEN '우수'
+                WHEN s.score >= 70 THEN '양호'
+                WHEN s.score >= 60 THEN '주의'
+                ELSE '미흡'
+            END                     AS Score
+        FROM eval_score s
+        JOIN eval_property p ON s.property_id = p.property_id
+        WHERE s.result_id = #{resultId}
+        ORDER BY p.property_id
+    </select>
+
+
+    <!-- 인사 상세 조회 -->
+    <!-- 평가 기본 정보 -->
+    <select id="findEvaluationContent"
+            parameterType="map"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationDetailDto">
+        SELECT
+            er.result_id            AS resultId,
+            e.emp_no                AS empNo,
+            e.name                  AS empName,
+            er.created_at           AS evaluatedAt,
+            CASE
+                WHEN er.score >= 95 THEN 'A'
+                WHEN er.score >= 85 THEN 'B'
+                WHEN er.score >= 70 THEN 'C'
+                WHEN er.score >= 60 THEN 'D'
+                ELSE 'E'
+            END                     AS overallGrade
+        FROM eval_response er
+        JOIN employee e ON e.emp_id = er.eval_id
+        WHERE er.result_id = #{resultId}
+            AND er.eval_id = #{empId}
+    </select>
+
+    <!-- 등급 비율 조회 -->
+    <select id="findRateInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            r.rate_s AS rateS,
+            r.rate_a AS rateA,
+            r.rate_b AS rateB,
+            r.rate_c AS rateC,
+            r.rate_d AS rateD
+        FROM eval_response er
+        JOIN hr_rate r ON r.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+    <!-- 가중치 정보 조회 -->
+    <select id="findWeightInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            w.perform_wt     AS weightPerform,
+            w.team_wt        AS weightTeam,
+            w.attitude_wt    AS weightAttitude,
+            w.growth_wt      AS weightGrowth,
+            w.engagement_wt  AS weightEngagement,
+            w.result_wt      AS weightResult
+        FROM eval_response er
+        JOIN hr_weight w ON w.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+
+    <!-- 인사 평가 회차 별 인사 평가 등급 및 가중치 기준 조회 -->
+    <select id="findRateInfoByRoundNo"
+            parameterType="int"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            rate_s, rate_a, rate_b, rate_c, rate_d
+        FROM hr_rate
+        WHERE round_id = (SELECT round_id FROM eval_round WHERE round_no = #{roundNo})
+    </select>
+
+    <select id="findWeightInfoByRoundNo"
+            parameterType="int"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            perform_wt AS weightPerform,
+            team_wt    AS weightTeam,
+            attitude_wt AS weightAttitude,
+            growth_wt   AS weightGrowth,
+            engagement_wt AS weightEngagement,
+            result_wt   AS weightResult
+        FROM hr_weight
+        WHERE round_id = (SELECT round_id FROM eval_round WHERE round_no = #{roundNo})
+    </select>
+
+    <select id="findLatestRoundNo"
+            resultType="int">
+        SELECT MAX(round_no) FROM eval_round
+    </select>
+
+</mapper>

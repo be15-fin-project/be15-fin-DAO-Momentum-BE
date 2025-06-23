@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.employee.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.application.dto.request.AppointCreateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
@@ -9,7 +10,9 @@ import com.dao.momentum.organization.employee.command.application.dto.response.A
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
+import com.dao.momentum.organization.position.exception.PositionException;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.*;
 
 @Controller

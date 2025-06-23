@@ -1,6 +1,8 @@
 package com.dao.momentum.organization.employee.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.jwt.JwtTokenProvider;
+import com.dao.momentum.email.service.EmailService;
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import com.dao.momentum.organization.department.exception.DepartmentException;
@@ -12,6 +14,7 @@ import com.dao.momentum.organization.employee.command.application.dto.response.*
 import com.dao.momentum.organization.employee.command.domain.aggregate.*;
 import com.dao.momentum.organization.employee.command.domain.repository.*;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import jakarta.mail.MessagingException;
 import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
@@ -43,6 +46,8 @@ public class EmployeeCommandService {
     private final AppointRepository appointRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public void createEmployee(EmployeeRegisterRequest request) {
@@ -71,7 +76,13 @@ public class EmployeeCommandService {
             employeeRolesRepository.save(new EmployeeRoles(null, employee.getEmpId(), userRoleId));
         }
 
-        //이메일 처리(추후 추가)
+        String passwordResetToken = jwtTokenProvider.createPasswordResetToken(
+                String.valueOf(employee.getEmpId())
+        );
+
+        //이메일 처리
+        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+
     }
 
     public String generateRandomPassword() {
