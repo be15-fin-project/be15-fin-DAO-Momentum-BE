@@ -11,6 +11,7 @@ import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +23,7 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
     private final EvaluationManageMapper evaluationManageMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public EvaluationRoundListResultDto getEvaluationRounds(EvaluationRoundListRequestDto request) {
 
         long total = evaluationManageMapper.countEvaluationRounds(request);
@@ -53,6 +55,7 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
 
     // 평가 종류 조회
     @Override
+    @Transactional(readOnly = true)
     public List<EvaluationFormResponseDto> getEvaluationForms(EvaluationFormListRequestDto request) {
         return evaluationManageMapper.findEvaluationForms(request);
     }
