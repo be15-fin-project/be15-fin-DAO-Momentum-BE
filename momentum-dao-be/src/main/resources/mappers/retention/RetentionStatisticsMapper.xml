@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionStatisticsMapper">
+
+    <!-- 1. 평균 근속 지수 조회 -->
+    <select id="findAverageRetentionScore"
+            parameterType="com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto"
+            resultType="com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto">
+        SELECT
+        ROUND(AVG(rs.retention_score), 2) AS averageScore
+        FROM
+        retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        <where>
+            <if test="req.year != null">
+                AND rs.round_id IN (
+                SELECT round_id
+                FROM retention_round
+                WHERE year = #{req.year}
+                <if test="req.month != null">
+                    AND month = #{req.month}
+                </if>
+                )
+            </if>
+            <if test="req.deptId != null">
+                AND e.dept_id = #{req.deptId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 2. 부서별 안정성 유형 분포 -->
+    <select id="findStabilityDistributionByDept" resultType="com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw">
+        SELECT
+            d.name AS deptName,
+            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
+            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
+            COUNT(*) AS totalCount
+        FROM
+            retention_support rs
+                JOIN
+            employee e ON rs.emp_id = e.emp_id
+                JOIN
+            department d ON e.dept_id = d.dept_id
+        WHERE
+            rs.round_id IN (
+                SELECT round_id
+                FROM retention_round
+                WHERE year = #{year}
+            )
+        GROUP BY
+            d.dept_id, d.name
+        ORDER BY
+            d.name
+    </select>
+
+    <select id="findOverallStabilityDistribution"
+            parameterType="com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto"
+            resultType="com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw">
+        SELECT
+            d.name AS deptName,
+            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
+            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
+            COUNT(*) AS totalCount
+        FROM retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN retention_round rr ON rs.round_id = rr.round_id
+            <where>
+                <if test="req.year != null">
+                    AND rr.year = #{req.year}
+                </if>
+                <if test="req.deptId != null">
+                    AND e.dept_id = #{req.deptId}
+                </if>
+            </where>
+    </select>
+
+</mapper>
