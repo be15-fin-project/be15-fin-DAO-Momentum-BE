@@ -56,12 +56,15 @@ public class ContractCommandService {
                 .createdAt(now)
                 .build();
 
-        AttachmentRequest attachmentRequest = contractCreateRequest.getAttachment();
+        AttachmentRequest attachment = contractCreateRequest.getAttachment();
+        if (attachment == null) {
+            throw new ContractException(ErrorCode.ATTACHEMENT_REQUIRED);
+        }
 
         File file = File.builder()
                 .contractId(contract.getContractId())
-                .url(attachmentRequest.getS3Key())
-                .type(attachmentRequest.getType())
+                .url(attachment.getS3Key())
+                .type(attachment.getType())
                 .build();
 
         fileRepository.save(file);
