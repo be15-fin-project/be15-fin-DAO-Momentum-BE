@@ -3,10 +3,17 @@ package com.dao.momentum.organization.employee.command.application.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
 import com.dao.momentum.email.service.EmailService;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRecords;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRoleName;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRecordsRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
@@ -15,16 +22,18 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
@@ -32,6 +41,7 @@ import java.util.stream.Collectors;
 public class EmployeeCommandService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeRolesRepository employeeRolesRepository;
+    private final EmployeeRecordsRepository employeeRecordsRepository;
     private final UserRoleRepository userRoleRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
@@ -39,29 +49,29 @@ public class EmployeeCommandService {
     private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public void createEmployee(EmployeeRegisterRequest request){
+    public void createEmployee(EmployeeRegisterRequest request) {
         List<Integer> userRoleIds;
 
         Employee employee = modelMapper.map(request, Employee.class);
 
-        if(employeeRepository.findByEmail(request.getEmail()).isPresent()){
+        if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new EmployeeException(ErrorCode.EMPLOYEE_ALREADY_EXISTS);
         }
 
         String nextEmpNo = generateNextEmpNo();
         employee.setEmpNo(nextEmpNo);
         String randomPassword = generateRandomPassword();
-        log.info("password : {}",randomPassword);
+        log.info("password : {}", randomPassword);
 
         employee.setPassword(passwordEncoder.encode(randomPassword));
         employeeRepository.save(employee);
 
-        try{
+        try {
             userRoleIds = userRoleRepository.findIdsByUserRoleNames(Arrays.stream(request.getEmployeeRoles()).toList());
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new EmployeeException(ErrorCode.INVALID_CREDENTIALS);
         }
-        for(int userRoleId : userRoleIds){
+        for (int userRoleId : userRoleIds) {
             employeeRolesRepository.save(new EmployeeRoles(null, employee.getEmpId(), userRoleId));
         }
 
@@ -126,4 +136,114 @@ public class EmployeeCommandService {
         return nextEmpNo;
     }
 
+    @Transactional
+    public EmployeeInfoUpdateResponse updateEmployeeInfo(UserDetails userDetails, long empId, EmployeeInfoUpdateRequest request) {
+        long adminId = Long.parseLong(userDetails.getUsername());
+        validateActiveAdmin(adminId);
+
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        employee.fromUpdateEmpInfo(request);
+        employeeRepository.save(employee);
+
+        EmployeeInfoDTO employeeInfo = EmployeeInfoDTO.fromEmployee(employee);
+        log.info("직원 정보 수정 완료 - 직원 ID: {}, 수정자(관리자) ID: {}, 수정 일시: {}", empId, adminId, LocalDateTime.now());
+
+        return EmployeeInfoUpdateResponse.builder()
+                .employeeInfo(employeeInfo)
+                .message("직원 정보 수정 완료")
+                .build();
+    }
+
+    @Transactional
+    public EmployeeRecordsUpdateResponse updateEmployeeRecords(UserDetails userDetails, long empId, EmployeeRecordsUpdateRequest request) {
+        long adminId = Long.parseLong(userDetails.getUsername());
+        validateActiveAdmin(adminId);
+        validateTargetEmployee(empId);
+
+        // 1. 삭제 처리 및 검증
+        List<Long> idsToDelete = request.getIdsToDelete();
+        List<Long> deletedIds = deleteRequestedRecords(idsToDelete, empId);
+
+        // 2. 삽입 처리
+        List<EmployeeRecordsUpdateRequest.EmployeeRecordsItemRequest> itemsToInsert = request.getInsertItems();
+        List<Long> insertedIds = insertEmployeeRecords(itemsToInsert, empId);
+
+        log.info("직원 인사 정보 수정 완료 - 직원 ID: {}, 수정자(관리자) ID: {}, 수정 일시: {}", empId, adminId, LocalDateTime.now());
+
+        return EmployeeRecordsUpdateResponse.builder()
+                .insertedIds(insertedIds)
+                .deletedIds(deletedIds)
+                .message("직원 인사 정보 수정 완료")
+                .build();
+    }
+
+    private void validateActiveAdmin(long adminId) {
+        Employee admin = employeeRepository.findByEmpId(adminId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        Status adminStatus = admin.getStatus();
+
+        // 관리자가 휴직 또는 퇴직 상태이면 수정 불가
+        if (adminStatus != Status.EMPLOYED) {
+            log.warn("권한 없는 사용자의 요청 - 요청자 ID: {}, 요청자 상태: {}", adminId, adminStatus);
+            throw new EmployeeException(ErrorCode.NOT_EMPLOYED_USER);
+        }
+    }
+
+    private void validateTargetEmployee(long empId) {
+        if (!employeeRepository.existsByEmpId(empId)) {
+            throw new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND);
+        }
+    }
+
+    private List<Long> deleteRequestedRecords(List<Long> idsToDelete, long empId) {
+        if (idsToDelete == null || idsToDelete.isEmpty()) {
+            return List.of();
+        }
+
+        List<EmployeeRecords> recordsToDelete = employeeRecordsRepository.findAllByRecordIdIn(idsToDelete);
+
+        Set<Long> requestedIdSet = new HashSet<>(idsToDelete);
+        Set<Long> foundIdSet = recordsToDelete.stream()
+                .map(EmployeeRecords::getRecordId)
+                .collect(Collectors.toSet());
+
+        if (!requestedIdSet.equals(foundIdSet)) {
+            log.warn("유효하지 않은 삭제 요청 - 삭제 요청 id: {}, 조회된 id: {}", requestedIdSet, foundIdSet);
+            throw new EmployeeException(ErrorCode.INVALID_COMMAND_REQUEST);
+        }
+
+        // 삭제 요청된 empId가 record에 기록된 empId와 일치하는 지 검증
+        recordsToDelete.forEach(rec -> {
+            if (rec.getEmpId() != empId) {
+                log.warn("유효하지 않은 삭제 요청 - rec.empId: {}, rec.recordId: {}, requestedEmpId: {}", rec.getEmpId(), rec.getRecordId(), empId);
+                throw new EmployeeException(ErrorCode.INVALID_COMMAND_REQUEST);
+            }
+        });
+
+        employeeRecordsRepository.deleteAllByRecordIdIn(idsToDelete);
+        return idsToDelete;
+    }
+
+    private List<Long> insertEmployeeRecords(List<EmployeeRecordsUpdateRequest.EmployeeRecordsItemRequest> insertItems, long empId) {
+        if (insertItems == null || insertItems.isEmpty()) return List.of();
+
+        List<EmployeeRecords> recordsToInsert = insertItems.stream()
+                .map(item ->
+                        EmployeeRecords.builder()
+                                .empId(empId)
+                                .type(item.getType())
+                                .organization(item.getOrganization())
+                                .startDate(item.getStartDate())
+                                .endDate(item.getEndDate())
+                                .name(item.getName())
+                                .build()
+                ).toList();
+
+        return recordsToInsert.stream()
+                .map(employeeRecordsRepository::save)
+                .map(EmployeeRecords::getRecordId)
+                .toList();
+    }
 }
