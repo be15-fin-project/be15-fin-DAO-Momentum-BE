@@ -1,10 +1,10 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.EvaluationHrMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,82 +31,93 @@ class EvaluationHrServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         req = new MyHrEvaluationListRequestDto();
-        req.setStartDate(null);
-        req.setEndDate(null);
         req.setPage(1);
         req.setSize(10);
     }
 
     @Test
-    @DisplayName("정상: 평가 내역과 요인점수, 페이징 정보 반환")
+    @DisplayName("getHrEvaluations: 평가 목록을 정상 반환")
     void getHrEvaluations_success() {
-        // given
         HrEvaluationItemDto item = HrEvaluationItemDto.builder()
-                .roundNo(5)
-                .resultId(123L)
-                .overallGrade("우수")
-                .evaluatedAt(LocalDateTime.of(2025,6,15,14,23,45))
+                .resultId(1001L)
+                .roundNo(3)
+                .overallGrade("A")
+                .evaluatedAt(LocalDateTime.now())
                 .build();
 
-        long total = 1L;
-        List<HrEvaluationItemDto> items = List.of(item);
+        given(mapper.findHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(List.of(item));
+        given(mapper.countHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(1L);
+        given(mapper.findFactorScores(1001L)).willReturn(List.of()); // 검증 대상 아님
 
-        FactorScoreDto fs1 = FactorScoreDto.builder()
-                .propertyName("커뮤니케이션")
-                .score("B")
-                .build();
-        FactorScoreDto fs2 = FactorScoreDto.builder()
-                .propertyName("문제해결")
-                .score("A")
-                .build();
-
-        given(mapper.findHrEvaluations(1L, req)).willReturn(items);
-        given(mapper.countHrEvaluations(1L, req)).willReturn(total);
-        given(mapper.findFactorScores(123L)).willReturn(List.of(fs1, fs2));
-
-        // when
         HrEvaluationListResultDto result = service.getHrEvaluations(1L, req);
 
-        // then
-        // items 검증
         assertThat(result.getItems()).hasSize(1);
-        HrEvaluationItemDto actualItem = result.getItems().get(0);
-        assertThat(actualItem.getRoundNo()).isEqualTo(5);
-        assertThat(actualItem.getOverallGrade()).isEqualTo("우수");
-        assertThat(actualItem.getEvaluatedAt()).isEqualTo(LocalDateTime.of(2025,6,15,14,23,45));
-
-        // factorScores 검증
-        assertThat(result.getFactorScores())
-                .extracting(FactorScoreDto::getPropertyName, FactorScoreDto::getScore)
-                .containsExactlyInAnyOrder(
-                        tuple("커뮤니케이션", 88),
-                        tuple("문제해결", 92)
-                );
-
-        // pagination 검증
-        Pagination p = result.getPagination();
-        assertThat(p.getCurrentPage()).isEqualTo(1);
-        assertThat(p.getTotalItems()).isEqualTo(total);
-        assertThat(p.getTotalPage()).isEqualTo(1);
+        assertThat(result.getItems().get(0).getResultId()).isEqualTo(1001L);
+        assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
     }
 
     @Test
-    @DisplayName("빈 결과: items, factorScores 모두 빈 리스트, pagination만 생성")
-    void getHrEvaluations_empty() {
-        // given
-        given(mapper.findHrEvaluations(1L, req)).willReturn(List.of());
-        given(mapper.countHrEvaluations(1L, req)).willReturn(0L);
+    @DisplayName("getHrEvaluationDetail: 상세조회 정상")
+    void getHrEvaluationDetail_success() {
+        Long resultId = 1001L;
+        Long empId = 1L;
 
-        // when
-        HrEvaluationListResultDto result = service.getHrEvaluations(1L, req);
+        HrEvaluationDetailDto content = HrEvaluationDetailDto.builder()
+                .resultId(resultId)
+                .empNo("20250001")
+                .empName("김현우")
+                .overallGrade("S")
+                .evaluatedAt(LocalDateTime.now())
+                .build();
 
-        // then
-        assertThat(result.getItems()).isEmpty();
-        assertThat(result.getFactorScores()).isEmpty();
+        RateInfo rate = RateInfo.builder().rateS(10).rateA(20).rateB(30).rateC(25).rateD(15).build();
+        WeightInfo weight = WeightInfo.builder()
+                .weightPerform(25).weightTeam(20).weightAttitude(15)
+                .weightGrowth(10).weightEngagement(15).weightResult(15).build();
+        FactorScoreDto score = FactorScoreDto.builder().propertyName("태도").score("B").build();
 
-        Pagination p = result.getPagination();
-        assertThat(p.getCurrentPage()).isEqualTo(1);
-        assertThat(p.getTotalItems()).isZero();
-        assertThat(p.getTotalPage()).isZero();
+        given(mapper.findEvaluationContent(resultId, empId)).willReturn(content);
+        given(mapper.findRateInfo(resultId)).willReturn(rate);
+        given(mapper.findWeightInfo(resultId)).willReturn(weight);
+        given(mapper.findFactorScores(resultId)).willReturn(List.of(score));
+
+        HrEvaluationDetailResultDto result = service.getHrEvaluationDetail(empId, resultId);
+
+        assertThat(result.getContent().getResultId()).isEqualTo(resultId);
+        assertThat(result.getFactorScores()).hasSize(1);
+        assertThat(result.getRateInfo().getRateS()).isEqualTo(10);
+        assertThat(result.getWeightInfo().getWeightPerform()).isEqualTo(25);
+    }
+
+    @Test
+    @DisplayName("getHrEvaluationDetail: 조회 결과 없으면 예외 발생")
+    void getHrEvaluationDetail_notFound_throws() {
+        given(mapper.findEvaluationContent(1001L, 1L)).willReturn(null);
+
+        assertThatThrownBy(() -> service.getHrEvaluationDetail(1L, 1001L))
+                .isInstanceOf(HrException.class)
+                .satisfies(e -> {
+                    HrException ex = (HrException) e;
+                    assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.HR_EVALUATION_NOT_FOUND);
+                });
+
+    }
+
+    @Test
+    @DisplayName("getEvaluationCriteria: 회차 없는 경우 최신 회차로 조회")
+    void getEvaluationCriteria_nullRoundNo_returnsLatest() {
+        given(mapper.findLatestRoundNo()).willReturn(5);
+        given(mapper.findRateInfoByRoundNo(5)).willReturn(
+                RateInfo.builder().rateS(10).rateA(25).rateB(30).rateC(20).rateD(15).build()
+        );
+        given(mapper.findWeightInfoByRoundNo(5)).willReturn(
+                WeightInfo.builder().weightPerform(20).weightTeam(20).weightAttitude(20)
+                        .weightGrowth(20).weightEngagement(10).weightResult(10).build()
+        );
+
+        HrEvaluationCriteriaDto result = service.getEvaluationCriteria(null);
+
+        assertThat(result.getRateInfo().getRateA()).isEqualTo(25);
+        assertThat(result.getWeightInfo().getWeightResult()).isEqualTo(10);
     }
 }

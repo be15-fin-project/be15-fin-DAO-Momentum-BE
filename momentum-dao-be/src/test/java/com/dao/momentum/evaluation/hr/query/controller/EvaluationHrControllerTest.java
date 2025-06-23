@@ -2,10 +2,9 @@ package com.dao.momentum.evaluation.hr.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.service.EvaluationHrService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +14,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,59 +30,95 @@ class EvaluationHrControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private EvaluationHrService service;
+    private EvaluationHrService evaluationHrService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("본인 인사평가 내역 조회 성공")
-    @WithMockUser(username = "1", roles = "USER")
+    @DisplayName("인사 평가 내역 조회 - 성공")
+    @WithMockUser(username = "53")
     void getMyHrEvaluations_success() throws Exception {
-        // given
-        HrEvaluationItemDto item1 = HrEvaluationItemDto.builder()
-                .roundNo(5)
+        HrEvaluationItemDto item = HrEvaluationItemDto.builder()
+                .resultId(1001L)
+                .roundNo(3)
                 .overallGrade("우수")
-                .evaluatedAt(LocalDateTime.of(2025, 6, 15, 14, 23, 45))
-                .build();
-
-        FactorScoreDto fs1 = FactorScoreDto.builder()
-                .propertyName("커뮤니케이션")
-                .score("B")
-                .build();
-        FactorScoreDto fs2 = FactorScoreDto.builder()
-                .propertyName("문제해결")
-                .score("A")
+                .evaluatedAt(LocalDateTime.now())
                 .build();
 
         Pagination pagination = Pagination.builder()
                 .currentPage(1)
                 .totalPage(1)
-                .totalItems(1L)
+                .totalItems(1)
                 .build();
 
-        HrEvaluationListResultDto resultDto = HrEvaluationListResultDto.builder()
-                .items(List.of(item1))
-                .factorScores(List.of(fs1, fs2))
+        HrEvaluationListResultDto mockResult = HrEvaluationListResultDto.builder()
+                .items(List.of(item))
+                .factorScores(Collections.emptyList())
                 .pagination(pagination)
                 .build();
 
-        given(service.getHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class)))
-                .willReturn(resultDto);
+        given(evaluationHrService.getHrEvaluations(eq(53L), any(MyHrEvaluationListRequestDto.class)))
+                .willReturn(mockResult);
 
-        // when & then
         mockMvc.perform(get("/evaluations/hr")
-                        .param("startDate", "2025-01-01")
-                        .param("endDate", "2025-06-30")
                         .param("page", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items", hasSize(1)))
-                .andExpect(jsonPath("$.items[0].roundNo").value(5))
-                .andExpect(jsonPath("$.items[0].overallGrade").value("우수"))
-                .andExpect(jsonPath("$.items[0].evaluatedAt").value("2025-06-15T14:23:45"))
-                .andExpect(jsonPath("$.factorScores", hasSize(2)))
-                .andExpect(jsonPath("$.factorScores[*].propertyName", containsInAnyOrder("커뮤니케이션", "문제해결")))
-                .andExpect(jsonPath("$.factorScores[*].score", containsInAnyOrder(88, 92)))
-                .andExpect(jsonPath("$.pagination.currentPage").value(1))
-                .andExpect(jsonPath("$.pagination.totalPage").value(1))
-                .andExpect(jsonPath("$.pagination.totalItems").value(1L));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.items", hasSize(1)))
+                .andExpect(jsonPath("$.data.items[0].resultId").value(1001))
+                .andExpect(jsonPath("$.data.items[0].roundNo").value(3))
+                .andExpect(jsonPath("$.data.items[0].overallGrade").value("우수"))
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
+                .andExpect(jsonPath("$.data.pagination.currentPage").value(1));
+    }
+
+
+    @Test
+    @DisplayName("인사 평가 상세 조회 성공")
+    @WithMockUser(username = "53")
+    void getHrEvaluationDetail_success() throws Exception {
+        HrEvaluationDetailResultDto mockResult = HrEvaluationDetailResultDto.builder()
+                .content(HrEvaluationDetailDto.builder()
+                        .resultId(1001L)
+                        .empNo("20250001")
+                        .empName("김현우")
+                        .overallGrade("우수")
+                        .evaluatedAt(LocalDateTime.now())
+                        .build())
+                .rateInfo(RateInfo.builder().rateS(5).rateA(20).rateB(30).rateC(30).rateD(15).build())
+                .weightInfo(WeightInfo.builder()
+                        .weightPerform(20).weightTeam(20).weightAttitude(20)
+                        .weightGrowth(15).weightEngagement(15).weightResult(10).build())
+                .factorScores(Collections.emptyList())
+                .build();
+
+        given(evaluationHrService.getHrEvaluationDetail(eq(53L), eq(1001L)))
+                .willReturn(mockResult);
+
+        mockMvc.perform(get("/evaluations/hr/1001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.content.resultId").value(1001));
+    }
+
+    @Test
+    @DisplayName("인사 평가 기준 조회 성공")
+    @WithMockUser(roles = {"ADMIN"})
+    void getEvaluationCriteria_success() throws Exception {
+        HrEvaluationCriteriaDto mockResult = HrEvaluationCriteriaDto.builder()
+                .rateInfo(RateInfo.builder().rateS(5).rateA(20).rateB(30).rateC(30).rateD(15).build())
+                .weightInfo(WeightInfo.builder()
+                        .weightPerform(20).weightTeam(20).weightAttitude(20)
+                        .weightGrowth(15).weightEngagement(15).weightResult(10).build())
+                .build();
+
+        given(evaluationHrService.getEvaluationCriteria(eq(3)))
+                .willReturn(mockResult);
+
+        mockMvc.perform(get("/evaluations/hr/3/criteria"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.rateInfo.rateA").value(20))
+                .andExpect(jsonPath("$.data.weightInfo.weightResult").value(10));
     }
 }
