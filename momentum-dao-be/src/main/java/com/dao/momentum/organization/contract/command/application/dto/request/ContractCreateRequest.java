@@ -1,7 +1,6 @@
 package com.dao.momentum.organization.contract.command.application.dto.request;
 
-
-import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.organization.contract.command.domain.aggregate.ContractType;
 import jakarta.persistence.Column;
 import jakarta.validation.Valid;

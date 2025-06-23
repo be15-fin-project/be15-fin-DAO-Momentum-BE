@@ -1,8 +1,8 @@
 package com.dao.momentum.organization.contract.command.application.service;
 
-import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.common.s3.S3Service;
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
 import com.dao.momentum.organization.contract.command.application.dto.request.ContractCreateRequest;
@@ -59,6 +59,8 @@ public class ContractCommandService {
                 .createdAt(now)
                 .build();
 
+        contractRepository.save(contract);
+
         AttachmentRequest attachment = contractCreateRequest.getAttachment();
         if (attachment == null) {
             throw new ContractException(ErrorCode.ATTACHMENT_REQUIRED);
@@ -71,7 +73,6 @@ public class ContractCommandService {
                 .build();
 
         fileRepository.save(file);
-        contractRepository.save(contract);
 
         log.info("계약서 등록 완료: 계약서 ID - {}, 등록자 ID - {}, 계약 대상자 ID - {}, 등록일시 - {}", contract.getContractId(), adminId, empId, now);
 
@@ -93,7 +94,7 @@ public class ContractCommandService {
         employeeCommandService.validateActiveAdmin(adminId);
 
         long empId = contractToDelete.getEmpId();
-        contractRepository.delete(contractToDelete);
+
 
         // 첨부파일 hard delete
         File file = fileRepository.findByContractId(contractId)
@@ -103,6 +104,8 @@ public class ContractCommandService {
                         });
         s3Service.deleteFileFromS3(file.getUrl());
         fileRepository.deleteById(file.getAttachmentId());
+
+        contractRepository.delete(contractToDelete);
 
         log.info("계약서 삭제 완료: 삭제자 ID - {}, 계약서 ID - {}, 계약 대상자 ID - {}, 삭제일시 - {}", adminId, contractId, empId, LocalDateTime.now());
 
