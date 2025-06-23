@@ -1,6 +1,8 @@
 package com.dao.momentum.organization.employee.query.mapper;
 
+import com.dao.momentum.organization.employee.query.dto.request.AppointSearchDTO;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDTO;
+import com.dao.momentum.organization.employee.query.dto.response.AppointDTO;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeDTO;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeRecordsDTO;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeSummaryDTO;
@@ -18,4 +20,8 @@ public interface AdminEmployeeMapper {
     EmployeeDTO getEmployeeDetails(long empId);
 
     List<EmployeeRecordsDTO> getEmployeeRecords(long empId);
+
+    List<AppointDTO> getAppoints(@Param("request") AppointSearchDTO request);
+
+    long countAppoints(@Param("request") AppointSearchDTO request);
 }
