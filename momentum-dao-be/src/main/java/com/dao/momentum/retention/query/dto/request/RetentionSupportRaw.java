@@ -1,18 +1,29 @@
 package com.dao.momentum.retention.query.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * mapper에서 직접 조회하는 점수 포함 raw DTO
- */
 @Getter
 @Setter
+@Schema(description = "Retention 지원용 원시 데이터 DTO")
 public class RetentionSupportRaw {
+
+    @Schema(description = "사원 이름", example = "김현우")
     private String empName;
+
+    @Schema(description = "부서명", example = "기획팀")
     private String deptName;
+
+    @Schema(description = "직위명", example = "대리")
     private String positionName;
-    private int retentionScore;      // 점수 → 등급/유형 변환용
+
+    @Schema(description = "Retention 점수 (등급/유형 변환용)", example = "85")
+    private int retentionScore;
+
+    @Schema(description = "요약 코멘트", example = "적극적으로 업무에 참여함")
     private String summaryComment;
+
+    @Schema(description = "평가 회차 번호", example = "2")
     private int roundNo;
 }
