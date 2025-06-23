@@ -1,8 +1,7 @@
 package com.dao.momentum.evaluation.hr.query.mapper;
 
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -27,4 +26,14 @@ public interface EvaluationHrMapper {
     List<FactorScoreDto> findFactorScores(
         @Param("resultId") long resultId
     );
+
+    // 인사 평가 상세 조회
+    HrEvaluationDetailDto findEvaluationContent(@Param("resultId") Long resultId, @Param("empId") Long empId);
+
+    RateInfo findRateInfo(@Param("resultId") Long resultId);
+
+    WeightInfo findWeightInfo(@Param("resultId") Long resultId);
+
+    List<FactorScoreDto> findFactorScores(@Param("resultId") Long resultId);
+
 }

@@ -4,6 +4,8 @@ import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDt
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
 import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.ObjectionItemDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.RateInfo;
+import com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,6 +26,10 @@ public interface MyObjectionMapper {
     ObjectionItemDto findObjectionDetail(
             @Param("objectionId") Long objectionId
     );
+
+    RateInfo findRateInfo(@Param("resultId") Long resultId);
+
+    WeightInfo findWeightInfo(@Param("resultId") Long resultId);
 
     List<FactorScoreDto> findFactorScores(@Param("resultId") Long resultId);
 }

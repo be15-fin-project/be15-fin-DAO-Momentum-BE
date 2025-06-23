@@ -6,18 +6,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "인사 평가 이의제기 상세 조회 응답 DTO")
-public class ObjectionDetailResultDto {
+@Schema(description = "인사 평가 상세 응답 DTO")
+public class HrEvaluationDetailResultDto {
 
-    // 인사 평가 결과 상세 정보
-    @Schema(description = "인사 평가 이의 제기 상세 정보")
-    private ObjectionItemDto itemDto;
+    @Schema(description = "인사 평가 기본 정보")
+    private HrEvaluationDetailDto content;
 
     @Schema(description = "등급 비율 정보")
     private RateInfo rateInfo;
@@ -27,5 +27,5 @@ public class ObjectionDetailResultDto {
 
     @Schema(description = "요인별 점수 목록")
     private List<FactorScoreDto> factorScores;
-
 }
+

@@ -14,6 +14,6 @@ public class FactorScoreDto {
     @Schema(description = "요인명", example = "커뮤니케이션")
     private String propertyName;
 
-    @Schema(description = "점수", example = "17")
-    private Integer score;
+    @Schema(description = "점수 등급", example = "S")
+    private String score;
 }

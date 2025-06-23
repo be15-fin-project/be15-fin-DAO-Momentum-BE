@@ -45,20 +45,6 @@
             e.emp_no                                       AS empNo,
             e.name                                         AS empName,
             DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
-
-            w.perform_wt                                   AS weightPerform,
-            w.team_wt                                      AS weightTeam,
-            w.attitude_wt                                  AS weightAttitude,
-            w.growth_wt                                    AS weightGrowth,
-            w.engagement_wt                                AS weightEngagement,
-            w.result_wt                                    AS weightResult,
-
-            r.rate_s                                       AS rateS,
-            r.rate_a                                       AS rateA,
-            r.rate_b                                       AS rateB,
-            r.rate_c                                       AS rateC,
-            r.rate_d                                       AS rateD,
-
             o.reason                                       AS objectionReason,
             s.status_type                                  AS statusType,
             o.response                                     AS responseReason
@@ -89,5 +75,39 @@
         WHERE es.result_id = #{resultId}
         ORDER BY ep.property_id
     </select>
+
+
+    <!-- 등급 비율 조회 -->
+    <select id="findRateInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            r.rate_s AS rateS,
+            r.rate_a AS rateA,
+            r.rate_b AS rateB,
+            r.rate_c AS rateC,
+            r.rate_d AS rateD
+        FROM eval_response er
+        JOIN hr_rate r ON r.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+    <!-- 가중치 정보 조회 -->
+    <select id="findWeightInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            w.perform_wt     AS weightPerform,
+            w.team_wt        AS weightTeam,
+            w.attitude_wt    AS weightAttitude,
+            w.growth_wt      AS weightGrowth,
+            w.engagement_wt  AS weightEngagement,
+            w.result_wt      AS weightResult
+        FROM eval_response er
+        JOIN hr_weight w ON w.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+
 
 </mapper>

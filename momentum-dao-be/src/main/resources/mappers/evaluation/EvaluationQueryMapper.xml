@@ -12,11 +12,11 @@
         SELECT
             r.round_no              AS round_no,
             CASE
-                WHEN er.score >= 95 THEN '탁월'
-                WHEN er.score >= 85 THEN '우수'
-                WHEN er.score >= 70 THEN '양호'
-                WHEN er.score >= 60 THEN '주의'
-                ELSE '미흡'
+                WHEN er.score >= 95 THEN 'S'
+                WHEN er.score >= 85 THEN 'A'
+                WHEN er.score >= 70 THEN 'B'
+                WHEN er.score >= 60 THEN 'C'
+                ELSE 'D'
             END                     AS overall_grade,
             er.created_at           AS evaluated_at,
             er.result_id            AS result_id
@@ -59,11 +59,73 @@
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
             p.name      AS property_name,
-            s.score     AS score
+            CASE
+                WHEN s.score >= 95 THEN '탁월'
+                WHEN s.score >= 85 THEN '우수'
+                WHEN s.score >= 70 THEN '양호'
+                WHEN s.score >= 60 THEN '주의'
+                ELSE '미흡'
+            END                     AS Score
         FROM eval_score s
         JOIN eval_property p ON s.property_id = p.property_id
         WHERE s.result_id = #{resultId}
         ORDER BY p.property_id
     </select>
+
+
+    <!-- 인사 상세 조회 -->
+    <!-- 평가 기본 정보 -->
+    <select id="findEvaluationContent"
+            parameterType="map"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationDetailDto">
+        SELECT
+            er.result_id            AS resultId,
+            e.emp_no                AS empNo,
+            e.name                  AS empName,
+            er.created_at           AS evaluatedAt,
+            CASE
+                WHEN er.score >= 95 THEN 'A'
+                WHEN er.score >= 85 THEN 'B'
+                WHEN er.score >= 70 THEN 'C'
+                WHEN er.score >= 60 THEN 'D'
+                ELSE 'E'
+            END                     AS overallGrade
+        FROM eval_response er
+        JOIN employee e ON e.emp_id = er.eval_id
+        WHERE er.result_id = #{resultId}
+            AND er.eval_id = #{empId}
+    </select>
+
+    <!-- 등급 비율 조회 -->
+    <select id="findRateInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            r.rate_s AS rateS,
+            r.rate_a AS rateA,
+            r.rate_b AS rateB,
+            r.rate_c AS rateC,
+            r.rate_d AS rateD
+        FROM eval_response er
+        JOIN hr_rate r ON r.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+    <!-- 가중치 정보 조회 -->
+    <select id="findWeightInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            w.perform_wt     AS weightPerform,
+            w.team_wt        AS weightTeam,
+            w.attitude_wt    AS weightAttitude,
+            w.growth_wt      AS weightGrowth,
+            w.engagement_wt  AS weightEngagement,
+            w.result_wt      AS weightResult
+        FROM eval_response er
+        JOIN hr_weight w ON w.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
 
 </mapper>

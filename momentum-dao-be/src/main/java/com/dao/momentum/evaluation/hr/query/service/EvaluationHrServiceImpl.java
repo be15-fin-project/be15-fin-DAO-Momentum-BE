@@ -1,10 +1,10 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.EvaluationHrMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,6 +47,33 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
                 .items(items)
                 .factorScores(factorScores)
                 .pagination(pagination)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HrEvaluationDetailResultDto getHrEvaluationDetail(Long empId, Long resultId) {
+        // 1. 기본 정보 조회
+        HrEvaluationDetailDto content = mapper.findEvaluationContent(resultId, empId);
+        if (content == null) {
+            throw new HrException(ErrorCode.HR_EVALUATION_NOT_FOUND);
+        }
+
+        // 2. 등급 비율 정보
+        RateInfo rateInfo = mapper.findRateInfo(resultId);
+
+        // 3. 가중치 정보
+        WeightInfo weightInfo = mapper.findWeightInfo(resultId);
+
+        // 4. 요인별 점수 목록
+        List<FactorScoreDto> factorScores = mapper.findFactorScores(resultId);
+
+        // 5. 조립 후 반환
+        return HrEvaluationDetailResultDto.builder()
+                .content(content)
+                .rateInfo(rateInfo)
+                .weightInfo(weightInfo)
+                .factorScores(factorScores)
                 .build();
     }
 

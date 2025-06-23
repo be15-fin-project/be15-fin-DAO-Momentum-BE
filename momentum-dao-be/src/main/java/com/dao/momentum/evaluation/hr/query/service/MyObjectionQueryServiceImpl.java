@@ -64,21 +64,30 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
 
     @Override
     public ObjectionDetailResultDto getObjectionDetail(Long objectionId) {
-        // 1) 기본 상세 정보 조회 (ObjectionListResultDto 하나)
+        // 1) 기본 상세 정보 조회
         ObjectionItemDto base = mapper.findObjectionDetail(objectionId);
-        System.out.printf("[getObjectionDetail] base=%s%n", base);
         if (base == null) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
-        // 2) 요인별 점수 조회
-        List<FactorScoreDto> scores = mapper.findFactorScores(base.getResultId());
-        System.out.printf("[getObjectionDetail] resultId=%d, scores=%s%n", base.getResultId(), scores);
+        Long resultId = base.getResultId();
 
-        // 3) 결과 합치기
+        // 2) 요인별 점수 조회
+        List<FactorScoreDto> scores = mapper.findFactorScores(resultId);
+
+        // 3) 가중치 정보 조회
+        WeightInfo weightInfo = mapper.findWeightInfo(resultId);
+
+        // 4) 등급 비율 정보 조회
+        RateInfo rateInfo = mapper.findRateInfo(resultId);
+
+        // 5) 조립
         return ObjectionDetailResultDto.builder()
-                .list(Collections.singletonList(base))
+                .itemDto(base)
                 .factorScores(scores)
+                .weightInfo(weightInfo)
+                .rateInfo(rateInfo)
                 .build();
     }
+
 }

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/hr-objections")
 @RequiredArgsConstructor
-@Tag(name = "인사 평가 이의제기", description = "팀장이 자신이 작성한 사원의 인사 평가 이의제기 목록 조회 API")
+@Tag(name = "인사 평가 이의제기 요청", description = "팀장이 자신이 작성한 사원의 인사 평가 이의제기 목록 조회 API")
 public class HrObjectionQueryController {
 
     private final HrObjectionQueryService service;
