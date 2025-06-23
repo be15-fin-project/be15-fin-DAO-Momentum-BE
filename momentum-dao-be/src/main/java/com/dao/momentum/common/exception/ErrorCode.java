@@ -18,9 +18,14 @@ public enum ErrorCode {
     POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
     NOT_EMPLOYED_USER("10008", "현재 재직중이지 않은 직원입니다.",HttpStatus.FORBIDDEN),
     INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_POSITION_FOR_PROMOTION("10010", "한 단계 높은 직위로만 승진 가능합니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
+    DEPARTMENT_NOT_FOUND("11002", "시스템 오류입니다." , HttpStatus.NOT_FOUND),
 
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -55,6 +60,7 @@ public enum ErrorCode {
     KPI_REQUEST_NOT_FOUND("40005", "조회 가능한 KPI 요청 내역이 없습니다.", HttpStatus.NOT_FOUND),
     // 평가 오류
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
     MY_OBJECTIONS_NOT_FOUND("40022", "조회 가능한 인사 평가 이의제기 내역이 없습니다.", HttpStatus.NOT_FOUND),
