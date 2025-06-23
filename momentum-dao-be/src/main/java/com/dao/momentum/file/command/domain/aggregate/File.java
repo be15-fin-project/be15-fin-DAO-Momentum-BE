@@ -1,4 +1,4 @@
-package com.dao.momentum.announcement.command.domain.aggregate;
+package com.dao.momentum.file.command.domain.aggregate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

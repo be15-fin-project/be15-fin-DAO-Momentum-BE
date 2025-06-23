@@ -9,13 +9,13 @@ import com.dao.momentum.announcement.command.application.dto.response.Announceme
 import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
-import com.dao.momentum.announcement.command.domain.aggregate.File;
 import com.dao.momentum.announcement.command.domain.repository.AnnouncementRepository;
-import com.dao.momentum.announcement.command.domain.repository.FileRepository;
 import com.dao.momentum.announcement.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.file.command.domain.aggregate.File;
+import com.dao.momentum.file.command.domain.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;

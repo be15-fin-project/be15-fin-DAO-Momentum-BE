@@ -2,6 +2,7 @@ package com.dao.momentum.announcement.command.domain.aggregate;
 
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.file.command.domain.aggregate.IsDeleted;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

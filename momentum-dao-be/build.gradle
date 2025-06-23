@@ -68,6 +68,9 @@ dependencies {
 
     // CloudFront Signed URL 생성 시 경로 내 한글/공백 등의 인코딩 문제를 방지하기 위해 URIBuilder 사용
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+    // Kafka 클라이언트 라이브러리 의존성 추가
+    implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {
