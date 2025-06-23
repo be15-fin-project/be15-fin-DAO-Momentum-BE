@@ -1,6 +1,8 @@
 package com.dao.momentum.retention.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.retention.exception.RetentionException;
 import com.dao.momentum.retention.query.dto.request.RetentionForecastRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionSupportRaw;
 import com.dao.momentum.retention.query.dto.response.RetentionForecastItemDto;
@@ -31,6 +33,10 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         // 2. 조회
         List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundNo);
         long total = mapper.countRetentionForecasts(req, roundNo);
+
+        if (rawList == null) {
+            throw new RetentionException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
+        }
 
         // 3. 안정성 유형 필터링 (Java에서 처리)
         List<RetentionForecastItemDto> filtered =
