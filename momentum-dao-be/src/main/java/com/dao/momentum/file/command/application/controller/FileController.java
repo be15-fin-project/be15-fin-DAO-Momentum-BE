@@ -1,9 +1,9 @@
-package com.dao.momentum.common.file.controller;
+package com.dao.momentum.file.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.common.file.dto.request.DownloadUrlRequest;
-import com.dao.momentum.common.file.dto.response.DownloadUrlResponse;
-import com.dao.momentum.common.file.service.FileService;
+import com.dao.momentum.file.command.application.dto.request.DownloadUrlRequest;
+import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
+import com.dao.momentum.file.command.application.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

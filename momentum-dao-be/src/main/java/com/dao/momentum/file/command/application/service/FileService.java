@@ -1,6 +1,6 @@
-package com.dao.momentum.common.file.service;
+package com.dao.momentum.file.command.application.service;
 
-import com.dao.momentum.common.file.dto.response.DownloadUrlResponse;
+import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
 import com.dao.momentum.common.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

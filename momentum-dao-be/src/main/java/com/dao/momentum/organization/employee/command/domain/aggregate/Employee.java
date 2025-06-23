@@ -78,4 +78,12 @@ public class Employee {
         }
     }
 
+    public void fromAppoint(int afterDeptId, int afterPositionId) {
+        if (this.deptId != afterDeptId) {
+            this.deptId = afterDeptId;
+        }
+        if (this.positionId != afterPositionId) {
+            this.positionId = afterPositionId;
+        }
+    }
 }
