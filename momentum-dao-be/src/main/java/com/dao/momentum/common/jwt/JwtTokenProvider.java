@@ -59,7 +59,7 @@ public class JwtTokenProvider {
 
     public String createPasswordResetToken(String employeeId){
         Date now  = new Date();
-        Date expiryDate = new Date(now.getTime()+600 * 1000);
+        Date expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24시간 후
         return Jwts.builder()
                 .subject(employeeId)
                 .claim("type", "PASSWORD_RESET")
