@@ -90,7 +90,7 @@ class AnnouncementCommandServiceTest {
 
         verify(fileRepository).save(argThat(file ->
                 file.getAnnouncementId().equals(1L)
-                        && file.getUrl().equals("announcements/uuid/test_file.png")
+                        && file.getS3Key().equals("announcements/uuid/test_file.png")
                         && file.getType().equals("png")
         ));
     }
@@ -125,14 +125,14 @@ class AnnouncementCommandServiceTest {
         File retainedFile = File.builder()
                 .attachmentId(100L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/old_file.pdf")
+                .s3Key("announcements/uuid/old_file.pdf")
                 .type("pdf")
                 .build();
 
         File deletedFile = File.builder()
                 .attachmentId(200L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/delete_file.pdf")
+                .s3Key("announcements/uuid/delete_file.pdf")
                 .type("pdf")
                 .build();
 
@@ -147,13 +147,13 @@ class AnnouncementCommandServiceTest {
         assertNotNull(response);
         assertEquals(announcementId, response.getAnnouncementId());
 
-        verify(s3Service).deleteFileFromS3(deletedFile.getUrl());
+        verify(s3Service).deleteFileFromS3(deletedFile.getS3Key());
         verify(fileRepository).deleteById(deletedFile.getAttachmentId());
 
         verify(fileRepository).save(argThat(file ->
                 file.getAnnouncementId().equals(announcementId)
                         && file.getType().equals("pdf")
-                        && file.getUrl().equals("announcements/uuid/new_file.pdf")
+                        && file.getS3Key().equals("announcements/uuid/new_file.pdf")
         ));
     }
 
@@ -234,14 +234,14 @@ class AnnouncementCommandServiceTest {
         File file1 = File.builder()
                 .attachmentId(101L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/file1.png")
+                .s3Key("announcements/uuid/file1.png")
                 .type("png")
                 .build();
 
         File file2 = File.builder()
                 .attachmentId(102L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/file2.pdf")
+                .s3Key("announcements/uuid/file2.pdf")
                 .type("pdf")
                 .build();
 
@@ -253,8 +253,8 @@ class AnnouncementCommandServiceTest {
 
         verify(announcementRepository).findById(announcementId);
         verify(fileRepository).findAllByAnnouncementId(announcementId);
-        verify(s3Service).deleteFileFromS3(file1.getUrl());
-        verify(s3Service).deleteFileFromS3(file2.getUrl());
+        verify(s3Service).deleteFileFromS3(file1.getS3Key());
+        verify(s3Service).deleteFileFromS3(file2.getS3Key());
         verify(fileRepository).deleteById(file1.getAttachmentId());
         verify(fileRepository).deleteById(file2.getAttachmentId());
         verify(announcementRepository).delete(announcement);

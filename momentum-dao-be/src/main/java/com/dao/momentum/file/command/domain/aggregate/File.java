@@ -1,9 +1,6 @@
 package com.dao.momentum.file.command.domain.aggregate;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -24,7 +21,8 @@ public class File {
     private Long contractId;
 
     @NotBlank
-    private String url;
+    @Column(name = "s3_key")
+    private String s3Key;
 
     @NotBlank
     private String type;
