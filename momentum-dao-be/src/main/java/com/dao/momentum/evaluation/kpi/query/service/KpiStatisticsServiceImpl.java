@@ -10,6 +10,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseD
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +22,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     private final KpiStatisticsMapper kpiStatisticsMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public KpiStatisticsResponseDto getStatistics(KpiStatisticsRequestDto requestDto) {
         KpiStatisticsResponseDto result = kpiStatisticsMapper.getMonthlyStatistics(requestDto);
 
@@ -32,6 +34,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
         if (requestDto.getYear() == null) {
             requestDto.setYear(LocalDate.now().getYear());
