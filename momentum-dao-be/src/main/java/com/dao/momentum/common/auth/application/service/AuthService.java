@@ -1,8 +1,10 @@
 package com.dao.momentum.common.auth.application.service;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
+import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
 import com.dao.momentum.common.auth.domain.aggregate.RefreshToken;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
@@ -16,6 +18,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Duration;
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, RefreshToken> redisTemplate;
+    private final RedisTemplate<String, PasswordResetToken> passwordResetTokenRedisTemplate;
 
     public LoginResponse login(LoginRequest loginRequest) {
         Employee employee = employeeRepository.findByEmail(loginRequest.getEmail())
@@ -112,5 +117,36 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetRequest request, String passwordResetToken) {
+        if(!request.getPassword().equals(request.getVerifiedPassword())){
+            throw new EmployeeException(ErrorCode.PASSWORD_NOT_CORRECT);
+        }
+
+        String empId = jwtTokenProvider.getUsernameFromJWT(passwordResetToken);
+        log.info("empId = {}",empId);
+
+        // Redis에 저장된 리프레시 토큰 조회
+        PasswordResetToken storedPasswordResetToken = passwordResetTokenRedisTemplate.opsForValue().get(empId);
+        if (storedPasswordResetToken == null) {
+            throw new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음");
+        }
+
+        // 넘어온 리프레시 토큰과 Redis의 토큰 비교
+        if (!storedPasswordResetToken.getToken().equals(passwordResetToken)) {
+            throw new BadCredentialsException("리프레시 토큰 일치하지 않음");
+        }
+
+        Employee employee = employeeRepository.findByEmpId(Long.parseLong(empId))
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND)
+                );
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        employee.setPassword(encodedPassword);
+
+        //토큰 사용 완료후 제거
+        passwordResetTokenRedisTemplate.delete(empId);
     }
 }

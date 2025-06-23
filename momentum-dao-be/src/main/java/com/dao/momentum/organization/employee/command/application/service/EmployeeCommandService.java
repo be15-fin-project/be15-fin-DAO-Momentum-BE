@@ -1,12 +1,17 @@
 package com.dao.momentum.organization.employee.command.application.service;
 
+import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
 import com.dao.momentum.email.service.EmailService;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
-import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRoleName;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
+import com.dao.momentum.organization.employee.command.domain.aggregate.*;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRecordsRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
@@ -15,11 +20,14 @@ import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,6 +47,7 @@ public class EmployeeCommandService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate<String, PasswordResetToken> passwordResetTokenRedisTemplate;
 
     @Transactional
     public void createEmployee(EmployeeRegisterRequest request) {
@@ -69,6 +78,16 @@ public class EmployeeCommandService {
 
         String passwordResetToken = jwtTokenProvider.createPasswordResetToken(
                 String.valueOf(employee.getEmpId())
+        );
+
+        PasswordResetToken redisPasswordResetToken = PasswordResetToken.builder()
+                .token(passwordResetToken)
+                .build();
+
+        passwordResetTokenRedisTemplate.opsForValue().set(
+                String.valueOf(employee.getEmpId()),
+                redisPasswordResetToken,
+                Duration.ofDays(1)
         );
 
         //이메일 처리
