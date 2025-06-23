@@ -1,5 +1,6 @@
 package com.dao.momentum.announcement.command.application.dto.request;
 
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

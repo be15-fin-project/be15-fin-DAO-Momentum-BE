@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionSupportMapper">
+
+    <!-- 근속 전망 조회 -->
+    <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.query.dto.request.RetentionSupportRaw">
+        SELECT
+            e.name AS empName,
+            d.name AS deptName,
+            p.name AS positionName,
+            rs.retention_score,
+            rr.round_no AS roundNo,
+            CONCAT(
+                '직무:', rs.job_satisfaction, ', ',
+                '관계:', rs.relationship_score
+                ) AS summaryComment
+        FROM retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN position p ON e.position_id = p.position_id
+        JOIN retention_round rr ON rs.round_id = rr.round_id
+        WHERE rr.round_no = #{roundNo}
+            <if test="req.deptId != null">
+                AND e.dept_id = #{req.deptId}
+            </if>
+            <if test="req.positionId != null">
+                AND e.position_id = #{req.positionId}
+            </if>
+        ORDER BY rs.retention_score DESC
+        LIMIT #{req.size}
+        OFFSET #{req.offset}
+    </select>
+
+    <!-- 총 개수 조회 -->
+    <select id="countRetentionForecasts" resultType="long">
+        SELECT COUNT(*)
+        FROM retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        JOIN department d ON e.dept_id = d.dept_id
+        JOIN position p ON e.position_id = p.position_id
+        JOIN retention_round rr ON rs.round_id = rr.round_id
+        WHERE rr.round_no = #{roundNo}
+            <if test="req.deptId != null">
+                AND e.dept_id = #{req.deptId}
+            </if>
+            <if test="req.positionId != null">
+                AND e.position_id = #{req.positionId}
+            </if>
+    </select>
+
+    <!-- 최신 회차 조회 -->
+    <select id="findLatestRoundNo" resultType="int">
+        SELECT MAX(round_no) FROM retention_round
+    </select>
+
+</mapper>

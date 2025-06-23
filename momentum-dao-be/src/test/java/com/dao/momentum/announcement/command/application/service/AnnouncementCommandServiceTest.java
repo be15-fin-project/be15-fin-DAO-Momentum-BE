@@ -2,19 +2,17 @@ package com.dao.momentum.announcement.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
-import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
-import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
-import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.mapper.AnnouncementMapper;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
-import com.dao.momentum.announcement.command.domain.aggregate.File;
 import com.dao.momentum.announcement.command.domain.repository.AnnouncementRepository;
-import com.dao.momentum.announcement.command.domain.repository.FileRepository;
 import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
-import com.dao.momentum.common.service.S3Service;
+import com.dao.momentum.common.s3.S3Service;
+import com.dao.momentum.file.command.domain.aggregate.File;
+import com.dao.momentum.file.command.domain.repository.FileRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,50 +45,6 @@ class AnnouncementCommandServiceTest {
 
     @InjectMocks
     private AnnouncementCommandService announcementCommandService;
-
-    @Test
-    @DisplayName("Presigned URL 생성 성공")
-    void generatePresignedUrl_success() {
-        // given
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 1024 * 1024, "image/png");
-
-        when(s3Service.extractFileExtension("test.png")).thenReturn("png");
-        when(s3Service.sanitizeFilename("test.png")).thenReturn("test.png");
-        when(s3Service.generatePresignedUploadUrlWithKey(anyString(), eq("image/png")))
-                .thenReturn(new FilePresignedUrlResponse("https://presigned.url", "announcements/uuid/test.png"));
-
-        // when
-        FilePresignedUrlResponse response = announcementCommandService.generatePresignedUrl(request);
-
-        // then
-        assertNotNull(response);
-        assertTrue(response.presignedUrl().startsWith("https://presigned.url"));
-        assertTrue(response.s3Key().startsWith("announcements/"));
-    }
-
-    @Test
-    @DisplayName("Presigned URL 생성 실패 - 파일 크기 초과")
-    void generatePresignedUrl_fail_fileTooLarge() {
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 11 * 1024 * 1024, "image/png");
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> announcementCommandService.generatePresignedUrl(request));
-
-        assertEquals("파일은 10MB 이하만 업로드 가능합니다.", exception.getMessage());
-    }
-
-    @Test
-    @DisplayName("Presigned URL 생성 실패 - 허용되지 않은 확장자")
-    void generatePresignedUrl_fail_invalidExtension() {
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("malware.exe", 1024 * 1024, "application/octet-stream");
-
-        when(s3Service.extractFileExtension("malware.exe")).thenReturn("exe");
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> announcementCommandService.generatePresignedUrl(request));
-
-        assertEquals("허용되지 않은 파일 확장자입니다.", exception.getMessage());
-    }
 
     @Test
     @DisplayName("공지사항 생성 성공")
@@ -136,7 +90,7 @@ class AnnouncementCommandServiceTest {
 
         verify(fileRepository).save(argThat(file ->
                 file.getAnnouncementId().equals(1L)
-                        && file.getUrl().equals("announcements/uuid/test_file.png")
+                        && file.getS3Key().equals("announcements/uuid/test_file.png")
                         && file.getType().equals("png")
         ));
     }
@@ -171,14 +125,14 @@ class AnnouncementCommandServiceTest {
         File retainedFile = File.builder()
                 .attachmentId(100L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/old_file.pdf")
+                .s3Key("announcements/uuid/old_file.pdf")
                 .type("pdf")
                 .build();
 
         File deletedFile = File.builder()
                 .attachmentId(200L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/delete_file.pdf")
+                .s3Key("announcements/uuid/delete_file.pdf")
                 .type("pdf")
                 .build();
 
@@ -193,13 +147,13 @@ class AnnouncementCommandServiceTest {
         assertNotNull(response);
         assertEquals(announcementId, response.getAnnouncementId());
 
-        verify(s3Service).deleteFileFromS3(deletedFile.getUrl());
+        verify(s3Service).deleteFileFromS3(deletedFile.getS3Key());
         verify(fileRepository).deleteById(deletedFile.getAttachmentId());
 
         verify(fileRepository).save(argThat(file ->
                 file.getAnnouncementId().equals(announcementId)
                         && file.getType().equals("pdf")
-                        && file.getUrl().equals("announcements/uuid/new_file.pdf")
+                        && file.getS3Key().equals("announcements/uuid/new_file.pdf")
         ));
     }
 
@@ -280,14 +234,14 @@ class AnnouncementCommandServiceTest {
         File file1 = File.builder()
                 .attachmentId(101L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/file1.png")
+                .s3Key("announcements/uuid/file1.png")
                 .type("png")
                 .build();
 
         File file2 = File.builder()
                 .attachmentId(102L)
                 .announcementId(announcementId)
-                .url("announcements/uuid/file2.pdf")
+                .s3Key("announcements/uuid/file2.pdf")
                 .type("pdf")
                 .build();
 
@@ -299,8 +253,8 @@ class AnnouncementCommandServiceTest {
 
         verify(announcementRepository).findById(announcementId);
         verify(fileRepository).findAllByAnnouncementId(announcementId);
-        verify(s3Service).deleteFileFromS3(file1.getUrl());
-        verify(s3Service).deleteFileFromS3(file2.getUrl());
+        verify(s3Service).deleteFileFromS3(file1.getS3Key());
+        verify(s3Service).deleteFileFromS3(file2.getS3Key());
         verify(fileRepository).deleteById(file1.getAttachmentId());
         verify(fileRepository).deleteById(file2.getAttachmentId());
         verify(announcementRepository).delete(announcement);

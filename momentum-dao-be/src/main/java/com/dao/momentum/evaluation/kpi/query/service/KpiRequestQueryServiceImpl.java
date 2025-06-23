@@ -9,6 +9,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiRequestListResultDt
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiRequestMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
     private final KpiRequestMapper kpiRequestMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public KpiRequestListResultDto getKpiRequests(Long requesterEmpId, KpiRequestListRequestDto requestDto) {
         KpiRequestListRequestDto updatedDto = KpiRequestListRequestDto.builder()
                 .requesterEmpId(requesterEmpId)

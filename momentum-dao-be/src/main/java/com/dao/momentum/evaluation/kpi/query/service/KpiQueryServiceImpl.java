@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     // KPI 전체 조회
     @Override
+    @Transactional(readOnly = true)
     public KpiListResultDto getKpiList(KpiListRequestDto requestDto) {
         long total = kpiQueryMapper.getKpiListCount(requestDto);
         List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
@@ -38,6 +40,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     // KPI 세부 조회
     @Override
+    @Transactional(readOnly = true)
     public KpiDetailResponseDto getKpiDetail(Long kpiId) {
         KpiDetailResponseDto detail = kpiQueryMapper.getKpiDetail(kpiId);
         if (detail == null) {
@@ -48,6 +51,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     // 사원별 KPI 조회
     @Override
+    @Transactional(readOnly = true)
     public KpiEmployeeSummaryResultDto getEmployeeKpiSummaries(KpiEmployeeSummaryRequestDto requestDto) {
         long total = kpiQueryMapper.countEmployeeKpiSummary(requestDto);
         List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);

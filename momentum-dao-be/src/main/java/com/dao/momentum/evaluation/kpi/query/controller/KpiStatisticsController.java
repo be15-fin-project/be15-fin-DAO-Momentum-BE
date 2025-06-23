@@ -6,12 +6,16 @@ import com.dao.momentum.evaluation.kpi.query.dto.request.KpiTimeseriesRequestDto
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsService;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 public class KpiStatisticsController {
 
     private final KpiStatisticsService kpiStatisticsService;
+
+    private final EmployeeRepository employeeRepository;
 
     @GetMapping("/statistics")
     @Operation(

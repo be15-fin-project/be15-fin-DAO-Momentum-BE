@@ -4,7 +4,7 @@ import com.dao.momentum.announcement.command.application.dto.request.Announcemen
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
 import com.dao.momentum.announcement.command.domain.aggregate.Announcement;
-import com.dao.momentum.announcement.command.domain.aggregate.IsDeleted;
+import com.dao.momentum.file.command.domain.aggregate.IsDeleted;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,13 +1,16 @@
 package com.dao.momentum.organization.employee.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.organization.employee.command.application.dto.request.AppointCreateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
+import com.dao.momentum.organization.employee.command.application.dto.response.AppointCreateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/employees")
+@Tag(name = "사원 관리", description = "사원 정보 등록, 수정, 삭제 API")
 public class EmployeeCommandController {
     private final EmployeeCommandService employeeService;
 
@@ -55,6 +59,19 @@ public class EmployeeCommandController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         employeeService.updateEmployeeRecords(userDetails, empId, request)
+                )
+        );
+    }
+
+    @Operation(summary = "사원 발령 등록", description = "관리자는 사원의 발령 정보를 등록할 수 있다.")
+    @PostMapping("/appoint")
+    public ResponseEntity<ApiResponse<AppointCreateResponse>> createAppoint(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody AppointCreateRequest request){
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                ApiResponse.success(
+                        employeeService.createAppoint(userDetails, request)
                 )
         );
     }

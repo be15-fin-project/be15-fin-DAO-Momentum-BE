@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +24,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     private final KpiStatisticsMapper kpiStatisticsMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public KpiStatisticsResponseDto getStatistics(KpiStatisticsRequestDto requestDto) {
         KpiStatisticsResponseDto result = kpiStatisticsMapper.getMonthlyStatistics(requestDto);
 
@@ -34,6 +36,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
         int year = (requestDto.getYear() != null) ? requestDto.getYear() : LocalDate.now().getYear();
 
