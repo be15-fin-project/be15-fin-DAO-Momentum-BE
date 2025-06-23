@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionContactMapper">
+
+    <select id="findContacts" resultType="com.dao.momentum.retention.query.dto.response.RetentionContactItemDto">
+        SELECT
+            rc.created_at,
+            t.emp_no AS targetNo,
+            t.name AS targetName,
+            d.name AS departmentName,
+            p.name AS positionName,
+            m.name AS managerName,
+            rc.reason
+        FROM retention_contact rc
+        JOIN employee t ON rc.target_id = t.emp_id
+        JOIN employee m ON rc.manager_id = m.emp_id
+        LEFT JOIN department d ON t.dept_id = d.dept_id
+        LEFT JOIN position p ON t.position_id = p.position_id
+        WHERE rc.is_deleted = 'N'
+            <if test="req.targetNo != null">
+                AND t.emp_no = #{req.targetNo}
+            </if>
+            <if test="req.managerId != null">
+                AND rc.manager_id = #{req.managerId}
+            </if>
+            <if test="req.managerNo != null">
+                AND t.emp_no = #{req.managerNo}
+            </if>
+            <if test="req.deptId != null">
+                AND t.dept_id = #{req.deptId}
+            </if>
+            <if test="req.positionId != null">
+                AND t.position_id = #{req.positionId}
+            </if>
+            <if test="req.startDate != null">
+                AND rc.created_at &gt;= #{req.startDate}
+            </if>
+            <if test="req.endDate != null">
+                AND rc.created_at &lt;= #{req.endDate}
+            </if>
+        ORDER BY rc.created_at DESC
+        LIMIT #{req.size} OFFSET #{req.offset}
+    </select>
+
+    <select id="countContacts" resultType="int">
+        SELECT COUNT(*)
+        FROM retention_contact rc
+        JOIN employee t ON rc.target_id = t.emp_id
+        WHERE rc.is_deleted = 'N'
+            <if test="req.targetNo != null">
+                AND t.emp_no = #{req.targetNo}
+            </if>
+            <if test="req.managerId != null">
+                AND rc.manager_id = #{req.managerId}
+            </if>
+            <if test="req.managerNo != null">
+                AND t.emp_no = #{req.managerNo}
+            </if>
+            <if test="req.deptId != null">
+                AND t.dept_id = #{req.deptId}
+            </if>
+            <if test="req.positionId != null">
+                AND t.position_id = #{req.positionId}
+            </if>
+            <if test="req.startDate != null">
+                AND rc.created_at &gt;= #{req.startDate}
+            </if>
+            <if test="req.endDate != null">
+                AND rc.created_at &lt;= #{req.endDate}
+            </if>
+    </select>
+
+</mapper>

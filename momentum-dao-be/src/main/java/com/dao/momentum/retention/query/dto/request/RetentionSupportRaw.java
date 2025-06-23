@@ -9,6 +9,9 @@ import lombok.Setter;
 @Schema(description = "Retention 지원용 원시 데이터 DTO")
 public class RetentionSupportRaw {
 
+    @Schema(description = "사번", example = "20250001")
+    private String empNo;
+
     @Schema(description = "사원 이름", example = "김현우")
     private String empName;
 

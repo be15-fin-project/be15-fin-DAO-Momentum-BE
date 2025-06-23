@@ -8,6 +8,7 @@
     <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.query.dto.request.RetentionSupportRaw">
         SELECT
             e.name AS empName,
+            e.emp_no AS empNo,
             d.name AS deptName,
             p.name AS positionName,
             rs.retention_score,
@@ -22,6 +23,9 @@
         JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
+            <if test="req.empNo != null">
+                AND t.emp_no = #{req.empNo}
+            </if>
             <if test="req.deptId != null">
                 AND e.dept_id = #{req.deptId}
             </if>
@@ -42,6 +46,9 @@
         JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
+            <if test="req.empNo != null">
+                AND t.emp_no = #{req.empNo}
+            </if>
             <if test="req.deptId != null">
                 AND e.dept_id = #{req.deptId}
             </if>
