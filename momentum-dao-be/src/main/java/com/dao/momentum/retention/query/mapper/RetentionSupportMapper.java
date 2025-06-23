@@ -1,8 +1,10 @@
 package com.dao.momentum.retention.query.mapper;
 
 import com.dao.momentum.retention.query.dto.request.RetentionForecastRequestDto;
+import com.dao.momentum.retention.query.dto.request.RetentionSupportDetailRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionSupportRaw;
 import com.dao.momentum.retention.query.dto.response.RetentionForecastItemDto;
+import com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +24,8 @@ public interface RetentionSupportMapper {
     );
 
     Integer findLatestRoundNo();
+
+    // 근속 전망 상세 조회
+    RetentionSupportDetailDto findSupportDetail(@Param("retentionId") Long retentionId);
+
 }

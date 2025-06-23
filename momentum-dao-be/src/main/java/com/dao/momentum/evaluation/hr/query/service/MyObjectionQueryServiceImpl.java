@@ -55,9 +55,9 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     }
 
     private String toGrade(int score) {
-        if (score >= 90) return "S";
-        if (score >= 80) return "A";
-        if (score >= 70) return "B";
+        if (score >= 95) return "S";
+        if (score >= 85) return "A";
+        if (score >= 75) return "B";
         if (score >= 60) return "C";
         return "D";
     }

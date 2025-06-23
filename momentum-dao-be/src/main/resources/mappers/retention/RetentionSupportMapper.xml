@@ -55,4 +55,85 @@
         SELECT MAX(round_no) FROM retention_round
     </select>
 
+
+    <!-- 근속 전망 상세 조회 -->
+    <select id="findSupportDetail"
+            resultType="com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto">
+        SELECT
+        e.name AS empName,
+        d.name AS deptName,
+        p.name AS positionName,
+
+        -- 점수 등급 변환 (직무 만족도)
+        CASE
+        WHEN rs.job_level >= 95 THEN '탁월'
+        WHEN rs.job_level >= 85 THEN '우수'
+        WHEN rs.job_level >= 70 THEN '양호'
+        WHEN rs.job_level >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS jobGrade,
+
+        -- 보상 만족도
+        CASE
+        WHEN rs.comp_level >= 95 THEN '탁월'
+        WHEN rs.comp_level >= 85 THEN '우수'
+        WHEN rs.comp_level >= 70 THEN '양호'
+        WHEN rs.comp_level >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS compGrade,
+
+        -- 관계 만족도
+        CASE
+        WHEN rs.relation_level >= 95 THEN '탁월'
+        WHEN rs.relation_level >= 85 THEN '우수'
+        WHEN rs.relation_level >= 70 THEN '양호'
+        WHEN rs.relation_level >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS relationGrade,
+
+        -- 성장 만족도
+        CASE
+        WHEN rs.growth_level >= 95 THEN '탁월'
+        WHEN rs.growth_level >= 85 THEN '우수'
+        WHEN rs.growth_level >= 70 THEN '양호'
+        WHEN rs.growth_level >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS growthGrade,
+
+        -- 워라밸 만족도
+        CASE
+        WHEN rs.wlb_level >= 95 THEN '탁월'
+        WHEN rs.wlb_level >= 85 THEN '우수'
+        WHEN rs.wlb_level >= 70 THEN '양호'
+        WHEN rs.wlb_level >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS wlbGrade,
+
+        rs.tenure_level AS tenure,
+
+        -- 종합 근속 전망 등급
+        CASE
+        WHEN rs.retention_score >= 95 THEN '탁월'
+        WHEN rs.retention_score >= 85 THEN '우수'
+        WHEN rs.retention_score >= 70 THEN '양호'
+        WHEN rs.retention_score >= 60 THEN '주의'
+        ELSE '미흡'
+        END AS retentionGrade,
+
+        -- 안정성 유형 (enum 문자열 그대로 반환)
+        CASE
+        WHEN rs.retention_score >= 80 THEN 'STABLE'
+        WHEN rs.retention_score >= 60 THEN 'WARNING'
+        ELSE 'UNSTABLE'
+        END AS stabilityType
+
+        FROM retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p ON e.position_id = p.position_id
+
+        WHERE rs.retention_id = #{retentionId}
+    </select>
+
+
 </mapper>
