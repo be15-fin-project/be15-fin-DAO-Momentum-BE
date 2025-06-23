@@ -2,6 +2,7 @@ package com.dao.momentum.common.exception;
 
 import com.dao.momentum.approve.exception.NotExistTabException;
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.email.exception.EmailFailException;
 import com.dao.momentum.work.exception.WorkException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -42,6 +43,14 @@ public class GlobalExceptionHandler {
         ApiResponse<Void> response
                 = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
 
+        return new ResponseEntity<>(response,errorCode.getHttpStatus());
+    }
+
+    @ExceptionHandler(EmailFailException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMailError(EmailFailException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse<Void> response
+                = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
         return new ResponseEntity<>(response,errorCode.getHttpStatus());
     }
 
