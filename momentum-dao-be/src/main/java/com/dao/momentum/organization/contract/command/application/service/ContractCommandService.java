@@ -2,10 +2,12 @@ package com.dao.momentum.organization.contract.command.application.service;
 
 import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.service.S3Service;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
 import com.dao.momentum.organization.contract.command.application.dto.request.ContractCreateRequest;
 import com.dao.momentum.organization.contract.command.application.dto.response.ContractCreateResponse;
+import com.dao.momentum.organization.contract.command.application.dto.response.ContractDeleteResponse;
 import com.dao.momentum.organization.contract.command.domain.aggregate.Contract;
 import com.dao.momentum.organization.contract.command.domain.aggregate.ContractType;
 import com.dao.momentum.organization.contract.command.domain.repository.ContractRepository;
@@ -28,6 +30,7 @@ public class ContractCommandService {
     private final ContractRepository contractRepository;
     private final FileRepository fileRepository;
     private final EmployeeCommandService employeeCommandService;
+    private final S3Service s3Service;
 
     @Transactional
     public ContractCreateResponse createContract(ContractCreateRequest contractCreateRequest, UserDetails userDetails) {
@@ -58,7 +61,7 @@ public class ContractCommandService {
 
         AttachmentRequest attachment = contractCreateRequest.getAttachment();
         if (attachment == null) {
-            throw new ContractException(ErrorCode.ATTACHEMENT_REQUIRED);
+            throw new ContractException(ErrorCode.ATTACHMENT_REQUIRED);
         }
 
         File file = File.builder()
@@ -75,6 +78,37 @@ public class ContractCommandService {
         return ContractCreateResponse.builder()
                 .contractId(contract.getContractId())
                 .message("계약서 등록 완료")
+                .build();
+    }
+
+    @Transactional
+    public ContractDeleteResponse deleteContract(long contractId, UserDetails userDetails) {
+        Contract contractToDelete = contractRepository.findById(contractId)
+                .orElseThrow(() -> {
+                    log.warn("계약서 조회 실패 - contractId: {}", contractId);
+                    return new ContractException(ErrorCode.CONTRACT_NOT_FOUND);
+                });
+
+        long adminId = Long.parseLong(userDetails.getUsername());
+        employeeCommandService.validateActiveAdmin(adminId);
+
+        long empId = contractToDelete.getEmpId();
+        contractRepository.delete(contractToDelete);
+
+        // 첨부파일 hard delete
+        File file = fileRepository.findByContractId(contractId)
+                        .orElseThrow(() -> {
+                            log.warn("계약서 첨부파일 조회 실패 - contractId: {}", contractId);
+                            return new ContractException(ErrorCode.ATTACHMENT_NOT_FOUND);
+                        });
+        s3Service.deleteFileFromS3(file.getUrl());
+        fileRepository.deleteById(file.getAttachmentId());
+
+        log.info("계약서 삭제 완료: 삭제자 ID - {}, 계약서 ID - {}, 계약 대상자 ID - {}, 삭제일시 - {}", adminId, contractId, empId, LocalDateTime.now());
+
+        return ContractDeleteResponse.builder()
+                .contractId(contractId)
+                .message("계약서 삭제 완료")
                 .build();
     }
 }
