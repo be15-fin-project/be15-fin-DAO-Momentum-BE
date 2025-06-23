@@ -102,52 +102,69 @@ class MyObjectionQueryServiceImplTest {
     @Test
     @DisplayName("정상: getObjectionDetail 호출 시 ObjectionDetailResultDto 생성")
     void getObjectionDetail_success() {
-        // base DTO
+        // 기본 이의제기 항목
         ObjectionItemDto base = ObjectionItemDto.builder()
                 .objectionId(5001L)
                 .resultId(2001L)
                 .empNo("20250001")
                 .empName("김현우")
                 .evaluatedAt("2025-06-22 17:31:08")
+                .objectionReason("점수가 낮습니다.")
+                .statusType("PENDING")
+                .responseReason("재검토 요청")
+                .build();
+
+        // 요인별 점수
+        List<FactorScoreDto> scores = List.of(
+                FactorScoreDto.builder().propertyName("커뮤니케이션").score("A").build(),
+                FactorScoreDto.builder().propertyName("태도").score("B").build()
+        );
+
+        // 가중치
+        WeightInfo weightInfo = WeightInfo.builder()
                 .weightPerform(20)
                 .weightTeam(15)
                 .weightAttitude(15)
                 .weightGrowth(25)
                 .weightEngagement(20)
                 .weightResult(5)
+                .build();
+
+        // 등급 비율
+        RateInfo rateInfo = RateInfo.builder()
                 .rateS(5)
                 .rateA(20)
                 .rateB(35)
                 .rateC(30)
                 .rateD(10)
-                .objectionReason("점수가 낮습니다.")
-                .statusType("PENDING")
-                .responseReason("재검토 요청")
                 .build();
-
-        List<FactorScoreDto> scores = List.of(
-                FactorScoreDto.builder().propertyName("커뮤니케이션").score(90).build(),
-                FactorScoreDto.builder().propertyName("태도").score(85).build()
-        );
 
         given(mapper.findObjectionDetail(5001L)).willReturn(base);
         given(mapper.findFactorScores(2001L)).willReturn(scores);
+        given(mapper.findWeightInfo(2001L)).willReturn(weightInfo);
+        given(mapper.findRateInfo(2001L)).willReturn(rateInfo);
 
         ObjectionDetailResultDto dto = service.getObjectionDetail(5001L);
 
-        // 기본 정보
-        assertThat(dto.getList()).hasSize(1);
-        ObjectionItemDto got = dto.getList().get(0);
+        // itemDto 확인
+        ObjectionItemDto got = dto.getItemDto();
         assertThat(got.getObjectionId()).isEqualTo(5001L);
         assertThat(got.getResultId()).isEqualTo(2001L);
 
         // 요인별 점수
         assertThat(dto.getFactorScores()).hasSize(2);
         assertThat(dto.getFactorScores().get(0).getPropertyName()).isEqualTo("커뮤니케이션");
-        assertThat(dto.getFactorScores().get(0).getScore()).isEqualTo(90);
-        assertThat(dto.getFactorScores().get(1).getPropertyName()).isEqualTo("태도");
-        assertThat(dto.getFactorScores().get(1).getScore()).isEqualTo(85);
+        assertThat(dto.getFactorScores().get(0).getScore()).isEqualTo("A");
+
+        // 가중치
+        assertThat(dto.getWeightInfo().getWeightPerform()).isEqualTo(20);
+        assertThat(dto.getWeightInfo().getWeightResult()).isEqualTo(5);
+
+        // 등급 비율
+        assertThat(dto.getRateInfo().getRateS()).isEqualTo(5);
+        assertThat(dto.getRateInfo().getRateB()).isEqualTo(35);
     }
+
 
     @Test
     @DisplayName("findObjectionDetail null 일 때 HrException 발생")

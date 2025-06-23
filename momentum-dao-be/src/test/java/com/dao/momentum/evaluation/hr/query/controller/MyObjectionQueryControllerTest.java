@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -73,66 +74,61 @@ class MyObjectionQueryControllerTest {
     }
 
     @Test
-    @DisplayName("본인 이의제기 상세 조회 성공")
+    @DisplayName("이의제기 상세 조회 성공")
     @WithMockUser(username = "1", roles = "USER")
-    void getMyObjectionDetail_success() throws Exception {
+    void getObjectionDetail_success() throws Exception {
         // given
-        // 1) 기본 상세 정보
-        ObjectionItemDto base = ObjectionItemDto.builder()
-                .objectionId(5001L)
-                .resultId(10001L)
-                .empNo("20250001")
+        ObjectionItemDto item = ObjectionItemDto.builder()
+                .objectionId(1L)
+                .resultId(17L)
+                .empNo("20250004")
                 .empName("김현우")
-                .evaluatedAt("2025-06-22 17:31:08")
-                .weightPerform(20)
-                .weightTeam(15)
-                .weightAttitude(15)
-                .weightGrowth(25)
-                .weightEngagement(20)
-                .weightResult(5)
-                .rateS(5)
-                .rateA(20)
-                .rateB(35)
-                .rateC(30)
-                .rateD(10)
-                .objectionReason("점수가 낮습니다.")
+                .evaluatedAt("2025-01-21 00:00:00")
+                .objectionReason("인사 평가 점수가 예상보다 낮게 나왔습니다.")
                 .statusType("PENDING")
                 .responseReason(null)
                 .build();
 
-        // 2) 요인별 점수
-        FactorScoreDto fs1 = FactorScoreDto.builder()
-                .propertyName("커뮤니케이션")
-                .score(88)
-                .build();
-        FactorScoreDto fs2 = FactorScoreDto.builder()
-                .propertyName("조직협업")
-                .score(92)
-                .build();
-
-        ObjectionDetailResultDto detailDto = ObjectionDetailResultDto.builder()
-                .list(List.of(base))
-                .factorScores(List.of(fs1, fs2))
+        WeightInfo weightInfo = WeightInfo.builder()
+                .weightPerform(25)
+                .weightTeam(20)
+                .weightAttitude(15)
+                .weightGrowth(10)
+                .weightEngagement(15)
+                .weightResult(15)
                 .build();
 
-        given(service.getObjectionDetail(any(Long.class)))
-                .willReturn(detailDto);
+        RateInfo rateInfo = RateInfo.builder()
+                .rateS(15)
+                .rateA(25)
+                .rateB(30)
+                .rateC(20)
+                .rateD(10)
+                .build();
+
+        List<FactorScoreDto> scores = List.of(
+                FactorScoreDto.builder().propertyName("업무 수행 역량").score("B").build(),
+                FactorScoreDto.builder().propertyName("문제 해결 능력").score("A").build()
+        );
+
+        ObjectionDetailResultDto resultDto = ObjectionDetailResultDto.builder()
+                .itemDto(item)
+                .weightInfo(weightInfo)
+                .rateInfo(rateInfo)
+                .factorScores(scores)
+                .build();
+
+        given(service.getObjectionDetail(1L)).willReturn(resultDto);
 
         // when & then
-        mockMvc.perform(get("/hr-objections/my/{id}", 5001L))
-                .andDo(print())
+        mockMvc.perform(get("/hr-objections/my/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                // 기본 정보 확인
-                .andExpect(jsonPath("$.data.list", hasSize(1)))
-                .andExpect(jsonPath("$.data.list[0].objectionId").value(5001))
-                .andExpect(jsonPath("$.data.list[0].empNo").value("20250001"))
-                .andExpect(jsonPath("$.data.list[0].empName").value("김현우"))
-                // 요인별 점수 확인
+                .andExpect(jsonPath("$.data.itemDto.empName").value("김현우"))
+                .andExpect(jsonPath("$.data.itemDto.resultId").value(17))
                 .andExpect(jsonPath("$.data.factorScores", hasSize(2)))
-                .andExpect(jsonPath("$.data.factorScores[0].propertyName").value("커뮤니케이션"))
-                .andExpect(jsonPath("$.data.factorScores[0].score").value(88))
-                .andExpect(jsonPath("$.data.factorScores[1].propertyName").value("조직협업"))
-                .andExpect(jsonPath("$.data.factorScores[1].score").value(92));
+                .andExpect(jsonPath("$.data.factorScores[*].propertyName",
+                        containsInAnyOrder("업무 수행 역량", "문제 해결 능력")))
+                .andExpect(jsonPath("$.data.weightInfo.weightPerform").value(25))
+                .andExpect(jsonPath("$.data.rateInfo.rateS").value(15));
     }
 }

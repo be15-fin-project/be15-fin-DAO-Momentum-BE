@@ -47,21 +47,17 @@ class EvaluationHrServiceImplTest {
                 .overallGrade("우수")
                 .evaluatedAt(LocalDateTime.of(2025,6,15,14,23,45))
                 .build();
-        // resultId 필드를 테스트에 반영하려면 DTO에 setter 또는 생성자에 포함되어야 합니다.
-        // 가정: builder()에 resultId(long) 메서드도 있음
-        // 예: item.setResultId(123L); 또는 builder().resultId(123L)
-        // 여기서는 리플렉션 대신 가정적으로 setter 호출:
 
         long total = 1L;
         List<HrEvaluationItemDto> items = List.of(item);
 
         FactorScoreDto fs1 = FactorScoreDto.builder()
                 .propertyName("커뮤니케이션")
-                .score(88)
+                .score("B")
                 .build();
         FactorScoreDto fs2 = FactorScoreDto.builder()
                 .propertyName("문제해결")
-                .score(92)
+                .score("A")
                 .build();
 
         given(mapper.findHrEvaluations(1L, req)).willReturn(items);

@@ -46,11 +46,11 @@ class EvaluationHrControllerTest {
 
         FactorScoreDto fs1 = FactorScoreDto.builder()
                 .propertyName("커뮤니케이션")
-                .score(88)
+                .score("B")
                 .build();
         FactorScoreDto fs2 = FactorScoreDto.builder()
                 .propertyName("문제해결")
-                .score(92)
+                .score("A")
                 .build();
 
         Pagination pagination = Pagination.builder()
