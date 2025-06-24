@@ -366,16 +366,22 @@ public class EmployeeCommandService {
     }
 
     @Transactional
-    public EmployeeCSVResponse createEmployees(MultipartFile file) {
+    public EmployeeCSVResponse createEmployees(MultipartFile file, UserDetails userDetails) {
+        long adminId = Long.parseLong(userDetails.getUsername());
+        validateActiveAdmin(adminId);
+
         // 1) 파싱 & 검증
         List<Employee> entities = parseAndValidate(file);
 
         // 2) 저장
         entities.forEach(employeeRepository::save);
 
+        List<Long> empIds = entities.stream().map(Employee::getEmpId).toList();
+
         // 3) 응답 DTO 반환
+        log.info("사원 CSV 등록 성공 - 요청자 ID: {}, 요청일시: {}, 등록된 사원 ID: {}", adminId, LocalDateTime.now(), empIds);
         return EmployeeCSVResponse.builder()
-                .empIds(entities.stream().map(Employee::getEmpId).toList())
+                .empIds(empIds)
                 .message("사원 CSV 등록 성공")
                 .build();
     }
@@ -422,10 +428,12 @@ public class EmployeeCommandService {
         ) {
             List<String[]> rows = csv.readAll();
             if (rows.isEmpty()) {
+                log.warn("입력할 데이터 없음");
                 throw new EmployeeException(ErrorCode.EMPTY_DATA_PROVIDED);
             }
             return rows;
         } catch (IOException e) {
+            log.warn("CSV 파일 읽기 실패");
             throw new EmployeeException(ErrorCode.CSV_READ_FAILED, e);
         } catch (CsvException e) {
             throw new RuntimeException(e);
@@ -445,6 +453,7 @@ public class EmployeeCommandService {
                 .toArray(String[]::new);
 
         if (!Arrays.equals(expected, cleaned)) {
+            log.warn("헤더 정보 불일치 - input: {}, expected: {}", Arrays.toString(cleaned), Arrays.toString(expected));
             throw new EmployeeException(ErrorCode.INVALID_CSV_HEADER);
         }
     }
@@ -452,6 +461,7 @@ public class EmployeeCommandService {
     // 3) 각 행 검증
     private void validateRow(String[] cols, String[] header, int line) {
         if (cols.length != header.length) {
+            log.warn("열 개수 불일치 - provided: {}개, expected: {}개", cols.length, header.length);
             throw new EmployeeException(
                     ErrorCode.INVALID_COLUMN_COUNT,
                     line, cols.length, header.length
@@ -510,8 +520,11 @@ public class EmployeeCommandService {
 
     private Integer parseDeptId(String deptName) {
         Integer deptId = null;
+        com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted isActive
+                = com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted.N;
+
         if (deptName != null && !deptName.isBlank()) {
-            Department dept = departmentRepository.findByName(deptName)
+            Department dept = departmentRepository.findByNameAndIsDeleted(deptName, isActive)
                     .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
             deptId = dept.getDeptId();
         }
@@ -519,7 +532,7 @@ public class EmployeeCommandService {
     }
 
     private int parsePositionId(String positionName) {
-        Position position = positionRepository.findByName(positionName)
+        Position position = positionRepository.findByNameAndIsDeleted(positionName, IsDeleted.N)
                 .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
        return position.getPositionId();
     }

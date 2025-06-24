@@ -44,14 +44,17 @@ public class EmployeeCommandController {
     // csv는 DB 저장 안하고 백엔드에 하드코딩
     @Operation(summary = "사원 CSV 등록", description = "관리자는 CSV 파일을 업로드하여 사원을 일괄 등록할 수 있다.")
     @PostMapping("/csv")
-    public ResponseEntity<ApiResponse<EmployeeCSVResponse>> createEmployees(@RequestParam("file") MultipartFile file){
+    public ResponseEntity<ApiResponse<EmployeeCSVResponse>> createEmployees(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
 
         if (file.isEmpty()) {
             throw new EmployeeException(ErrorCode.CSV_NOT_FOUND);
         }
         validateFileType(file);
 
-        EmployeeCSVResponse response = employeeService.createEmployees(file);
+        EmployeeCSVResponse response = employeeService.createEmployees(file, userDetails);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
@@ -64,7 +67,6 @@ public class EmployeeCommandController {
             throw new EmployeeException(ErrorCode.NOT_A_CSV);
         }
     }
-
 
     @Operation(summary = "사원 기본 정보 수정", description = "관리자는 사원의 사번, 재직 상태, 이메일을 수정할 수 있다.")
     @PutMapping("/{empId}")
