@@ -20,6 +20,8 @@ public class AdminWorkSearchRequest {
 
     private String typeName;
 
+    private Integer vacationTypeId;
+
     private Order order;
 
     private Integer page;
