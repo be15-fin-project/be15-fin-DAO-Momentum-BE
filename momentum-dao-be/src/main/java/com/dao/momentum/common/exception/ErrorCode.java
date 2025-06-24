@@ -76,6 +76,7 @@ public enum ErrorCode {
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_CONTACT_NOT_FOUND("50002", "조회 가능한 면담 요청 내역 정보가 없습니다.", HttpStatus.NOT_FOUND),
 
 
     //공지사항 오류(60001 - 69999)

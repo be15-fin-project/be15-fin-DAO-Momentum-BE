@@ -38,9 +38,11 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
     @Override
     @Transactional(readOnly = true)
     public List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionStatisticsRequestDto req) {
-        int targetYear = (req.getYear() != null) ? req.getYear() : LocalDate.now().getYear();
 
-        List<StabilityRatioByDeptRaw> rawList = mapper.findStabilityDistributionByDept(targetYear);
+        int targetYear = (req.getYear() != null) ? req.getYear() : LocalDate.now().getYear();
+        req.setYear(targetYear); // Mapper에서 사용하므로 DTO에도 세팅
+
+        List<StabilityRatioByDeptRaw> rawList = mapper.findStabilityDistributionByDept(req);
 
         if (rawList == null) {
             throw new RetentionException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
