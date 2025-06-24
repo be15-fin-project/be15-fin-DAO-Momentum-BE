@@ -64,7 +64,7 @@ public class EmployeeCommandController {
     }
 
     @Operation(summary = "사원 발령 등록", description = "관리자는 사원의 발령 정보를 등록할 수 있다.")
-    @PostMapping("/appoint")
+    @PostMapping("/appoints")
     public ResponseEntity<ApiResponse<AppointCreateResponse>> createAppoint(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody AppointCreateRequest request){

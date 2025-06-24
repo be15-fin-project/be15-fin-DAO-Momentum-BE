@@ -13,6 +13,9 @@ public class RetentionForecastRequestDto {
     @Schema(description = "조회할 회차 번호 (미입력 시 최신 회차로 처리)", example = "3")
     private Integer roundNo;
 
+    @Schema(description = "사번", example = "20240001")
+    private String empNo;
+
     @Schema(description = "부서 ID (필터)", example = "5")
     private Integer deptId;
 

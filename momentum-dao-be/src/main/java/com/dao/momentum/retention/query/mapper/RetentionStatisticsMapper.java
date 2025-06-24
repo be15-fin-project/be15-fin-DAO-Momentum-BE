@@ -15,7 +15,7 @@ public interface RetentionStatisticsMapper {
     RetentionAverageScoreDto findAverageRetentionScore(@Param("req") RetentionStatisticsRequestDto req);
 
     // 2. 연도별 + 부서별 근속 안정성 분포 집계
-    List<StabilityRatioByDeptRaw> findStabilityDistributionByDept(@Param("year") int year);
+    List<StabilityRatioByDeptRaw> findStabilityDistributionByDept(@Param("year") RetentionStatisticsRequestDto req);
 
     // 전체(또는 부서필터) 기준 근속 안정성 분포 통계
     StabilityRatioByDeptRaw findOverallStabilityDistribution(@Param("req") RetentionStatisticsRequestDto req);
