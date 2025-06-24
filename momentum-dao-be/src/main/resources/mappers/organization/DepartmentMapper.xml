@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.organization.department.query.mapper.DepartmentMapper">
+    <select id="getDepartments" resultType="com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO">
+        SELECT
+                dept_id,
+                name,
+                parent_dept_id
+        FROM
+                department
+        WHERE
+                is_deleted = 'N';
+    </select>
+
+</mapper>

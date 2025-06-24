@@ -36,6 +36,7 @@ public enum ErrorCode {
     ATTACHMENT_REQUIRED("12003", "첨부파일이 없습니다.", HttpStatus.BAD_REQUEST), CONTRACT_NOT_FOUND("12004", "해당 계약서를 찾을 수 없습니다." , HttpStatus.NOT_FOUND),
     ATTACHMENT_NOT_FOUND("12004", "첨부파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
+
     // CSV 오류 (13001 - 13999)
     CSV_NOT_FOUND("13001", "CSV 파일이 존재하지 않습니다." , HttpStatus.BAD_REQUEST),
     NOT_A_CSV("13002", "CSV 파일이 아닙니다.", HttpStatus.BAD_REQUEST),
