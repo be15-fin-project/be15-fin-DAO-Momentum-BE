@@ -6,6 +6,7 @@ import com.dao.momentum.approve.exception.OcrRequestFailedException;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.contract.exception.ContractException;
 import com.dao.momentum.email.exception.EmailFailException;
+import com.dao.momentum.organization.department.exception.DepartmentException;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.work.exception.WorkException;
 import org.springframework.http.ResponseEntity;
@@ -93,6 +94,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailFailException.class)
     public ResponseEntity<ApiResponse<Void>> handleMailError(EmailFailException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ApiResponse<Void> response
+                = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
+        return new ResponseEntity<>(response,errorCode.getHttpStatus());
+    }
+
+    @ExceptionHandler(DepartmentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDepartmentError(DepartmentException e) {
         ErrorCode errorCode = e.getErrorCode();
         ApiResponse<Void> response
                 = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
