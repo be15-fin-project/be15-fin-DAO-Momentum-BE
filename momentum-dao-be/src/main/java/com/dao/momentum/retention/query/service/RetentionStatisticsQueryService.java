@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.query.service;
 
+import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto;
@@ -12,9 +13,9 @@ public interface RetentionStatisticsQueryService {
     RetentionAverageScoreDto getAverageScore(RetentionStatisticsRequestDto req);
 
     // 연도별 부서별 근속 안정성 유형 분포 조회
-    List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionStatisticsRequestDto req);
+    StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionInsightRequestDto req);
 
     // 전체(또는 부서필터) 기준 근속 안정성 분포 통계
-    StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionStatisticsRequestDto req);
+    List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionInsightRequestDto req);
 
 }
