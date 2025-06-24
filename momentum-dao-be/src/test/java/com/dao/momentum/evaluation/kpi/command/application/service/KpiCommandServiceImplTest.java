@@ -6,9 +6,11 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateRequest;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiProgressUpdateRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiProgressUpdateResponse;
 import com.dao.momentum.evaluation.kpi.command.domain.aggregate.Kpi;
 import com.dao.momentum.evaluation.kpi.command.domain.repository.KpiRepository;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
@@ -26,8 +28,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -159,4 +160,88 @@ class KpiCommandServiceImplTest {
         assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
     }
 
+    private Kpi mockKpi(int progress, Long ownerId) {
+        return Kpi.builder()
+                .kpiId(kpiId)
+                .empId(ownerId)
+                .statusId(Status.ACCEPTED.getId())
+                .isDeleted(UseStatus.N)
+                .kpiProgress(progress)
+                .build();
+    }
+
+    @Test
+    @DisplayName("진척도 수정 성공")
+    void updateProgress_success() {
+        Kpi kpi = mockKpi(30, empId);
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
+        req.setProgress(75);
+
+        KpiProgressUpdateResponse res = service.updateProgress(empId, kpiId, req);
+
+        assertEquals(kpiId, res.getKpiId());
+        assertEquals(75, res.getProgress());
+        assertEquals("KPI 진척도가 성공적으로 업데이트되었습니다.", res.getMessage()); // ✔️ 핵심 수정
+    }
+
+    @Test
+    @DisplayName("음수 진척도 예외")
+    void updateProgress_negative() {
+        Kpi kpi = mockKpi(0, empId);
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
+        req.setProgress(-10);
+
+        KpiException ex = assertThrows(KpiException.class, () ->
+                service.updateProgress(empId, kpiId, req)
+        );
+        assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("100 초과 진척도 예외")
+    void updateProgress_over100() {
+        Kpi kpi = mockKpi(0, empId);
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
+        req.setProgress(150);
+
+        KpiException ex = assertThrows(KpiException.class, () ->
+                service.updateProgress(empId, kpiId, req)
+        );
+        assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("다른 사원이 수정 시도시 예외")
+    void updateProgress_forbidden() {
+        Kpi kpi = mockKpi(2, 999L); // 다른 사원이 소유
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
+        req.setProgress(50);
+
+        KpiException ex = assertThrows(KpiException.class, () ->
+                service.updateProgress(empId, kpiId, req)
+        );
+        assertEquals(ErrorCode.KPI_REQUEST_FORBIDDEN, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 KPI")
+    void updateProgress_notFound() {
+        when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
+
+        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
+        req.setProgress(60);
+
+        KpiException ex = assertThrows(KpiException.class, () ->
+                service.updateProgress(empId, kpiId, req)
+        );
+        assertEquals(ErrorCode.KPI_NOT_FOUND, ex.getErrorCode());
+    }
 }

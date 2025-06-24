@@ -69,6 +69,11 @@ public class KpiCommandServiceImpl implements KpiCommandService {
             throw new KpiException(ErrorCode.KPI_REQUEST_FORBIDDEN);
         }
 
+        if (request.getProgress() < 0 || request.getProgress() > 100) {
+            throw new KpiException(ErrorCode.KPI_EDIT_FORBIDDEN);
+        }
+
+
         kpi.updateProgress(request.getProgress());
 
         return KpiProgressUpdateResponse.builder()

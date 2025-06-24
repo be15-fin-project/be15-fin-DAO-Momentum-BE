@@ -72,6 +72,7 @@ public enum ErrorCode {
     KPI_INVALID_STATUS("40007", "취소 가능한 상태의 KPI가 아닙니다.", HttpStatus.BAD_REQUEST),
     KPI_ALREADY_PROCESSED("40008", "이미 처리 된 KPI입니다.", HttpStatus.BAD_REQUEST),
     KPI_REJECTION_REASON_REQUIRED("40009", "반려 할 경우 반드시 처리 사유가 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
+    KPI_EDIT_FORBIDDEN("40010", "진척도는 0 이상 100 이하 값만 가능합니다.", HttpStatus.BAD_REQUEST),
     // 평가 오류
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),

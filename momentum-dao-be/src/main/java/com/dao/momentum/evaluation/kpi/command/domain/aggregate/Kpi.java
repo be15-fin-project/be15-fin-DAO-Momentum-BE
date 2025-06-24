@@ -112,7 +112,11 @@ public class Kpi {
     }
 
     public void updateProgress(Integer progress) {
+        if (progress < 0 || progress > 100) {
+            throw new IllegalArgumentException("진척도는 0 이상 100 이하 값만 가능합니다.");
+        }
         this.kpiProgress = progress;
     }
+
 
 }
