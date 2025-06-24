@@ -119,4 +119,94 @@
         WHERE emp_id = #{empId}
     </select>
 
+    <select id="getAppoints" resultType="com.dao.momentum.organization.employee.query.dto.response.AppointDTO">
+        SELECT
+            app.appoint_id,
+            app.emp_id,
+            emp.emp_no,
+            emp.name AS empName,
+            app.before_position,
+            bpos.name AS beforePositionName,
+            app.after_position,
+            apos.name AS afterPositionName,
+            app.before_department,
+            bdep.name AS beforeDeptName,
+            app.after_department,
+            adep.name AS afterDeptName,
+            app.type,
+            app.appoint_date
+        FROM appoint AS app
+        JOIN employee AS emp ON app.emp_id = emp.emp_id
+        JOIN position AS bpos ON app.before_position = bpos.position_id
+        JOIN position AS apos ON app.after_position = apos.position_id
+        JOIN department AS bdep ON app.before_department = bdep.dept_id
+        JOIN department AS adep ON app.after_department = adep.dept_id
+        <where>
+            <if test="request.deptId != null">
+                adep.dept_id = #{request.deptId}
+            </if>
+            <if test="request.positionId != null">
+                AND apos.position_id = #{request.positionId}
+            </if>
+            <if test="request.empId != null">
+                AND emp.emp_id = #{request.empId}
+            </if>
+            <if test="request.empName != null and request.empName != ''">
+                AND emp.name = #{request.empName}
+            </if>
+            <if test="request.type != null">
+                AND app.type = #{request.type}
+            </if>
+            <if test="request.searchStartDate != null">
+                AND app.appoint_date &gt;= #{request.searchStartDate}
+            </if>
+            <if test="request.searchEndDate != null">
+                AND app.appoint_date &lt;= #{request.searchEndDate}
+            </if>
+        </where>
+        <choose>
+            <when test="request.order == null or request.order.name() == 'DESC'">
+                ORDER BY app.appoint_date DESC
+            </when>
+            <otherwise>
+                ORDER BY app.appoint_date
+            </otherwise>
+        </choose>
+        LIMIT #{request.limit} OFFSET #{request.offset}
+    </select>
+
+    <select id="countAppoints" resultType="java.lang.Long">
+        SELECT
+            COUNT(app.appoint_id)
+        FROM appoint AS app
+        JOIN employee AS emp ON app.emp_id = emp.emp_id
+        JOIN position AS bpos ON app.before_position = bpos.position_id
+        JOIN position AS apos ON app.after_position = apos.position_id
+        JOIN department AS bdep ON app.before_department = bdep.dept_id
+        JOIN department AS adep ON app.after_department = adep.dept_id
+        <where>
+            <if test="request.deptId != null">
+                adep.dept_id = #{request.deptId}
+            </if>
+            <if test="request.positionId != null">
+                AND apos.position_id = #{request.positionId}
+            </if>
+            <if test="request.empId != null">
+                AND emp.emp_id = #{request.empId}
+            </if>
+            <if test="request.empName != null and request.empName != ''">
+                AND emp.name = #{request.empName}
+            </if>
+            <if test="request.type != null">
+                AND app.type = #{request.type}
+            </if>
+            <if test="request.searchStartDate != null">
+                AND app.appoint_date &gt;= #{request.searchStartDate}
+            </if>
+            <if test="request.searchEndDate != null">
+                AND app.appoint_date &lt;= #{request.searchEndDate}
+            </if>
+        </where>
+    </select>
+
 </mapper>
