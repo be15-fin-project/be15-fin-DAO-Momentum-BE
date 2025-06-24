@@ -35,33 +35,34 @@ class FileServiceTest {
         String fileName = "test.png";
         String contentType = "image/png";
         long size = 1024L;
+        String prefixType = "announcement";
 
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest(fileName, size, contentType);
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest(fileName, size, contentType, prefixType);
 
         when(s3Service.extractFileExtension(fileName)).thenReturn("png");
         when(s3Service.sanitizeFilename(fileName)).thenReturn(fileName);
         when(s3Service.generatePresignedUploadUrlWithKey(any(), eq(contentType)))
-                .thenReturn(new FilePresignedUrlResponse("https://presigned.url", "generated/key"));
+                .thenReturn(new FilePresignedUrlResponse("https://presigned.url", "announcement/generated/key"));
 
         // when
         FilePresignedUrlResponse response = fileService.generatePresignedUrl(request);
 
         // then
         assertNotNull(response);
-        assertEquals("generated/key", response.s3Key());
+        assertEquals("announcement/generated/key", response.s3Key());
         assertEquals("https://presigned.url", response.presignedUrl());
 
         // verify
         verify(s3Service).extractFileExtension(fileName);
         verify(s3Service).sanitizeFilename(fileName);
-        verify(s3Service).generatePresignedUploadUrlWithKey(startsWith("announcements/"), eq(contentType));
+        verify(s3Service).generatePresignedUploadUrlWithKey(startsWith("announcement/"), eq(contentType));
     }
 
     @Test
     @DisplayName("Presigned URL 생성 실패 - 용량 초과")
     void generatePresignedUrl_fail_sizeTooLarge() {
         // given
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 20 * 1024 * 1024L, "image/png");
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 20 * 1024 * 1024L, "image/png", "announcement");
 
         // when
         FileUploadFailedException e = assertThrows(FileUploadFailedException.class, () ->
@@ -81,7 +82,7 @@ class FileServiceTest {
     @DisplayName("Presigned URL 생성 실패 - 확장자 불일치")
     void generatePresignedUrl_fail_invalidExtension() {
         // given
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("malicious.exe", 1024L , "application/octet-stream");
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("malicious.exe", 1024L , "application/octet-stream", "announcement");
 
         when(s3Service.extractFileExtension("malicious.exe")).thenReturn("exe");
 
