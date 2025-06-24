@@ -1,7 +1,6 @@
 package com.dao.momentum.evaluation.kpi.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
@@ -18,10 +17,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -43,21 +42,22 @@ class KpiQueryControllerTest {
 
     @Test
     @DisplayName("KPI 전체 내역 조회")
-    @WithMockUser(authorities = "MASTER")
+    @WithMockUser(username = "123", authorities = "MASTER")
     void getKpiList_success() throws Exception {
         // given
-        KpiListResponseDto item = new KpiListResponseDto();
-        item.setKpiId(1L);
-        item.setEmpNo("HR123");
-        item.setEmployeeName("김예진");
-        item.setDepartmentName("인사팀");
-        item.setPositionName("대리");
-        item.setGoal("신입 채용 완료");
-        item.setGoalValue(3);
-        item.setKpiProgress(80);
-        item.setStatusName("ACCEPTED");
-        item.setCreatedAt("2025-06-01");
-        item.setDeadline("2025-06-30");
+        KpiListResponseDto item = KpiListResponseDto.builder()
+                .kpiId(1L)
+                .empNo("HR123")
+                .employeeName("김예진")
+                .departmentName("인사팀")
+                .positionName("대리")
+                .goal("신입 채용 완료")
+                .goalValue(3)
+                .kpiProgress(80)
+                .statusName("ACCEPTED")
+                .createdAt("2025-06-01")
+                .deadline("2025-06-30")
+                .build();
 
         Pagination pagination = Pagination.builder()
                 .currentPage(1)
@@ -67,7 +67,15 @@ class KpiQueryControllerTest {
 
         KpiListResultDto resultDto = new KpiListResultDto(List.of(item), pagination);
 
-        Mockito.when(kpiQueryService.getKpiList(any(KpiListRequestDto.class))).thenReturn(resultDto);
+        Mockito.when(employeeRepository.findByEmpId(123L))
+                .thenReturn(Optional.of(
+                        com.dao.momentum.organization.employee.command.domain.aggregate.Employee.builder()
+                                .empNo("HR123")
+                                .build()
+                ));
+
+        Mockito.when(kpiQueryService.getKpiListWithAccessControl(any(KpiListRequestDto.class), Mockito.eq(123L), Mockito.eq("HR123")))
+                .thenReturn(resultDto);
 
         // when & then
         mockMvc.perform(get("/kpi/list")
@@ -81,28 +89,30 @@ class KpiQueryControllerTest {
                 .andDo(print());
     }
 
+
     @Test
     @DisplayName("KPI 세부 조회")
     @WithMockUser(authorities = "MASTER")
     void getKpiDetail_success() throws Exception {
         Long kpiId = 101L;
 
-        KpiDetailResponseDto dto = new KpiDetailResponseDto();
-        dto.setKpiId(kpiId);
-        dto.setEmpNo("HR001");
-        dto.setEmployeeName("정예준");
-        dto.setDepartmentName("기획팀");
-        dto.setPositionName("대리");
-        dto.setGoal("리포트 자동화");
-        dto.setGoalValue(5);
-        dto.setKpiProgress(75);
-        dto.setProgress25("템플릿 작성");
-        dto.setProgress50("API 연동");
-        dto.setProgress75("리포트 생성");
-        dto.setProgress100("운영 반영");
-        dto.setStatusType("ACCEPTED");
-        dto.setCreatedAt("2025-05-01");
-        dto.setDeadline("2025-06-30");
+        KpiDetailResponseDto dto = KpiDetailResponseDto.builder()
+                .kpiId(kpiId)
+                .empNo("HR001")
+                .employeeName("정예준")
+                .departmentName("기획팀")
+                .positionName("대리")
+                .goal("리포트 자동화")
+                .goalValue(5)
+                .kpiProgress(75)
+                .progress25("템플릿 작성")
+                .progress50("API 연동")
+                .progress75("리포트 생성")
+                .progress100("운영 반영")
+                .statusType("ACCEPTED")
+                .createdAt("2025-05-01")
+                .deadline("2025-06-30")
+                .build();
 
         Mockito.when(kpiQueryService.getKpiDetail(kpiId)).thenReturn(dto);
 
@@ -119,15 +129,16 @@ class KpiQueryControllerTest {
     @WithMockUser(authorities = "HR")
     void getEmployeeKpiSummaries_success() throws Exception {
         // given
-        KpiEmployeeSummaryResponseDto item = new KpiEmployeeSummaryResponseDto();
-        item.setEmpNo("HR001");
-        item.setEmployeeName("홍길동");
-        item.setDepartmentName("기획팀");
-        item.setPositionName("대리");
-        item.setTotalKpiCount(6);
-        item.setCompletedKpiCount(4);
-        item.setAverageProgress(76.5);
-        item.setCompletionRate(66.7);
+        KpiEmployeeSummaryResponseDto item = KpiEmployeeSummaryResponseDto.builder()
+                .empNo("HR001")
+                .employeeName("홍길동")
+                .departmentName("기획팀")
+                .positionName("대리")
+                .totalKpiCount(6)
+                .completedKpiCount(4)
+                .averageProgress(76.5)
+                .completionRate(66.7)
+                .build();
 
         Pagination pagination = Pagination.builder()
                 .currentPage(1)
@@ -160,5 +171,4 @@ class KpiQueryControllerTest {
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andDo(print());
     }
-
 }

@@ -1,11 +1,12 @@
 package com.dao.momentum.evaluation.kpi.query.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "KPI 사원별 요약 조회 요청 DTO")
 public class KpiEmployeeSummaryRequestDto {
 
@@ -18,9 +19,11 @@ public class KpiEmployeeSummaryRequestDto {
     @Schema(description = "부서 ID", example = "3")
     private Integer deptId;
 
+    @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     private int page = 1;
 
+    @Builder.Default
     @Schema(description = "페이지당 항목 수", example = "10", defaultValue = "10")
     private int size = 10;
 

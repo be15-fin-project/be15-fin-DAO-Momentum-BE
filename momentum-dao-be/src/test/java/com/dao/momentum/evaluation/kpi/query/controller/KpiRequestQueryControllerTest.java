@@ -41,18 +41,19 @@ class KpiRequestQueryControllerTest {
     @WithMockUser(username = "11", authorities = "MANAGER")
     void getKpiRequests_success() throws Exception {
         // given
-        KpiRequestListResponseDto dto = new KpiRequestListResponseDto();
-        dto.setKpiId(101L);
-        dto.setEmpNo("20240001");
-        dto.setEmployeeName("김현우");
-        dto.setDepartmentName("기획팀");
-        dto.setPositionName("대리");
-        dto.setGoal("월간 영업 건수 10건 달성");
-        dto.setGoalValue(10);
-        dto.setKpiProgress(40);
-        dto.setStatusName("대기중");
-        dto.setCreatedAt("2025-06-01");
-        dto.setDeadline("2025-06-30");
+        KpiRequestListResponseDto dto = KpiRequestListResponseDto.builder()
+                .kpiId(101L)
+                .empNo("20240001")
+                .employeeName("김현우")
+                .departmentName("기획팀")
+                .positionName("대리")
+                .goal("월간 영업 건수 10건 달성")
+                .goalValue(10)
+                .kpiProgress(40)
+                .statusName("대기중")
+                .createdAt("2025-06-01")
+                .deadline("2025-06-30")
+                .build();
 
         Pagination pagination = Pagination.builder()
                 .currentPage(1)
