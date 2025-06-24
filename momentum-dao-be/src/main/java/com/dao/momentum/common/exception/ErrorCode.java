@@ -63,6 +63,8 @@ public enum ErrorCode {
     NOT_EXIST_VACATION("30008", "존재하지 않는 휴가 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     NOT_EXIST_WORK_CORRECTION("30009", "존재하지 않는 출퇴근 정정 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    FAILED_OCR_CALL("30011", "OCR API 요청에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    RECEIPT_IMAGE_REQUIRED("30012", "영수증 결재에는 반드시 이미지 파일이 필요합니다.", HttpStatus.BAD_REQUEST),
 
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
