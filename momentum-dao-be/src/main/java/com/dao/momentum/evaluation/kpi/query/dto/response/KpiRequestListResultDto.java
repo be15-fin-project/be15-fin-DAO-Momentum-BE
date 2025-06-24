@@ -3,11 +3,11 @@ package com.dao.momentum.evaluation.kpi.query.dto.response;
 import com.dao.momentum.common.dto.Pagination;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 
-@Data
+@Getter
 @AllArgsConstructor
 @Schema(description = "KPI 요청 목록 조회 결과 DTO")
 public class KpiRequestListResultDto {

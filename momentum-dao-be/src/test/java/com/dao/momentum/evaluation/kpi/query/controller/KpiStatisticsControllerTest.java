@@ -6,25 +6,20 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseD
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsService;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
-import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import static org.mockito.ArgumentMatchers.isNull;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,109 +30,94 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 class KpiStatisticsControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private KpiStatisticsService kpiStatisticsService;
 
     @Autowired
-    ObjectMapper objectMapper;
-
-    @MockitoBean
-    KpiStatisticsService kpiStatisticsService;
-
-    @MockitoBean
-    EmployeeRepository employeeRepository;
+    private ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("KPI 통계 조회 - 관리자 권한")
+    @DisplayName("KPI 통계 조회 - 관리자")
     @WithMockUser(username = "1", authorities = "MASTER")
     void getKpiStatistics_admin_success() throws Exception {
-        // given
-        KpiStatisticsResponseDto responseDto = new KpiStatisticsResponseDto();
-        responseDto.setTotalKpiCount(15);
-        responseDto.setCompletedKpiCount(10);
-        responseDto.setAverageProgress(73.3);
+        KpiStatisticsResponseDto responseDto = KpiStatisticsResponseDto.builder()
+                .totalKpiCount(5)
+                .completedKpiCount(3)
+                .averageProgress(72.4)
+                .build();
 
-        Mockito.when(kpiStatisticsService.getStatistics(any(KpiStatisticsRequestDto.class)))
+        Mockito.when(kpiStatisticsService.getStatisticsWithAccessControl(any(KpiStatisticsRequestDto.class), eq(1L)))
                 .thenReturn(responseDto);
 
-        // when & then
-        mockMvc.perform(
-                        get("/kpi/statistics")
-                                .param("year", "2025")
-                                .param("month", "6")
-                                .param("deptId", "101")
-                )
+        mockMvc.perform(get("/kpi/statistics")
+                        .param("year", "2025")
+                        .param("month", "6")
+                        .param("deptId", "10")
+                        .param("empId", "22"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.totalKpiCount").value(15))
-                .andExpect(jsonPath("$.data.completedKpiCount").value(10))
-                .andExpect(jsonPath("$.data.averageProgress").value(73.3))
-                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.data.totalKpiCount").value(5))
+                .andExpect(jsonPath("$.data.completedKpiCount").value(3))
+                .andExpect(jsonPath("$.data.averageProgress").value(72.4))
                 .andDo(print());
     }
 
     @Test
     @DisplayName("KPI 통계 조회 - 일반 사용자")
-    @WithMockUser(username = "23", authorities = "EMPLOYEE")
+    @WithMockUser(username = "15", authorities = "MEMBER")
     void getKpiStatistics_user_success() throws Exception {
-        // given
-        Employee mockEmp = Employee.builder()
-                .empId(23L)
-                .empNo("EMP0023")
+        KpiStatisticsResponseDto responseDto = KpiStatisticsResponseDto.builder()
+                .totalKpiCount(4)
+                .completedKpiCount(2)
+                .averageProgress(60.0)
                 .build();
 
-        Mockito.when(employeeRepository.findByEmpId(eq(23L)))
-                .thenReturn(Optional.of(mockEmp));
-
-        KpiStatisticsResponseDto responseDto = new KpiStatisticsResponseDto();
-        responseDto.setTotalKpiCount(9);
-        responseDto.setCompletedKpiCount(4);
-        responseDto.setAverageProgress(68.8);
-
-        Mockito.when(kpiStatisticsService.getStatistics(any(KpiStatisticsRequestDto.class)))
+        Mockito.when(kpiStatisticsService.getStatisticsWithAccessControl(any(KpiStatisticsRequestDto.class), eq(15L)))
                 .thenReturn(responseDto);
 
-        // when & then
         mockMvc.perform(get("/kpi/statistics")
                         .param("year", "2025")
                         .param("month", "6"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.totalKpiCount").value(9))
-                .andExpect(jsonPath("$.data.completedKpiCount").value(4))
-                .andExpect(jsonPath("$.data.averageProgress").value(68.8))
+                .andExpect(jsonPath("$.data.totalKpiCount").value(4))
+                .andExpect(jsonPath("$.data.completedKpiCount").value(2))
+                .andExpect(jsonPath("$.data.averageProgress").value(60.0))
                 .andDo(print());
     }
 
     @Test
-    @WithMockUser(username = "1", authorities = {"MASTER"})
-    @DisplayName("KPI 시계열 통계 조회 - year 파라미터 없음")
+    @DisplayName("KPI 시계열 통계 조회 - 기본 연도")
+    @WithMockUser(username = "33", authorities = "HR")
     void getTimeseriesStatistics_defaultYear() throws Exception {
-        // given
-        int thisYear = LocalDate.now().getYear();
+        KpiTimeseriesMonthlyDto monthDto = KpiTimeseriesMonthlyDto.builder()
+                .month(6)
+                .totalKpiCount(10)
+                .completedKpiCount(8)
+                .averageProgress(85.0)
+                .build();
 
-        List<KpiTimeseriesMonthlyDto> monthlyStats = List.of(
-                new KpiTimeseriesMonthlyDto(6, 12, 8, 70.0)
-        );
+        KpiTimeseriesResponseDto mockResponse = KpiTimeseriesResponseDto.builder()
+                .year(2025)
+                .monthlyStats(List.of(monthDto))
+                .build();
 
-        KpiTimeseriesResponseDto mockResponse = new KpiTimeseriesResponseDto();
-        mockResponse.setYear(thisYear);
-        mockResponse.setMonthlyStats(monthlyStats);
-
-        // dto 파라미터 구성
-        KpiTimeseriesRequestDto mockDto = new KpiTimeseriesRequestDto(); // year는 null
-        // empId는 컨트롤러에서 설정됨 (권한자이므로 null 유지)
-
-        Mockito.when(kpiStatisticsService.getTimeseriesStatistics(any(KpiTimeseriesRequestDto.class)))
+        Mockito.when(kpiStatisticsService.getTimeseriesWithAccessControl(any(KpiTimeseriesRequestDto.class), eq(33L)))
                 .thenReturn(mockResponse);
 
-        // when & then
-        mockMvc.perform(get("/kpi/timeseries"))
+        mockMvc.perform(get("/kpi/timeseries")
+                        .param("year", "2025")
+                        .param("deptId", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.year").value(thisYear))
-                .andExpect(jsonPath("$.data.monthlyStats").isArray())
+                .andExpect(jsonPath("$.data.year").value(2025))
+                .andExpect(jsonPath("$.data.monthlyStats", hasSize(1)))
+                .andExpect(jsonPath("$.data.monthlyStats[0].month").value(6))
+                .andExpect(jsonPath("$.data.monthlyStats[0].totalKpiCount").value(10))
+                .andExpect(jsonPath("$.data.monthlyStats[0].completedKpiCount").value(8))
+                .andExpect(jsonPath("$.data.monthlyStats[0].averageProgress").value(85.0))
                 .andDo(print());
     }
-
-
 }

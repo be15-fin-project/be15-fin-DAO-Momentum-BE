@@ -9,6 +9,8 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDt
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,17 +38,61 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     @Override
     @Transactional(readOnly = true)
     public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
-        if (requestDto.getYear() == null) {
-            requestDto.setYear(LocalDate.now().getYear());
-        }
+        int year = (requestDto.getYear() != null) ? requestDto.getYear() : LocalDate.now().getYear();
 
-        List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(requestDto);
+        KpiTimeseriesRequestDto updatedDto = KpiTimeseriesRequestDto.builder()
+                .year(year)
+                .empId(requestDto.getEmpId())
+                .build();
 
-        if (stats == null || stats.isEmpty()) {
+        List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
+
+        if (stats == null) {
             throw new KpiException(ErrorCode.STATISTICS_NOT_FOUND);
         }
 
-        return new KpiTimeseriesResponseDto(requestDto.getYear(), stats);
+        return new KpiTimeseriesResponseDto(year, stats);
     }
 
+    // 권한 반영된 단일 통계 조회
+    @Override
+    public KpiStatisticsResponseDto getStatisticsWithAccessControl(KpiStatisticsRequestDto dto, Long requesterEmpId) {
+        boolean isPrivileged = hasPrivilegedRole();
+        KpiStatisticsRequestDto resolvedDto = isPrivileged
+                ? dto
+                : KpiStatisticsRequestDto.builder()
+                .year(dto.getYear())
+                .month(dto.getMonth())
+                .deptId(dto.getDeptId())
+                .empId(requesterEmpId)
+                .build();
+
+        return getStatistics(resolvedDto);
+    }
+
+    // 권한 반영된 시계열 통계 조회
+    @Override
+    public KpiTimeseriesResponseDto getTimeseriesWithAccessControl(KpiTimeseriesRequestDto dto, Long requesterEmpId) {
+        boolean isPrivileged = hasPrivilegedRole();
+        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
+
+        KpiTimeseriesRequestDto resolvedDto = isPrivileged
+                ? KpiTimeseriesRequestDto.builder()
+                .year(year)
+                .empId(dto.getEmpId())
+                .build()
+                : KpiTimeseriesRequestDto.builder()
+                .year(year)
+                .empId(requesterEmpId)
+                .build();
+
+        return getTimeseriesStatistics(resolvedDto);
+    }
+
+    // 역할 확인 (권한별 공개 여부 분기용)
+    private boolean hasPrivilegedRole() {
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+    }
 }

@@ -77,3 +77,8 @@ cloud:
 custom:
   kafka:
     notification-topic: user.notification
+
+naver:
+  service:
+    url: ${NAVER_URL}
+    secret-key: ${NAVER_SECRET_KEY}

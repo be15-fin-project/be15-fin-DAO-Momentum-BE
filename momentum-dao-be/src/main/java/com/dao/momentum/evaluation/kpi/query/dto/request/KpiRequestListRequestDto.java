@@ -1,12 +1,12 @@
 package com.dao.momentum.evaluation.kpi.query.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Schema(description = "KPI 요청 목록 조회 요청 DTO")
 public class KpiRequestListRequestDto {
 
@@ -28,9 +28,11 @@ public class KpiRequestListRequestDto {
     @Schema(description = "마감일 종료일자 (yyyy-MM-dd)", example = "2025-06-30")
     private String endDate;
 
+    @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     private Integer page = 1;
 
+    @Builder.Default
     @Schema(description = "페이지당 항목 수", example = "10", defaultValue = "10")
     private Integer size = 10;
 

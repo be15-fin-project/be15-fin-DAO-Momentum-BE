@@ -34,24 +34,14 @@ public class KpiQueryController {
             description = "사번, 부서 ID, 직위 ID, 상태 ID, 작성일 범위로 KPI를 조회합니다. 페이징 지원."
     )
     public ApiResponse<KpiListResultDto> getKpiList(@ModelAttribute KpiListRequestDto request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String empIdStr = auth.getName(); // JWT subject = emp_id (Long)
+        Long empId = getAuthenticatedEmpId();
 
-        boolean isPrivileged = auth.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
+        // 사번 조회 (builder 처리를 서비스로 넘기되, empNo만 컨트롤러에서 보완해도 됨)
+        String empNo = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
+                .getEmpNo();
 
-        if (!isPrivileged) {
-            Long empId = Long.parseLong(empIdStr);
-            // 사번 조회
-            String empNo = employeeRepository.findByEmpId(empId)
-                    .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
-                    .getEmpNo();
-
-            request.setEmpNo(empNo);
-        }
-
-        return ApiResponse.success(kpiQueryService.getKpiList(request));
+        return ApiResponse.success(kpiQueryService.getKpiListWithAccessControl(request, empId, empNo));
     }
 
     @GetMapping("/{kpiId}")
@@ -74,5 +64,9 @@ public class KpiQueryController {
     ) {
         KpiEmployeeSummaryResultDto result = kpiQueryService.getEmployeeKpiSummaries(requestDto);
         return ApiResponse.success(result);
+    }
+
+    private Long getAuthenticatedEmpId() {
+        return Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 }

@@ -68,6 +68,8 @@ public enum ErrorCode {
     NOT_EXIST_VACATION("30008", "존재하지 않는 휴가 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     NOT_EXIST_WORK_CORRECTION("30009", "존재하지 않는 출퇴근 정정 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
+    FAILED_OCR_CALL("30011", "OCR API 요청에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    RECEIPT_IMAGE_REQUIRED("30012", "영수증 결재에는 반드시 이미지 파일이 필요합니다.", HttpStatus.BAD_REQUEST),
 
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
@@ -76,9 +78,12 @@ public enum ErrorCode {
     KPI_NOT_FOUND("40003", "해당 KPI 항목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     KPI_EMPLOYEE_SUMMARY_NOT_FOUND("40004", "사원별 KPI 요약 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     KPI_REQUEST_NOT_FOUND("40005", "조회 가능한 KPI 요청 내역이 없습니다.", HttpStatus.NOT_FOUND),
+    KPI_REQUEST_FORBIDDEN("40006", "본인의 KPI만 취소할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    KPI_INVALID_STATUS("40007", "취소 가능한 상태의 KPI가 아닙니다.", HttpStatus.BAD_REQUEST),
     // 평가 오류
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_REQUEST("40013", "평가 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
     MY_OBJECTIONS_NOT_FOUND("40022", "조회 가능한 인사 평가 이의제기 내역이 없습니다.", HttpStatus.NOT_FOUND),

@@ -2,6 +2,7 @@ package com.dao.momentum.retention.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.exception.RetentionException;
+import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw;
 import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
@@ -63,40 +64,86 @@ class RetentionStatisticsQueryServiceImplTest {
     }
 
     @Test
+    @DisplayName("getOverallStabilityDistribution - 전체 기준 조회 성공")
+    void getOverallStabilityDistribution_success() {
+        // given
+        var req = new RetentionInsightRequestDto();
+        req.setRoundId(3); // 필수
+
+        var dto = StabilityDistributionByDeptDto.builder()
+                .deptName(null)
+                .positionName(null)
+                .empCount(100)
+                .progress20(10)
+                .progress40(20)
+                .progress60(30)
+                .progress80(25)
+                .progress100(15)
+                .build();
+
+        when(mapper.findInsightDistribution(req)).thenReturn(dto);
+
+        // when
+        var result = service.getOverallStabilityDistribution(req);
+
+        // then
+        assertThat(result.getDeptName()).isEqualTo("전체");
+        assertThat(result.getEmpCount()).isEqualTo(100);
+        assertThat(result.getProgress80()).isEqualTo(25);
+    }
+
+    @Test
+    @DisplayName("getOverallStabilityDistribution - 조회 결과 없음")
+    void getOverallStabilityDistribution_empty() {
+        // given
+        var req = new RetentionInsightRequestDto();
+        req.setRoundId(3);
+
+        when(mapper.findInsightDistribution(req)).thenReturn(null);
+
+        // when & then
+        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
+    }
+
+    @Test
     @DisplayName("getStabilityDistributionByDept - 정상 조회")
     void getStabilityDistributionByDept_success() {
         // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
+        var req = new RetentionInsightRequestDto();
+        req.setRoundId(3);
 
-        StabilityRatioByDeptRaw raw = new StabilityRatioByDeptRaw();
-        raw.setDeptName("인사팀");
-        raw.setStableCount(5L);
-        raw.setWarningCount(3L);
-        raw.setUnstableCount(2L);
-        raw.setTotalCount(10L);
+        var dto = StabilityDistributionByDeptDto.builder()
+                .deptName("인사팀")
+                .positionName("대리")
+                .empCount(12)
+                .progress20(2)
+                .progress40(3)
+                .progress60(4)
+                .progress80(2)
+                .progress100(1)
+                .build();
 
-        when(mapper.findStabilityDistributionByDept(req)).thenReturn(List.of(raw));
+        when(mapper.findInsightDistributionList(req)).thenReturn(List.of(dto));
 
         // when
-        List<StabilityDistributionByDeptDto> result = service.getStabilityDistributionByDept(req);
+        var result = service.getStabilityDistributionByDept(req);
 
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDeptName()).isEqualTo("인사팀");
-        assertThat(result.get(0).getStableRatio()).isEqualTo(50.0);
-        assertThat(result.get(0).getWarningRatio()).isEqualTo(30.0);
-        assertThat(result.get(0).getUnstableRatio()).isEqualTo(20.0);
+        assertThat(result.get(0).getProgress60()).isEqualTo(4);
     }
 
     @Test
-    @DisplayName("getStabilityDistributionByDept - 결과 없음")
-    void getStabilityDistributionByDept_null() {
+    @DisplayName("getStabilityDistributionByDept - 조회 결과 없음")
+    void getStabilityDistributionByDept_empty() {
         // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
+        var req = new RetentionInsightRequestDto();
+        req.setRoundId(3);
 
-        when(mapper.findStabilityDistributionByDept(req)).thenReturn(null);
+        when(mapper.findInsightDistributionList(req)).thenReturn(List.of());
 
         // when & then
         assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
@@ -104,31 +151,15 @@ class RetentionStatisticsQueryServiceImplTest {
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
-
     @Test
-    @DisplayName("getOverallStabilityDistribution - 전체 조회 성공")
-    void getOverallStabilityDistribution_success() {
+    @DisplayName("getOverallStabilityDistribution - roundId 누락 예외")
+    void getOverallStabilityDistribution_missingRoundId() {
         // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
-        req.setDeptId(null); // 전체 조회
+        var req = new RetentionInsightRequestDto(); // roundId 미설정
 
-        StabilityRatioByDeptRaw raw = new StabilityRatioByDeptRaw();
-        raw.setDeptName(null);
-        raw.setStableCount(4L);
-        raw.setWarningCount(4L);
-        raw.setUnstableCount(2L);
-        raw.setTotalCount(10L);
-
-        when(mapper.findOverallStabilityDistribution(req)).thenReturn(raw);
-
-        // when
-        var result = service.getOverallStabilityDistribution(req);
-
-        // then
-        assertThat(result.getDeptName()).isEqualTo("전체");
-        assertThat(result.getStableRatio()).isEqualTo(40.0);
-        assertThat(result.getWarningRatio()).isEqualTo(40.0);
-        assertThat(result.getUnstableRatio()).isEqualTo(20.0);
+        // when & then
+        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
     }
 }

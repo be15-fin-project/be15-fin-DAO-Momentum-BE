@@ -2,8 +2,12 @@ package com.dao.momentum.common.auth.application.controller;
 
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordChangeRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordResetLinkRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.PasswordChangeResponse;
+import com.dao.momentum.common.auth.application.dto.response.PasswordResetResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
 import com.dao.momentum.common.dto.ApiResponse;
@@ -14,6 +18,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -70,16 +76,34 @@ public class AuthController {
             @RequestBody @Valid PasswordResetRequest request,
             @RequestHeader("Authorization") String authorizationHeader
     ){
-        // authorizationHeader 예: "Bearer eyJhbGciOiJIUzI1NiIs..."
         String passwordResetToken = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             passwordResetToken = authorizationHeader.substring(7); // "Bearer " 뒤 토큰만 추출
         }
-
-        log.info("request = {}, token = {}",request,passwordResetToken);
         authService.resetPassword(request, passwordResetToken);
         return ResponseEntity.ok().body(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "비밀번호 재설정 요청", description = "비회원은 자신의 이메일을 입력하여 비밀번호 재설정을 요청할 수 있다.")
+    @PostMapping("/reset-password/request")
+    public ResponseEntity<ApiResponse<PasswordResetResponse>> resetPasswordRequest(
+            @RequestBody @Valid PasswordResetLinkRequest request
+    ){
+        PasswordResetResponse response = authService.resetPasswordRequest(request);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "사원은 권한이 있는 상태에서 자신의 비밀번호를 변경할 수 있다. 비밀번호, 확인 비밀번호를 필요로 한다.")
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<PasswordChangeResponse>> changePassword(
+            @AuthenticationPrincipal UserDetails username,
+            @RequestBody @Valid PasswordChangeRequest request
+    ) {
+        PasswordChangeResponse response = authService.changePassword(username,request);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
