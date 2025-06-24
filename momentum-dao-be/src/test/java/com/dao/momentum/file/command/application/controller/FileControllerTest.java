@@ -39,8 +39,8 @@ class FileControllerTest {
     @Test
     @DisplayName("Presigned URL 생성 성공")
     void generatePresignedUrl_success() throws Exception {
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 1024L, "image/png");
-        FilePresignedUrlResponse response = new FilePresignedUrlResponse("test-key", "https://presigned.url");
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png", 1024L, "image/png", "announcement");
+        FilePresignedUrlResponse response = new FilePresignedUrlResponse("announcement/https://presigned.url", "test-key");
 
         when(fileService.generatePresignedUrl(any())).thenReturn(response);
 
@@ -50,8 +50,8 @@ class FileControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.s3Key").value("https://presigned.url"))
-                .andExpect(jsonPath("$.data.presignedUrl").value("test-key"));
+                .andExpect(jsonPath("$.data.presignedUrl").value("announcement/https://presigned.url"))
+                .andExpect(jsonPath("$.data.s3Key").value("test-key"));
     }
 
     @Test
@@ -74,7 +74,7 @@ class FileControllerTest {
     @Test
     @DisplayName("Presigned URL 생성 실패 - 파일 용량 초과")
     void generatePresignedUrl_fail_fileTooLarge() throws Exception {
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("large_file.pdf", 20 * 1024 * 1024L, "application/pdf");
+        FilePresignedUrlRequest request = new FilePresignedUrlRequest("large_file.pdf", 20 * 1024 * 1024L, "application/pdf", "announcement");
 
         when(fileService.generatePresignedUrl(any()))
                 .thenThrow(new FileUploadFailedException(ErrorCode.FILE_TOO_LARGE));

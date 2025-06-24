@@ -44,6 +44,7 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         List<RetentionForecastItemDto> filtered =
             rawList.stream()
                    .map(raw -> RetentionForecastItemDto.builder()
+                       .empNo(raw.getEmpNo())
                        .empName(raw.getEmpName())
                        .deptName(raw.getDeptName())
                        .positionName(raw.getPositionName())
