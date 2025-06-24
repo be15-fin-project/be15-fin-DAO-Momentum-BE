@@ -1,17 +1,21 @@
 package com.dao.momentum.common.auth.application.service;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordResetLinkRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.PasswordResetResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
 import com.dao.momentum.common.auth.domain.aggregate.RefreshToken;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
+import com.dao.momentum.email.service.EmailService;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -33,6 +37,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, RefreshToken> redisTemplate;
     private final RedisTemplate<String, PasswordResetToken> passwordResetTokenRedisTemplate;
+    private final EmailService emailService;
 
     public LoginResponse login(LoginRequest loginRequest) {
         Employee employee = employeeRepository.findByEmail(loginRequest.getEmail())
@@ -148,5 +153,33 @@ public class AuthService {
 
         //토큰 사용 완료후 제거
         passwordResetTokenRedisTemplate.delete(empId);
+    }
+
+    @Transactional
+    public PasswordResetResponse resetPasswordRequest(PasswordResetLinkRequest request) {
+        Employee employee = employeeRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND)
+                );
+
+        String passwordResetToken = jwtTokenProvider.createPasswordResetToken(
+                String.valueOf(employee.getEmpId())
+        );
+
+        PasswordResetToken redisPasswordResetToken = PasswordResetToken.builder()
+                .token(passwordResetToken)
+                .build();
+
+        passwordResetTokenRedisTemplate.opsForValue().set(
+                String.valueOf(employee.getEmpId()),
+                redisPasswordResetToken,
+                Duration.ofMinutes(10)
+        );
+
+        //이메일 처리
+        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+
+        return PasswordResetResponse.builder()
+                .message("비밀번호 재설정 메일이 전송되었습니다. 이메일을 확인해주세요.")
+                .build();
     }
 }
