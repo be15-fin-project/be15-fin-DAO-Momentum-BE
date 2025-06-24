@@ -1,15 +1,15 @@
 package com.dao.momentum.organization.department.query.dto.response;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @NoArgsConstructor
 @Setter
 @Getter
+@AllArgsConstructor
+@Builder
 public class DepartmentInfoDTO {
     private Integer deptId;
     private Integer parentDeptId;
