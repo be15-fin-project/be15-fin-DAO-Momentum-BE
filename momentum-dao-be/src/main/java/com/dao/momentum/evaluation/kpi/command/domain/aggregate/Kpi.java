@@ -82,4 +82,11 @@ public class Kpi {
                 .isDeleted(UseStatus.N)
                 .build();
     }
+
+    public void cancel(String reason) {
+        this.statusId = Status.PENDING.getId(); // 승인 대기로 전환
+        this.isDeleted = UseStatus.Y;           // 삭제 요청 상태 표시
+        this.cancelReason = reason;
+    }
+
 }
