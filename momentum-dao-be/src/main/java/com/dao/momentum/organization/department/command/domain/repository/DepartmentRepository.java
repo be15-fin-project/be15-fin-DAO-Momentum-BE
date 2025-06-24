@@ -6,4 +6,6 @@ import java.util.Optional;
 
 public interface DepartmentRepository {
     Optional<Department> findById(int deptId);
+
+    Optional<Department> findByName(String deptName);
 }

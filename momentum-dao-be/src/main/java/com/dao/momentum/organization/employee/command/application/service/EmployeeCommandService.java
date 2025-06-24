@@ -11,10 +11,7 @@ import com.dao.momentum.organization.employee.command.application.dto.request.Ap
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.application.dto.response.AppointCreateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.*;
 import com.dao.momentum.organization.employee.command.domain.aggregate.*;
 import com.dao.momentum.organization.employee.command.domain.repository.*;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -22,6 +19,8 @@ import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
 import com.dao.momentum.organization.position.exception.PositionException;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -30,7 +29,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -358,6 +363,186 @@ public class EmployeeCommandService {
         if (position.getIsDeleted() == IsDeleted.Y) {
             throw new EmployeeException(ErrorCode.POSITION_NOT_FOUND);
         }
+    }
+
+    @Transactional
+    public EmployeeCSVResponse createEmployees(MultipartFile file) {
+        // 1) 파싱 & 검증
+        List<Employee> entities = parseAndValidate(file);
+
+        // 2) 저장
+        entities.forEach(employeeRepository::save);
+
+        // 3) 응답 DTO 반환
+        return EmployeeCSVResponse.builder()
+                .empIds(entities.stream().map(Employee::getEmpId).toList())
+                .message("사원 CSV 등록 성공")
+                .build();
+    }
+
+    /**
+     * CSV 파싱 → 검증 → Entity 리스트 반환
+     */
+    public List<Employee> parseAndValidate(MultipartFile file) {
+        List<String[]> rows = readAllRows(file);
+
+        String[] header = rows.get(0);
+        validateHeader(header);
+
+        List<Employee> entities = new ArrayList<>();
+        for (int i = 1; i < rows.size(); i++) {
+            int line = i + 1;
+            String[] cols = rows.get(i);
+
+            if (isEmptyRow(cols)) continue; // ",,,,," 행이 남아있으면 무시
+
+            validateRow(cols, header, line);
+            entities.add(toEntity(cols));
+        }
+        return entities;
+    }
+
+    // BOM 처리
+    private String normalize(String s) {
+        return s == null
+                ? null
+                : s.replace("\uFEFF", "").trim();
+    }
+
+    private boolean isEmptyRow(String[] cols) {
+        return cols == null || Arrays.stream(cols).allMatch(c -> c == null || c.isBlank());
+    }
+
+    // 1) 전체 행 읽기
+    private List<String[]> readAllRows(MultipartFile file) {
+        try (
+                InputStream is = file.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                CSVReader csv = new CSVReader(reader)
+        ) {
+            List<String[]> rows = csv.readAll();
+            if (rows.isEmpty()) {
+                throw new EmployeeException(ErrorCode.EMPTY_DATA_PROVIDED);
+            }
+            return rows;
+        } catch (IOException e) {
+            throw new EmployeeException(ErrorCode.CSV_READ_FAILED, e);
+        } catch (CsvException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 2) 헤더 검증
+    private void validateHeader(String[] header) {
+        String[] expected = {
+                "사번","이름","이메일 주소","부서명","직위명",
+                "성별","주소","연락처","입사일","상태",
+                "생년월일","잔여 연차 시간","잔여 리프레시 휴가 일수"
+        };
+
+        String[] cleaned = Arrays.stream(header)
+                .map(this::normalize)
+                .toArray(String[]::new);
+
+        if (!Arrays.equals(expected, cleaned)) {
+            throw new EmployeeException(ErrorCode.INVALID_CSV_HEADER);
+        }
+    }
+
+    // 3) 각 행 검증
+    private void validateRow(String[] cols, String[] header, int line) {
+        if (cols.length != header.length) {
+            throw new EmployeeException(
+                    ErrorCode.INVALID_COLUMN_COUNT,
+                    line, cols.length, header.length
+            );
+        }
+        for (int idx = 0; idx < cols.length; idx++) {
+            if (idx == 0 || idx == 3 || idx == 8 || idx == 9) continue;
+            if (cols[idx] == null || cols[idx].isBlank()) {
+                throw new EmployeeException(
+                        ErrorCode.REQUIRED_VALUE_NOT_FOUND,
+                       line, header[idx]
+                );
+            }
+        }
+    }
+
+    // 4) Entity 변환
+    private Employee toEntity(String[] cols) {
+        String empNo = provideDefaultEmpNo(cols[0]);
+
+        String deptName = cols[3];
+        Integer deptId = parseDeptId(deptName);
+
+        String positionName = cols[4];
+        int positionId = parsePositionId(positionName);
+
+        LocalDate joinDate = provideDefaultJoinDate(cols[8]);
+
+        Status status = parseStatus(cols[9]);
+
+        return  Employee.builder()
+                .empNo(empNo)
+                .name(cols[1])
+                .email(cols[2])
+                .password(passwordEncoder.encode(generateRandomPassword()))
+                .deptId(deptId)
+                .positionId(positionId)
+                .gender(Gender.valueOf(cols[5]))
+                .address(cols[6])
+                .contact(cols[7])
+                .joinDate(joinDate)
+                .status(status)
+                .birthDate(LocalDate.parse(cols[10]))
+                .remainingDayoffHours(Integer.parseInt(cols[11]))
+                .remainingRefreshDays(Integer.parseInt(cols[12]))
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    private String provideDefaultEmpNo(String empNo) {
+        if (empNo == null || empNo.isBlank()) {
+            return generateNextEmpNo();
+        }
+        return empNo;
+    }
+
+    private Integer parseDeptId(String deptName) {
+        Integer deptId = null;
+        if (deptName != null && !deptName.isBlank()) {
+            Department dept = departmentRepository.findByName(deptName)
+                    .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
+            deptId = dept.getDeptId();
+        }
+        return deptId;
+    }
+
+    private int parsePositionId(String positionName) {
+        Position position = positionRepository.findByName(positionName)
+                .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
+       return position.getPositionId();
+    }
+
+    private LocalDate provideDefaultJoinDate(String input) {
+        LocalDate joinDate = LocalDate.now();
+        if (input != null && !input.isBlank()) {
+            joinDate = LocalDate.parse(input);
+        }
+        return joinDate;
+    }
+
+    private Status parseStatus(String input) {
+        if (input == null) {
+            return Status.EMPLOYED;
+        }
+
+        return switch (input) {
+            case "", "재직" -> Status.EMPLOYED;
+            case "휴직" -> Status.ON_LEAVE;
+            case "퇴사" -> Status.RESIGNED;
+            default -> throw new EmployeeException(ErrorCode.INVALID_STATUS);
+        };
     }
 
 }

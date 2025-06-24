@@ -27,4 +27,6 @@ public interface PositionRepository {
     void decrementLevelsInRange(int startLevel, int endLevel);
 
     void deleteByPositionId(Integer positionId);
+
+    Optional<Position> findByName(String positionName);
 }
