@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.*;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiProgressUpdateResponse;
 import com.dao.momentum.evaluation.kpi.command.application.service.KpiCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,4 +44,15 @@ public class KpiCommandController {
         return ApiResponse.success(response);
     }
 
+    @PatchMapping("/{kpiId}/progress")
+    @Operation(summary = "KPI 진척도 업데이트", description = "사원이 KPI 항목의 진척도 수치를 입력하여 최신화합니다.")
+    public ApiResponse<KpiProgressUpdateResponse> updateProgress(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long kpiId,
+            @RequestBody @Valid KpiProgressUpdateRequest request
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+        KpiProgressUpdateResponse response = kpiCommandService.updateProgress(empId, kpiId, request);
+        return ApiResponse.success(response);
+    }
 }

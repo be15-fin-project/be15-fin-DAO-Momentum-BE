@@ -111,5 +111,8 @@ public class Kpi {
         this.isDeleted = UseStatus.N;
     }
 
+    public void updateProgress(Integer progress) {
+        this.kpiProgress = progress;
+    }
 
 }
