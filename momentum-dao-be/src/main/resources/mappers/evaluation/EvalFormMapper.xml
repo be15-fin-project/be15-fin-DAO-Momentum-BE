@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.EvalFormMapper">
+
+    <select id="findFormDetailByFormId"
+            parameterType="int"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvalFormPromptRaw">
+        SELECT
+            ef.name         AS formName,
+            ep.property_id  AS propertyId,
+            ep.name         AS propertyName,
+            pr.prompt_id    AS promptId,
+            pr.content      AS content,
+            pr.is_positive  AS isPositive
+        FROM eval_form ef
+        JOIN eval_property ep ON ep.form_id = ef.form_id
+        JOIN eval_prompt pr   ON pr.property_id = ep.property_id
+        WHERE ef.form_id = #{formId}
+        ORDER BY ep.property_id, pr.prompt_id
+    </select>
+
+</mapper>

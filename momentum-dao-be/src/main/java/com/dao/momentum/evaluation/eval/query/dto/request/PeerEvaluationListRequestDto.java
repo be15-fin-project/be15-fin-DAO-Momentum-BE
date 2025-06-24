@@ -12,7 +12,7 @@ import lombok.Setter;
 public class PeerEvaluationListRequestDto {
 
     @Schema(description = "평가자 사번", example = "1001")
-    private Long evalNo;
+    private String evalNo;
 
     @Schema(description = "피평가자 사번", example = "20250002")
     private Long targetNo;

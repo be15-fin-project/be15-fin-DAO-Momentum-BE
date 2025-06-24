@@ -46,9 +46,9 @@ class EvaluationQueryControllerTest {
         // given
         PeerEvaluationResponseDto dto = PeerEvaluationResponseDto.builder()
                 .resultId(101L)
-                .evalNo(20250001L)
+                .evalNo("20250001")
                 .evalName("김현우")
-                .targetNo(20250002L)
+                .targetNo("20250002")
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -93,9 +93,9 @@ class EvaluationQueryControllerTest {
 
         PeerEvaluationResponseDto detail = PeerEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .evalNo(20250001L)
+                .evalNo("20250001")
                 .evalName("김현우")
-                .targetNo(20250002L)
+                .targetNo("20250002")
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -165,7 +165,7 @@ class EvaluationQueryControllerTest {
 
         OrgEvaluationResponseDto detail = OrgEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김현우")
                 .formName("조직 몰입도")
                 .roundNo(2)
@@ -205,7 +205,7 @@ class EvaluationQueryControllerTest {
         // given
         SelfEvaluationResponseDto dto = SelfEvaluationResponseDto.builder()
                 .resultId(201L)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김하진")
                 .formName("직업 만족도 진단")
                 .roundNo(1)
@@ -251,7 +251,7 @@ class EvaluationQueryControllerTest {
 
         SelfEvaluationResponseDto detail = SelfEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김하진")
                 .formName("직무 스트레스 자가진단")
                 .roundNo(1)
