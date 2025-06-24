@@ -1,25 +1,31 @@
 package com.dao.momentum.organization.employee.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.application.dto.request.AppointCreateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
 import com.dao.momentum.organization.employee.command.application.dto.response.AppointCreateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeCSVResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/employees")
@@ -33,6 +39,33 @@ public class EmployeeCommandController {
         //관리자 권한 검사 로그인 기능 구현 이후 추후 추가
         employeeService.createEmployee(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
+    }
+
+    // csv는 DB 저장 안하고 백엔드에 하드코딩
+    @Operation(summary = "사원 CSV 등록", description = "관리자는 CSV 파일을 업로드하여 사원을 일괄 등록할 수 있다.")
+    @PostMapping("/csv")
+    public ResponseEntity<ApiResponse<EmployeeCSVResponse>> createEmployees(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+
+        if (file.isEmpty()) {
+            throw new EmployeeException(ErrorCode.CSV_NOT_FOUND);
+        }
+        validateFileType(file);
+
+        EmployeeCSVResponse response = employeeService.createEmployees(file, userDetails);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+    private void validateFileType(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        log.info("Uploaded Content-Type: {}", file.getContentType());
+
+        if (filename == null || !filename.toLowerCase().endsWith(".csv")) {
+            throw new EmployeeException(ErrorCode.NOT_A_CSV);
+        }
     }
 
     @Operation(summary = "사원 기본 정보 수정", description = "관리자는 사원의 사번, 재직 상태, 이메일을 수정할 수 있다.")
@@ -75,6 +108,5 @@ public class EmployeeCommandController {
                 )
         );
     }
-
 
 }

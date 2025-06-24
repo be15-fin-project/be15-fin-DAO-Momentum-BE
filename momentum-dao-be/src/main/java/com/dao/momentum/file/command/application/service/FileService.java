@@ -30,7 +30,8 @@ public class FileService {
                 "pdf", "docx", "txt",   // 문서
                 "hwp", "hwpx",          // 한글
                 "xlsx", "xls",          // 엑셀
-                "pptx", "ppt"           // 파워포인트
+                "pptx", "ppt",           // 파워포인트
+                "csv" // csv
         ).contains(extension)) {
             throw new FileUploadFailedException(ErrorCode.INVALID_FILE_EXTENSION);
         }
