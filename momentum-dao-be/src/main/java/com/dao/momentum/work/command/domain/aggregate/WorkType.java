@@ -16,4 +16,6 @@ public class WorkType {
     @Enumerated(EnumType.STRING)
     private WorkTypeName typeName;
 
+    private Integer parentTypeId;
+
 }

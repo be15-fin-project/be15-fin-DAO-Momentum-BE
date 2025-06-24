@@ -20,6 +20,8 @@ public class AdminWorkSearchDTO {
 
     private String typeName;
 
+    private Integer vacationTypeId;
+
     private Order order;
 
     private Integer page;
