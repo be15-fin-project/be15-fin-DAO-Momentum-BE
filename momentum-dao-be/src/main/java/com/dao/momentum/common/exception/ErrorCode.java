@@ -36,6 +36,11 @@ public enum ErrorCode {
     ATTACHMENT_REQUIRED("12003", "첨부파일이 없습니다.", HttpStatus.BAD_REQUEST), CONTRACT_NOT_FOUND("12004", "해당 계약서를 찾을 수 없습니다." , HttpStatus.NOT_FOUND),
     ATTACHMENT_NOT_FOUND("12004", "첨부파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
+
+
+    // 부서 오류 (14001 - 14999)
+    DEPARTMENT_NOT_FOUNT("14001","부서를 조회할 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     IP_NOT_ALLOWED("20002", "출퇴근 등록이 불가능한 IP입니다.", HttpStatus.BAD_REQUEST),

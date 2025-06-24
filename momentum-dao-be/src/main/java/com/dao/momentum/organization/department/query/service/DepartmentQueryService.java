@@ -1,11 +1,14 @@
 package com.dao.momentum.organization.department.query.service;
 
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.department.exception.DepartmentException;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +19,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DepartmentQueryService {
     private final DepartmentMapper departmentMapper;
+
+    @Transactional(readOnly = true)
     public DepartmentsInfoResponse getDepartmentsInfo() {
         List<DepartmentInfoDTO> allDepts = departmentMapper.getDepartments();
+        if(allDepts == null){
+            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUNT);
+        }
         Map<Integer, DepartmentInfoDTO> deptMap = new HashMap<>();
         List<DepartmentInfoDTO> result = new ArrayList<>();
 
