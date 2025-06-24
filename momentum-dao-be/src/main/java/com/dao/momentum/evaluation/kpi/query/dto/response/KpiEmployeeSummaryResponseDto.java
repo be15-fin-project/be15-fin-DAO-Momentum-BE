@@ -1,11 +1,13 @@
 package com.dao.momentum.evaluation.kpi.query.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @Schema(description = "KPI 사원별 요약 응답 DTO")
 public class KpiEmployeeSummaryResponseDto {
 

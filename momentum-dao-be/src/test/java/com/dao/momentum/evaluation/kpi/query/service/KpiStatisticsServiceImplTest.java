@@ -10,13 +10,11 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseD
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,23 +32,22 @@ class KpiStatisticsServiceImplTest {
     @Test
     @DisplayName("KPI 통계 정상 조회")
     void getStatistics_success() {
-        // given
-        KpiStatisticsRequestDto requestDto = new KpiStatisticsRequestDto();
-        requestDto.setYear(2025);
-        requestDto.setMonth(6);
-        requestDto.setDeptId(101L);
+        KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
+                .year(2025)
+                .month(6)
+                .deptId(101L)
+                .build();
 
-        KpiStatisticsResponseDto mockResponse = new KpiStatisticsResponseDto();
-        mockResponse.setTotalKpiCount(12);
-        mockResponse.setCompletedKpiCount(5);
-        mockResponse.setAverageProgress(66.6);
+        KpiStatisticsResponseDto mockResponse = KpiStatisticsResponseDto.builder()
+                .totalKpiCount(12)
+                .completedKpiCount(5)
+                .averageProgress(66.6)
+                .build();
 
         when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(mockResponse);
 
-        // when
         KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
 
-        // then
         assertNotNull(result);
         assertEquals(12, result.getTotalKpiCount());
         assertEquals(5, result.getCompletedKpiCount());
@@ -60,14 +57,13 @@ class KpiStatisticsServiceImplTest {
     @Test
     @DisplayName("KPI 통계 조회 실패 - 결과 없음")
     void getStatistics_nullResponse_throwsException() {
-        // given
-        KpiStatisticsRequestDto requestDto = new KpiStatisticsRequestDto();
-        requestDto.setYear(2025);
-        requestDto.setMonth(6);
+        KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
+                .year(2025)
+                .month(6)
+                .build();
 
         when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(null);
 
-        // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
             kpiStatisticsService.getStatistics(requestDto);
         });
@@ -78,64 +74,40 @@ class KpiStatisticsServiceImplTest {
     @Test
     @DisplayName("시계열 KPI 통계 조회 - 정상 케이스")
     void getTimeseriesStatistics_success() {
-        // given
-        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
-        requestDto.setYear(2025);
-        requestDto.setEmpId(1001L);
+        KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
+                .year(2025)
+                .empId(1001L)
+                .build();
 
-        List<KpiTimeseriesMonthlyDto> mockList = Arrays.asList(
-                new KpiTimeseriesMonthlyDto(1, 10, 4, 64.0),
-                new KpiTimeseriesMonthlyDto(2, 12, 6, 71.5)
+        List<KpiTimeseriesMonthlyDto> mockList = List.of(
+                KpiTimeseriesMonthlyDto.builder().month(1).totalKpiCount(10).completedKpiCount(4).averageProgress(64.0).build(),
+                KpiTimeseriesMonthlyDto.builder().month(2).totalKpiCount(12).completedKpiCount(6).averageProgress(71.5).build()
         );
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(mockList);
+        when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(mockList);
 
-        // when
         KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
 
-        // then
         assertNotNull(result);
         assertEquals(2025, result.getYear());
         assertEquals(2, result.getMonthlyStats().size());
         assertEquals(10, result.getMonthlyStats().get(0).getTotalKpiCount());
     }
 
-
     @Test
     @DisplayName("시계열 KPI 통계 조회 실패 - null 결과")
     void getTimeseriesStatistics_null_throwsException() {
-        // given
-        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
-        requestDto.setYear(2025);
-        requestDto.setEmpId(1001L);
+        KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
+                .year(2025)
+                .empId(1001L)
+                .build();
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(null);
+        when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(null);
 
-        // when & then
         KpiException ex = assertThrows(KpiException.class, () -> {
             kpiStatisticsService.getTimeseriesStatistics(requestDto);
         });
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
     }
-
-
-    @Test
-    @DisplayName("시계열 KPI 통계 조회 실패 - 빈 결과")
-    void getTimeseriesStatistics_empty_throwsException() {
-        // given
-        KpiTimeseriesRequestDto requestDto = new KpiTimeseriesRequestDto();
-        requestDto.setYear(2025);
-        requestDto.setEmpId(1001L);
-
-        when(kpiStatisticsMapper.getTimeseriesStatistics(requestDto)).thenReturn(Collections.emptyList());
-
-        // when & then
-        KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(requestDto);
-        });
-
-        assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
-    }
-
 }

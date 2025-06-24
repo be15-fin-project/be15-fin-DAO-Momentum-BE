@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.retention.query.mapper.RetentionStatisticsMapper">
 
-    <!-- 1. 평균 근속 지수 조회 -->
+    <!-- 평균 근속 지수 조회 -->
     <select id="findAverageRetentionScore"
             parameterType="com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto"
             resultType="com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto">
@@ -30,53 +30,57 @@
         </where>
     </select>
 
-    <!-- 2. 부서별 안정성 유형 분포 -->
-    <select id="findStabilityDistributionByDept" resultType="com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw">
+    <!-- 단일 결과 조회 (overall or 단일 부서/직급) -->
+    <select id="findInsightDistribution"
+            parameterType="com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto"
+            resultType="com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto">
         SELECT
             d.name AS deptName,
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
-            COUNT(*) AS totalCount
-        FROM
-            retention_support rs
-                JOIN
-            employee e ON rs.emp_id = e.emp_id
-                JOIN
-            department d ON e.dept_id = d.dept_id
-        WHERE
-            rs.round_id IN (
-                SELECT round_id
-                FROM retention_round
-                WHERE year = #{year}
-            )
-        GROUP BY
-            d.dept_id, d.name
-        ORDER BY
-            d.name
-    </select>
-
-    <select id="findOverallStabilityDistribution"
-            parameterType="com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto"
-            resultType="com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw">
-        SELECT
-            d.name AS deptName,
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
-            COUNT(*) AS totalCount
-        FROM retention_support rs
-        JOIN employee e ON rs.emp_id = e.emp_id
-        JOIN department d ON e.dept_id = d.dept_id
-        JOIN retention_round rr ON rs.round_id = rr.round_id
+            p.name AS positionName,
+            i.emp_count AS empCount,
+            i.progress_20 AS progress20,
+            i.progress_40 AS progress40,
+            i.progress_60 AS progress60,
+            i.progress_80 AS progress80,
+            i.progress_100 AS progress100
+        FROM retention_insight i
+        JOIN department d ON i.dept_id = d.dept_id
+        LEFT JOIN position p ON i.position_id = p.position_id
             <where>
-                <if test="req.year != null">
-                    AND rr.year = #{req.year}
+                <if test="req.roundId != null">
+                    AND i.round_id = #{req.roundId}
                 </if>
                 <if test="req.deptId != null">
-                    AND e.dept_id = #{req.deptId}
+                    AND i.dept_id = #{req.deptId}
+                </if>
+                <if test="req.positionId != null">
+                    AND i.position_id = #{req.positionId}
                 </if>
             </where>
+        LIMIT 1
     </select>
 
+    <!-- 부서별 리스트 조회 (roundId는 필수, 부서 필터 없음) -->
+    <select id="findInsightDistributionList"
+            parameterType="com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto"
+            resultType="com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto">
+        SELECT
+            d.name AS deptName,
+            p.name AS positionName,
+            i.emp_count AS empCount,
+            i.progress_20 AS progress20,
+            i.progress_40 AS progress40,
+            i.progress_60 AS progress60,
+            i.progress_80 AS progress80,
+            i.progress_100 AS progress100
+        FROM retention_insight i
+        JOIN department d ON i.dept_id = d.dept_id
+        LEFT JOIN position p ON i.position_id = p.position_id
+            <where>
+                <if test="req.roundId != null">
+                    AND i.round_id = #{req.roundId}
+                </if>
+            </where>
+        ORDER BY d.name ASC
+    </select>
 </mapper>

@@ -1,7 +1,9 @@
 package com.dao.momentum.organization.employee.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.organization.employee.query.dto.request.AppointSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
+import com.dao.momentum.organization.employee.query.dto.response.AppointListResponse;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeListResponse;
 import com.dao.momentum.organization.employee.query.service.AdminEmployeeQueryService;
@@ -40,6 +42,19 @@ public class AdminEmployeeQueryController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         adminEmployeeQueryService.getEmployeeDetails(empId)
+                )
+        );
+    }
+
+    @GetMapping("/appoints")
+    @Operation(summary = "사원 발령 내역 조회", description = "관리자가 사원 발령 내역을 조회합니다.")
+    public ResponseEntity<ApiResponse<AppointListResponse>> getAppoints(
+            @ModelAttribute AppointSearchRequest appointSearchRequest
+    ) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        adminEmployeeQueryService.getAppoints(appointSearchRequest)
                 )
         );
     }

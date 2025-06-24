@@ -2,6 +2,7 @@ package com.dao.momentum.retention.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.exception.RetentionException;
+import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw;
@@ -35,57 +36,54 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
                 .build();
     }
 
+    // 전체 기준 또는 단일 부서/직급 기준 근속 안정성 분포 조회
     @Override
     @Transactional(readOnly = true)
-    public List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionStatisticsRequestDto req) {
+    public StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionInsightRequestDto req) {
+        validateRoundId(req);
 
-        int targetYear = (req.getYear() != null) ? req.getYear() : LocalDate.now().getYear();
-        req.setYear(targetYear); // Mapper에서 사용하므로 DTO에도 세팅
+        StabilityDistributionByDeptDto result = mapper.findInsightDistribution(req);
 
-        List<StabilityRatioByDeptRaw> rawList = mapper.findStabilityDistributionByDept(req);
-
-        if (rawList == null) {
+        if (result == null) {
             throw new RetentionException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        return rawList.stream()
-                .map(raw -> StabilityDistributionByDeptDto.builder()
-                        .deptName(raw.getDeptName())
-                        .stableRatio(calcRatio(raw.getStableCount(), raw.getTotalCount()))
-                        .warningRatio(calcRatio(raw.getWarningCount(), raw.getTotalCount()))
-                        .unstableRatio(calcRatio(raw.getUnstableCount(), raw.getTotalCount()))
-                        .build())
-                .collect(Collectors.toList());
+        // 전체 조회인 경우 부서명 표시
+        if (req.getDeptId() == null) {
+            result = StabilityDistributionByDeptDto.builder()
+                    .deptName("전체")
+                    .positionName(result.getPositionName())
+                    .empCount(result.getEmpCount())
+                    .progress20(result.getProgress20())
+                    .progress40(result.getProgress40())
+                    .progress60(result.getProgress60())
+                    .progress80(result.getProgress80())
+                    .progress100(result.getProgress100())
+                    .build();
+        }
+
+        return result;
     }
 
-
-    private double calcRatio(Long count, Long total) {
-        if (total == null || total == 0) return 0.0;
-        if (count == null) return 0.0;
-        return Math.round((count * 100.0 / total) * 10) / 10.0;
-    }
-
-    // 전체(또는 부서필터) 기준 근속 안정성 분포 통계
+    // 부서별 근속 안정성 분포 리스트 조회
     @Override
     @Transactional(readOnly = true)
-    public StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionStatisticsRequestDto req) {
-        // year가 null이면 현재 연도 사용
-        int targetYear = (req.getYear() != null) ? req.getYear() : LocalDate.now().getYear();
-        req.setYear(targetYear); // Mapper에서 사용하므로 DTO에도 세팅
+    public List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionInsightRequestDto req) {
+        validateRoundId(req);
 
-        StabilityRatioByDeptRaw raw = mapper.findOverallStabilityDistribution(req);
+        List<StabilityDistributionByDeptDto> results = mapper.findInsightDistributionList(req);
 
-        if (raw == null || raw.getTotalCount() == null) {
+        if (results == null || results.isEmpty()) {
             throw new RetentionException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        return StabilityDistributionByDeptDto.builder()
-                .deptName(req.getDeptId() != null ? raw.getDeptName() : "전체")
-                .stableRatio(calcRatio(raw.getStableCount(), raw.getTotalCount()))
-                .warningRatio(calcRatio(raw.getWarningCount(), raw.getTotalCount()))
-                .unstableRatio(calcRatio(raw.getUnstableCount(), raw.getTotalCount()))
-                .build();
+        return results;
     }
 
+    private void validateRoundId(RetentionInsightRequestDto req) {
+        if (req.getRoundId() == null) {
+            throw new RetentionException(ErrorCode.INVALID_REQUEST);
+        }
+    }
 
 }
