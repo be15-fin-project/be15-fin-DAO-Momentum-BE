@@ -1,6 +1,8 @@
 package com.dao.momentum.evaluation.kpi.command.domain.aggregate;
 
+import com.dao.momentum.common.dto.Status;
 import com.dao.momentum.common.dto.UseStatus;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -62,4 +64,22 @@ public class Kpi {
     @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted", nullable = false, columnDefinition = "ENUM('Y','N') DEFAULT 'N'")
     private UseStatus isDeleted;
+
+
+    public static Kpi applyCreateDTO(KpiCreateDTO dto, Long empId) {
+        return Kpi.builder()
+                .empId(empId)
+                .statusId(Status.PENDING.getId())
+                .goal(dto.getGoal())
+                .goalValue(dto.getGoalValue())
+                .kpiProgress(dto.getKpiProgress())
+                .progress25(dto.getProgress25())
+                .progress50(dto.getProgress50())
+                .progress75(dto.getProgress75())
+                .progress100(dto.getProgress100())
+                .deadline(dto.getDeadline())
+                .createdAt(LocalDateTime.now())
+                .isDeleted(UseStatus.N)
+                .build();
+    }
 }
