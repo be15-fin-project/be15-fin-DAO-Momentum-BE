@@ -3,15 +3,18 @@ package com.dao.momentum.evaluation.kpi.command.application.service;
 import com.dao.momentum.common.dto.Status;
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
 import com.dao.momentum.evaluation.kpi.command.domain.aggregate.Kpi;
 import com.dao.momentum.evaluation.kpi.command.domain.repository.KpiRepository;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -155,4 +158,78 @@ class KpiCommandServiceImplTest {
         );
         assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
     }
+
+    @DisplayName("KPI 승인/반려 처리")
+    @Nested
+    class ApproveKpiTests {
+
+        private final Long managerId = 10L;
+        private final Long kpiId = 200L;
+
+        private Kpi mockKpi(Status status, UseStatus isDeleted) {
+            return Kpi.builder()
+                    .kpiId(kpiId)
+                    .empId(1L)
+                    .statusId(status.getId())
+                    .isDeleted(isDeleted)
+                    .build();
+        }
+
+        @Test
+        @DisplayName("작성 승인 성공")
+        void approveKpi_success() {
+            Kpi kpi = mockKpi(Status.PENDING, UseStatus.N);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiApprovalRequest req = new KpiApprovalRequest(true, null);
+            KpiApprovalResponse res = service.approveKpi(managerId, kpiId, req);
+
+            assertThat(res.getKpiId()).isEqualTo(kpiId);
+            assertThat(res.getStatus()).isEqualTo(Status.ACCEPTED.name());
+            assertThat(res.getMessage()).contains("승인");
+        }
+
+        @Test
+        @DisplayName("작성 반려 성공 (사유 입력됨)")
+        void rejectKpi_success_withReason() {
+            Kpi kpi = mockKpi(Status.PENDING, UseStatus.N);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiApprovalRequest req = new KpiApprovalRequest(false, "목표 불명확");
+            KpiApprovalResponse res = service.approveKpi(managerId, kpiId, req);
+
+            assertThat(res.getKpiId()).isEqualTo(kpiId);
+            assertThat(res.getStatus()).isEqualTo(Status.REJECTED.name());
+            assertThat(res.getMessage()).contains("반려");
+        }
+
+        @Test
+        @DisplayName("작성 반려 실패 (사유 없음)")
+        void rejectKpi_fail_withoutReason() {
+            Kpi kpi = mockKpi(Status.PENDING, UseStatus.N);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiApprovalRequest req = new KpiApprovalRequest(false, null);
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.approveKpi(managerId, kpiId, req)
+            );
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.KPI_REJECTION_REASON_REQUIRED);
+        }
+
+        @Test
+        @DisplayName("이미 처리된 KPI는 승인/반려 불가")
+        void rejectKpi_fail_alreadyProcessed() {
+            Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.N);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiApprovalRequest req = new KpiApprovalRequest(true, null);
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.approveKpi(managerId, kpiId, req)
+            );
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.KPI_ALREADY_PROCESSED);
+        }
+    }
+
 }
