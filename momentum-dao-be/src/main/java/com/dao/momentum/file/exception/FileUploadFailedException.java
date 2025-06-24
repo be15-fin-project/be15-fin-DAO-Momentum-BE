@@ -1,4 +1,4 @@
-package com.dao.momentum.announcement.exception;
+package com.dao.momentum.file.exception;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import lombok.Getter;

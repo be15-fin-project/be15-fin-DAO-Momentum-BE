@@ -2,11 +2,9 @@ package com.dao.momentum.announcement.command.application.controller;
 
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementCreateRequest;
 import com.dao.momentum.announcement.command.application.dto.request.AnnouncementModifyRequest;
-import com.dao.momentum.announcement.command.application.dto.request.AttachmentRequest;
-import com.dao.momentum.announcement.command.application.dto.request.FilePresignedUrlRequest;
+import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementCreateResponse;
 import com.dao.momentum.announcement.command.application.dto.response.AnnouncementModifyResponse;
-import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
 import com.dao.momentum.announcement.command.application.service.AnnouncementCommandService;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.exception.ErrorCode;
@@ -43,26 +41,6 @@ class AnnouncementCommandControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Test
-    @DisplayName("Presigned URL 생성 성공")
-    void generatePresignedUrl_success() throws Exception {
-        FilePresignedUrlRequest request = new FilePresignedUrlRequest("test.png",1024 * 1024, "image/png"); // 1MB
-
-        FilePresignedUrlResponse response = new FilePresignedUrlResponse(
-                "https://s3-url.com/announcements/uuid/test.png",
-                "announcements/uuid/test.png"
-        );
-
-        when(announcementCommandService.generatePresignedUrl(any())).thenReturn(response);
-
-        mockMvc.perform(post("/announcement/presigned-url")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.presignedUrl").value(response.presignedUrl()))
-                .andExpect(jsonPath("$.data.s3Key").value(response.s3Key()));
-    }
 
     @Test
     @DisplayName("공지사항 등록 성공 (파일 포함)")

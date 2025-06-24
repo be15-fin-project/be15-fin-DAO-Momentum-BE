@@ -1,6 +1,6 @@
-package com.dao.momentum.common.service;
+package com.dao.momentum.common.s3;
 
-import com.dao.momentum.announcement.command.application.dto.response.FilePresignedUrlResponse;
+import com.dao.momentum.file.command.application.dto.response.FilePresignedUrlResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -29,18 +29,22 @@ public class ApproveReceipt {
     @Column(name = "store_name", nullable = false)
     private String storeName;
 
+    @Column(name = "store_address", nullable = false)
+    private String storeAddress;
+
     @Column(name = "amount", nullable = false)
     private Integer amount;
 
     @Column(name = "used_at", nullable = false)
-    private LocalDateTime usedAt;
+    private LocalDate usedAt;
 
     @Builder
     public ApproveReceipt(Long approveId, ReceiptType receiptType, String storeName,
-                          Integer amount, LocalDateTime usedAt) {
+                          String storeAddress, Integer amount, LocalDate usedAt) {
         this.receiptType = receiptType;
         this.approveId = approveId;
         this.storeName = storeName;
+        this.storeAddress = storeAddress;
         this.amount = amount;
         this.usedAt = usedAt;
     }
