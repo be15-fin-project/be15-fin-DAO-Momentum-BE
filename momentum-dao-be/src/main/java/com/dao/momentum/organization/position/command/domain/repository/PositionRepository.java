@@ -1,9 +1,8 @@
 package com.dao.momentum.organization.position.command.domain.repository;
 
+import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.Optional;
 
@@ -27,4 +26,6 @@ public interface PositionRepository {
     void decrementLevelsInRange(int startLevel, int endLevel);
 
     void deleteByPositionId(Integer positionId);
+
+    Optional<Position> findByNameAndIsDeleted(String positionName, IsDeleted isDeleted);
 }
