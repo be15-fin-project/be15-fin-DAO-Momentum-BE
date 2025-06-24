@@ -37,7 +37,14 @@ public class FileService {
         }
 
         String sanitizedFilename = s3Service.sanitizeFilename(request.fileName());
-        String key = "announcements/" + UUID.randomUUID() + "/" + sanitizedFilename;
+
+        String prefix = request.prefixType();
+        // s3 key 경로 prefix 검증
+        if (!prefix.equals("announcement") && !prefix.equals("contract") && !prefix.equals("approve")) {
+            throw new FileUploadFailedException(ErrorCode.INVALID_S3_PREFIX); // 커스텀 에러 코드
+        }
+
+        String key = prefix + "/" + UUID.randomUUID() + "/" + sanitizedFilename;
 
         return s3Service.generatePresignedUploadUrlWithKey(key, request.contentType());
     }
