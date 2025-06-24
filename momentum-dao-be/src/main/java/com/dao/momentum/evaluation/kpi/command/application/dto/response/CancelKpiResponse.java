@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "KPI 생성 응답")
+@Schema(description = "KPI 취소 요청 응답")
 public class CancelKpiResponse {
 
     @Schema(description = "취소 요청된 KPI ID", example = "101")
