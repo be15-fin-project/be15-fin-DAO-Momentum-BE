@@ -13,4 +13,6 @@ public interface FileRepository {
     void deleteById(Long fileId);
 
     List<File> findAllByAnnouncementId(Long announcementId);
+
+    Optional<File> findByContractId(long contractId);
 }

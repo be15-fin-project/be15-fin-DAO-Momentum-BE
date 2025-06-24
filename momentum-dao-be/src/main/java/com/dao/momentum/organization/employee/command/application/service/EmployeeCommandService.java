@@ -11,16 +11,12 @@ import com.dao.momentum.organization.employee.command.application.dto.request.Ap
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.application.dto.response.*;
-import com.dao.momentum.organization.employee.command.domain.aggregate.*;
-import com.dao.momentum.organization.employee.command.domain.repository.*;
+import com.dao.momentum.organization.employee.command.application.dto.response.AppointCreateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
-import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRecordsRepository;
-import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
-import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
-import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
+import com.dao.momentum.organization.employee.command.domain.aggregate.*;
+import com.dao.momentum.organization.employee.command.domain.repository.*;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
@@ -200,7 +196,7 @@ public class EmployeeCommandService {
                 .build();
     }
 
-    private void validateActiveAdmin(long adminId) {
+    public void validateActiveAdmin(long adminId) {
         Employee admin = employeeRepository.findByEmpId(adminId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
         Status adminStatus = admin.getStatus();

@@ -49,7 +49,7 @@ public class AnnouncementCommandService {
                         .announcementId(savedAnnouncement.getAnnouncementId())
                         .approveId(null)
                         .contractId(null)
-                        .url(attachment.getS3Key()) // 이미 S3 업로드된 URL
+                        .s3Key(attachment.getS3Key()) // 이미 S3 업로드된 URL
                         .type(attachment.getType())
                         .build();
                 fileRepository.save(file);
@@ -89,7 +89,7 @@ public class AnnouncementCommandService {
 
         // 삭제 처리: S3 + DB
         filesToDelete.forEach(file -> {
-            s3Service.deleteFileFromS3(file.getUrl()); // file.url에서 key 추출하여 삭제
+            s3Service.deleteFileFromS3(file.getS3Key()); // file.url에서 key 추출하여 삭제
             fileRepository.deleteById(file.getAttachmentId());
         });
 
@@ -102,7 +102,7 @@ public class AnnouncementCommandService {
                             .announcementId(announcementId)
                             .approveId(null)
                             .contractId(null)
-                            .url(attachment.getS3Key())  // 현재는 URL 필드를 s3Key로 사용 중
+                            .s3Key(attachment.getS3Key())  // 현재는 URL 필드를 s3Key로 사용 중
                             .type(attachment.getType())
                             .build();
 
@@ -134,7 +134,7 @@ public class AnnouncementCommandService {
         // 공지사항에 첨부된 파일들 hard delete
         List<File> files = fileRepository.findAllByAnnouncementId(announcementId);
         files.forEach(file -> {
-            s3Service.deleteFileFromS3(file.getUrl());
+            s3Service.deleteFileFromS3(file.getS3Key());
             fileRepository.deleteById(file.getAttachmentId());
         });
 
