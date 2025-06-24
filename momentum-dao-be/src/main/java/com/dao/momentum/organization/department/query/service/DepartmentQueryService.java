@@ -24,7 +24,7 @@ public class DepartmentQueryService {
     public DepartmentsInfoResponse getDepartmentsInfo() {
         List<DepartmentInfoDTO> allDepts = departmentMapper.getDepartments();
         if(allDepts == null){
-            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUNT);
+            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND);
         }
         Map<Integer, DepartmentInfoDTO> deptMap = new HashMap<>();
         List<DepartmentInfoDTO> result = new ArrayList<>();
