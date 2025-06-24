@@ -1,8 +1,5 @@
 package com.dao.momentum.organization.department.query.service;
 
-
-import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.organization.department.exception.DepartmentException;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
@@ -23,9 +20,7 @@ public class DepartmentQueryService {
     @Transactional(readOnly = true)
     public DepartmentsInfoResponse getDepartmentsInfo() {
         List<DepartmentInfoDTO> allDepts = departmentMapper.getDepartments();
-        if(allDepts == null){
-            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND);
-        }
+
         Map<Integer, DepartmentInfoDTO> deptMap = new HashMap<>();
         List<DepartmentInfoDTO> result = new ArrayList<>();
 
