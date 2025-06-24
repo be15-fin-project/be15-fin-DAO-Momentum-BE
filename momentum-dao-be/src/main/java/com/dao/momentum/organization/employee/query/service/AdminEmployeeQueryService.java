@@ -1,6 +1,8 @@
 package com.dao.momentum.organization.employee.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.organization.employee.query.dto.request.AppointSearchDTO;
+import com.dao.momentum.organization.employee.query.dto.request.AppointSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDTO;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.response.*;
@@ -49,6 +51,28 @@ public class AdminEmployeeQueryService {
         return EmployeeDetailsResponse.builder()
                 .employeeDetails(employeeDetails)
                 .employeeRecords(employeeRecords)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AppointListResponse getAppoints(AppointSearchRequest appointSearchRequest) {
+        AppointSearchDTO appointSearchDTO = AppointSearchDTO.fromRequest(appointSearchRequest);
+
+        List<AppointDTO> appoints = adminEmployeeMapper.getAppoints(appointSearchDTO);
+        long totalItems = adminEmployeeMapper.countAppoints(appointSearchDTO);
+
+        int currentPage = appointSearchDTO.getPage();
+        int size = appointSearchDTO.getSize();
+
+        return AppointListResponse.builder()
+                .appoints(appoints)
+                .pagination(
+                        Pagination.builder()
+                                .currentPage(currentPage)
+                                .totalItems(totalItems)
+                                .totalPage((int) Math.ceil((double) totalItems / size))
+                                .build()
+                )
                 .build();
     }
 }

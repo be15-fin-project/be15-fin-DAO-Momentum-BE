@@ -93,7 +93,8 @@ public class SecurityConfig {
         auths.requestMatchers(
             "/employees/login",
                 "/employees",
-                "/employees/reset-password"
+                "/employees/reset-password",
+                "/employees/reset-password/request"
         ).permitAll();
     }
 

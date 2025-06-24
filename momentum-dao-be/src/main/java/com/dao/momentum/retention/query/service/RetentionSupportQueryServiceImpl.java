@@ -4,9 +4,11 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.exception.RetentionException;
 import com.dao.momentum.retention.query.dto.request.RetentionForecastRequestDto;
+import com.dao.momentum.retention.query.dto.request.RetentionSupportDetailRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionSupportRaw;
 import com.dao.momentum.retention.query.dto.response.RetentionForecastItemDto;
 import com.dao.momentum.retention.query.dto.response.RetentionForecastResponseDto;
+import com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto;
 import com.dao.momentum.retention.query.mapper.RetentionSupportMapper;
 import com.dao.momentum.retention.command.domain.aggregate.StabilityType;
 import lombok.RequiredArgsConstructor;
@@ -80,4 +82,17 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         if (score >= 60) return StabilityType.WARNING;
         return StabilityType.UNSTABLE;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RetentionSupportDetailDto getSupportDetail(Long retentionId) {
+        RetentionSupportDetailDto detail = mapper.findSupportDetail(retentionId);
+
+        if (detail == null) {
+            throw new RetentionException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
+        }
+
+        return detail;
+    }
+
 }
