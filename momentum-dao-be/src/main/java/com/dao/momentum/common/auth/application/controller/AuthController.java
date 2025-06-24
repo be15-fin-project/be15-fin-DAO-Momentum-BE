@@ -2,9 +2,11 @@ package com.dao.momentum.common.auth.application.controller;
 
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordChangeRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetLinkRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.PasswordChangeResponse;
 import com.dao.momentum.common.auth.application.dto.response.PasswordResetResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.application.service.AuthService;
@@ -16,6 +18,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -90,6 +94,18 @@ public class AuthController {
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
+
+    @Operation(summary = "비밀번호 변경", description = "사원은 권한이 있는 상태에서 자신의 비밀번호를 변경할 수 있다. 비밀번호, 확인 비밀번호를 필요로 한다.")
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<PasswordChangeResponse>> changePassword(
+            @AuthenticationPrincipal UserDetails username,
+            @RequestBody @Valid PasswordChangeRequest request
+    ) {
+        PasswordChangeResponse response = authService.changePassword(username,request);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)

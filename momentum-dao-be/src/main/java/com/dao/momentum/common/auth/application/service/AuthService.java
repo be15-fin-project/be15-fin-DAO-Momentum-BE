@@ -1,9 +1,11 @@
 package com.dao.momentum.common.auth.application.service;
 
 import com.dao.momentum.common.auth.application.dto.request.LoginRequest;
+import com.dao.momentum.common.auth.application.dto.request.PasswordChangeRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetLinkRequest;
 import com.dao.momentum.common.auth.application.dto.request.PasswordResetRequest;
 import com.dao.momentum.common.auth.application.dto.response.LoginResponse;
+import com.dao.momentum.common.auth.application.dto.response.PasswordChangeResponse;
 import com.dao.momentum.common.auth.application.dto.response.PasswordResetResponse;
 import com.dao.momentum.common.auth.application.dto.response.TokenResponse;
 import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,6 +183,34 @@ public class AuthService {
 
         return PasswordResetResponse.builder()
                 .message("비밀번호 재설정 메일이 전송되었습니다. 이메일을 확인해주세요.")
+                .build();
+    }
+
+    @Transactional
+    public PasswordChangeResponse changePassword(UserDetails username, PasswordChangeRequest request) {
+        Long employeeId = Long.parseLong(username.getUsername());
+
+        //사원 여부 검사
+        Employee employee = employeeRepository.findByEmpId(employeeId).orElseThrow(
+                () -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND)
+        );
+
+        //기존 비밀번호 검사
+        if(!passwordEncoder.matches(request.getCurrentPassword(), employee.getPassword())){
+            throw new EmployeeException(ErrorCode.PASSWORD_NOT_CORRECT);
+        }
+
+        //비밀번호 검사
+        if(!request.getPassword().equals(request.getVerifiedPassword())){
+            throw new EmployeeException(ErrorCode.PASSWORD_NOT_CORRECT);
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
+        employee.setPassword(encodedPassword);
+
+        return PasswordChangeResponse.builder()
+                .message("비밀번호가 변경되었습니다.")
                 .build();
     }
 }
