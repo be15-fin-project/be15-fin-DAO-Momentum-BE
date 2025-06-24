@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.Status;
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCancelApprovalRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
@@ -89,5 +90,41 @@ public class KpiCommandServiceImpl implements KpiCommandService {
                     .build();
         }
     }
+
+    // KPI 취소 승인/반려
+    @Override
+    @Transactional
+    public KpiApprovalResponse approveCancelRequest(Long managerId, Long kpiId, KpiCancelApprovalRequest request) {
+        Kpi kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> new KpiException(ErrorCode.KPI_NOT_FOUND));
+
+        // 상태가 'PENDING'이고 삭제 요청이 들어간 것만 취소 승인/반려 가능
+        if (!kpi.getStatusId().equals(Status.PENDING.getId()) || !kpi.getIsDeleted().equals(UseStatus.Y)) {
+            throw new KpiException(ErrorCode.KPI_INVALID_STATUS);
+        }
+
+        if (request.isRejectedWithoutReason()) {
+            throw new KpiException(ErrorCode.KPI_REJECTION_REASON_REQUIRED);
+        }
+
+        if (request.getApproved()) {
+            // 취소 승인: 삭제 상태 유지하면서 상태도 'ACCEPTED' 처리
+            kpi.approveCancel(); // → isDeleted = Y, status = ACCEPTED
+            return KpiApprovalResponse.builder()
+                    .kpiId(kpi.getKpiId())
+                    .status(Status.ACCEPTED.name())
+                    .message("KPI 취소가 승인되었습니다.")
+                    .build();
+        } else {
+            // 취소 반려: 삭제 상태 해제 및 반려 처리
+            kpi.rejectCancel(request.getReason()); // → isDeleted = N, status = ACCEPTED, c_reason = 사유
+            return KpiApprovalResponse.builder()
+                    .kpiId(kpi.getKpiId())
+                    .status(Status.ACCEPTED.name())
+                    .message("KPI 취소가 반려되었습니다.")
+                    .build();
+        }
+    }
+
 
 }

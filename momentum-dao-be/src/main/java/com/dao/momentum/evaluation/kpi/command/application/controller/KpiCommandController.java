@@ -1,10 +1,7 @@
 package com.dao.momentum.evaluation.kpi.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
-import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCancelRequest;
-import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
-import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateRequest;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.*;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
@@ -20,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/kpis")
 @RequiredArgsConstructor
-@Tag(name = "KPI", description = "KPI 생성 API")
+@Tag(name = "KPI", description = "KPI 생성, 취소 요청, 승인/반려 처리 API")
 public class KpiCommandController {
 
     private final KpiCommandService kpiCommandService;
@@ -59,4 +56,15 @@ public class KpiCommandController {
         return ApiResponse.success(response);
     }
 
+    @PatchMapping("/{kpiId}/cancel/approval")
+    @Operation(summary = "KPI 취소 승인/반려", description = "팀장이 KPI 취소 요청에 대해 승인 또는 반려 처리합니다.")
+    public ApiResponse<KpiApprovalResponse> approveCancelKpi(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long kpiId,
+            @RequestBody @Valid KpiCancelApprovalRequest request
+    ) {
+        Long managerId = Long.parseLong(userDetails.getUsername());
+        KpiApprovalResponse response = kpiCommandService.approveCancelRequest(managerId, kpiId, request);
+        return ApiResponse.success(response);
+    }
 }

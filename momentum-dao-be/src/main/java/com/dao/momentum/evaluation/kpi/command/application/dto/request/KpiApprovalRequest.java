@@ -20,4 +20,10 @@ public class KpiApprovalRequest {
     public boolean isRejectedWithoutReason() {
         return Boolean.FALSE.equals(approved) && (reason == null || reason.trim().isEmpty());
     }
+
+    public KpiApprovalRequest(Boolean approved, String reason) {
+        this.approved = approved;
+        this.reason = reason;
+    }
+
 }

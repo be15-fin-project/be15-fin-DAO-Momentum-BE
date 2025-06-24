@@ -99,5 +99,17 @@ public class Kpi {
         this.reason = reason;
     }
 
+    public void approveCancel() {
+        this.statusId = Status.ACCEPTED.getId();  // 취소 승인 → 상태도 삭제
+        this.cancelReason = null;
+        this.isDeleted = UseStatus.Y;
+    }
+
+    public void rejectCancel(String reason) {
+        this.statusId = Status.REJECTED.getId(); // 취소 반려 → 반려 상태로 복구
+        this.cancelReason = reason;
+        this.isDeleted = UseStatus.N;
+    }
+
 
 }
