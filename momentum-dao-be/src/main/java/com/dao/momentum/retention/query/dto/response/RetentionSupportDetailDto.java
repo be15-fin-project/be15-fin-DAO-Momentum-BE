@@ -11,8 +11,14 @@ import lombok.*;
 @Schema(description = "근속 전망 상세 조회 DTO")
 public class RetentionSupportDetailDto {
 
+    @Schema(description = "회차 번호", example = "5")
+    private Integer roundNo;
+
     @Schema(description = "사원 이름", example = "홍길동")
     private String empName;
+
+    @Schema(description = "사번", example = "20250020")
+    private String empNo;
 
     @Schema(description = "부서명", example = "프론트엔드팀")
     private String deptName;

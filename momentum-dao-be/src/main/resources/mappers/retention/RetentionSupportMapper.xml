@@ -68,8 +68,10 @@
             resultType="com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto">
         SELECT
         e.name AS empName,
+        e.emp_no AS empNo,
         d.name AS deptName,
         p.name AS positionName,
+        rr.round_no AS roundNo,
 
         -- 점수 등급 변환 (직무 만족도)
         CASE
@@ -138,6 +140,7 @@
         JOIN employee e ON rs.emp_id = e.emp_id
         LEFT JOIN department d ON e.dept_id = d.dept_id
         LEFT JOIN position p ON e.position_id = p.position_id
+        JOIN retention_round rr ON rs.round_id = rr.round_id
 
         WHERE rs.retention_id = #{retentionId}
     </select>
