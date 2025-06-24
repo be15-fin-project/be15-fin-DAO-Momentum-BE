@@ -89,4 +89,15 @@ public class Kpi {
         this.cancelReason = reason;
     }
 
+    public void approve() {
+        this.statusId = Status.ACCEPTED.getId();
+        this.reason = null;
+    }
+
+    public void reject(String reason) {
+        this.statusId = Status.REJECTED.getId();
+        this.reason = reason;
+    }
+
+
 }

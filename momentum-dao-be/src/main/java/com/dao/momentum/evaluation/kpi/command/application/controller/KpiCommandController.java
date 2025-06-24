@@ -1,10 +1,12 @@
 package com.dao.momentum.evaluation.kpi.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCancelRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
 import com.dao.momentum.evaluation.kpi.command.application.service.KpiCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +44,18 @@ public class KpiCommandController {
     ) {
         Long empId = Long.parseLong(userDetails.getUsername());
         CancelKpiResponse response = kpiCommandService.cancelKpi(empId, kpiId, request.getReason());
+        return ApiResponse.success(response);
+    }
+
+    @PatchMapping("/{kpiId}/approval")
+    @Operation(summary = "KPI 작성 승인/반려", description = "팀장이 KPI 작성 요청을 승인하거나 반려 처리합니다. 반려 시 사유 입력이 필요합니다.")
+    public ApiResponse<KpiApprovalResponse> approveKpi(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long kpiId,
+            @RequestBody @Valid KpiApprovalRequest request
+    ) {
+        Long managerId = Long.parseLong(userDetails.getUsername()); // 인증된 사용자 ID
+        KpiApprovalResponse response = kpiCommandService.approveKpi(managerId, kpiId, request);
         return ApiResponse.success(response);
     }
 

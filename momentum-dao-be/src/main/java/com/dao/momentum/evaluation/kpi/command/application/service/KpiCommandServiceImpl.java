@@ -3,8 +3,10 @@ package com.dao.momentum.evaluation.kpi.command.application.service;
 import com.dao.momentum.common.dto.Status;
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiApprovalRequest;
 import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiCreateDTO;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiApprovalResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
 import com.dao.momentum.evaluation.kpi.command.domain.aggregate.Kpi;
 import com.dao.momentum.evaluation.kpi.command.domain.repository.KpiRepository;
@@ -54,6 +56,38 @@ public class KpiCommandServiceImpl implements KpiCommandService {
                 .kpiId(saved.getKpiId())
                 .message("KPI가 성공적으로 취소 요청되었습니다.")
                 .build();
+    }
+
+    // KPI 승인 반려 처리
+    @Override
+    @Transactional
+    public KpiApprovalResponse approveKpi(Long managerId, Long kpiId, KpiApprovalRequest request) {
+        Kpi kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> new KpiException(ErrorCode.KPI_NOT_FOUND));
+
+        if (!kpi.getStatusId().equals(Status.PENDING.getId())) {
+            throw new KpiException(ErrorCode.KPI_ALREADY_PROCESSED);
+        }
+
+        if (request.isRejectedWithoutReason()) {
+            throw new KpiException(ErrorCode.KPI_REJECTION_REASON_REQUIRED);
+        }
+
+        if (request.getApproved()) {
+            kpi.approve(); // 상태 ACCEPTED로 변경
+            return KpiApprovalResponse.builder()
+                    .kpiId(kpi.getKpiId())
+                    .status(Status.ACCEPTED.name())
+                    .message("KPI가 승인되었습니다.")
+                    .build();
+        } else {
+            kpi.reject(request.getReason()); // 상태 REJECTED, 사유 기록
+            return KpiApprovalResponse.builder()
+                    .kpiId(kpi.getKpiId())
+                    .status(Status.REJECTED.name())
+                    .message("KPI가 반려되었습니다.")
+                    .build();
+        }
     }
 
 }
