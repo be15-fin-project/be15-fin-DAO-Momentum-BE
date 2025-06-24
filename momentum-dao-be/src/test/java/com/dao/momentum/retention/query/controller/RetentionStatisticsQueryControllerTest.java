@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.query.controller;
 
+import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto;
@@ -66,26 +67,30 @@ class RetentionStatisticsQueryControllerTest {
         // given
         StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
                 .deptName("기획팀")
-                .stableRatio(50.0)
-                .warningRatio(30.0)
-                .unstableRatio(20.0)
+                .positionName("대리")
+                .empCount(20)
+                .progress20(0)
+                .progress40(0)
+                .progress60(5)
+                .progress80(10)
+                .progress100(5)
                 .build();
 
-        Mockito.when(retentionStatisticsQueryService.getStabilityDistributionByDept(any(RetentionStatisticsRequestDto.class)))
+        Mockito.when(retentionStatisticsQueryService.getStabilityDistributionByDept(any(RetentionInsightRequestDto.class)))
                 .thenReturn(List.of(dto));
 
         // when & then
         mockMvc.perform(get("/retention/statistics/stability-distribution")
-                        .param("year", "2025")
-                        .param("month", "6")
-                        .param("deptId", "10"))
+                        .param("roundId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data", hasSize(1)))
                 .andExpect(jsonPath("$.data[0].deptName").value("기획팀"))
-                .andExpect(jsonPath("$.data[0].stableRatio").value(50.0))
-                .andExpect(jsonPath("$.data[0].warningRatio").value(30.0))
-                .andExpect(jsonPath("$.data[0].unstableRatio").value(20.0))
+                .andExpect(jsonPath("$.data[0].positionName").value("대리"))
+                .andExpect(jsonPath("$.data[0].empCount").value(20))
+                .andExpect(jsonPath("$.data[0].progress60").value(5))
+                .andExpect(jsonPath("$.data[0].progress80").value(10))
+                .andExpect(jsonPath("$.data[0].progress100").value(5))
                 .andDo(print());
     }
 
@@ -95,22 +100,25 @@ class RetentionStatisticsQueryControllerTest {
     void getOverallStabilityDistribution_success() throws Exception {
         StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
                 .deptName("전체")
-                .stableRatio(60.0)
-                .warningRatio(25.0)
-                .unstableRatio(15.0)
+                .positionName(null)
+                .empCount(50)
+                .progress20(2)
+                .progress40(5)
+                .progress60(10)
+                .progress80(18)
+                .progress100(15)
                 .build();
 
-        Mockito.when(retentionStatisticsQueryService.getOverallStabilityDistribution(any(RetentionStatisticsRequestDto.class)))
+        Mockito.when(retentionStatisticsQueryService.getOverallStabilityDistribution(any(RetentionInsightRequestDto.class)))
                 .thenReturn(dto);
 
         mockMvc.perform(get("/retention/statistics/stability-distribution/overall")
-                        .param("year", "2025"))
+                        .param("roundId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.deptName").value("전체"))
-                .andExpect(jsonPath("$.data.stableRatio").value(60.0))
-                .andExpect(jsonPath("$.data.warningRatio").value(25.0))
-                .andExpect(jsonPath("$.data.unstableRatio").value(15.0))
+                .andExpect(jsonPath("$.data.empCount").value(50))
+                .andExpect(jsonPath("$.data.progress100").value(15))
                 .andDo(print());
     }
 }
