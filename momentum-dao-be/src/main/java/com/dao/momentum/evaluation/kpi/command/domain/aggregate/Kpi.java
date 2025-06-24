@@ -89,4 +89,34 @@ public class Kpi {
         this.cancelReason = reason;
     }
 
+    public void approve() {
+        this.statusId = Status.ACCEPTED.getId();
+        this.reason = null;
+    }
+
+    public void reject(String reason) {
+        this.statusId = Status.REJECTED.getId();
+        this.reason = reason;
+    }
+
+    public void approveCancel() {
+        this.statusId = Status.ACCEPTED.getId();  // 취소 승인 → 상태도 삭제
+        this.cancelReason = null;
+        this.isDeleted = UseStatus.Y;
+    }
+
+    public void rejectCancel(String reason) {
+        this.statusId = Status.REJECTED.getId(); // 취소 반려 → 반려 상태로 복구
+        this.cancelReason = reason;
+        this.isDeleted = UseStatus.N;
+    }
+
+    public void updateProgress(Integer progress) {
+        if (progress < 0 || progress > 100) {
+            throw new IllegalArgumentException("진척도는 0 이상 100 이하 값만 가능합니다.");
+        }
+        this.kpiProgress = progress;
+    }
+
+
 }
