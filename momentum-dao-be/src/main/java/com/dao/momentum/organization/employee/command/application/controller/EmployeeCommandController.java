@@ -2,6 +2,8 @@ package com.dao.momentum.organization.employee.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
+import com.dao.momentum.file.command.application.service.FileService;
 import com.dao.momentum.organization.employee.command.application.dto.request.AppointCreateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
@@ -31,7 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/employees")
 @Tag(name = "사원 관리", description = "사원 정보 등록, 수정, 삭제 API")
 public class EmployeeCommandController {
+    private static final String CSV_KEY = "csv/0b66fc14-61fa-4a80-a502-18714e2081c1/employees.csv";
+
     private final EmployeeCommandService employeeService;
+    private final FileService fileService;
 
     @Operation(summary = "사원 등록", description = "관리자는 사원의 정보를 입력하여 사원을 등록할 수 있다.")
     @PostMapping
@@ -41,7 +46,13 @@ public class EmployeeCommandController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
     }
 
-    // csv는 DB 저장 안하고 백엔드에 하드코딩
+    @Operation(summary = "CSV 양식 다운로드", description = "관리자는 사원 CSV 등록에 필요한 CSV 양식 파일을 다운로드할 수 있다.")
+    @GetMapping("/csv")
+    public ResponseEntity<ApiResponse<DownloadUrlResponse>> downloadCSVFormat() {
+        DownloadUrlResponse response = fileService.generateDownloadUrl(CSV_KEY);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @Operation(summary = "사원 CSV 등록", description = "관리자는 CSV 파일을 업로드하여 사원을 일괄 등록할 수 있다.")
     @PostMapping("/csv")
     public ResponseEntity<ApiResponse<EmployeeCSVResponse>> createEmployees(
