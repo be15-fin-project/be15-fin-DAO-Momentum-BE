@@ -14,4 +14,15 @@
                 is_deleted = 'N';
     </select>
 
+    <select id="getDepartmentDetail" resultType="com.dao.momentum.organization.department.query.dto.response.DepartmentDetailDTO">
+        SELECT
+                name,
+                contact,
+                created_at
+        FROM
+                department
+        WHERE
+                dept_id = #{deptId}
+    </select>
+
 </mapper>

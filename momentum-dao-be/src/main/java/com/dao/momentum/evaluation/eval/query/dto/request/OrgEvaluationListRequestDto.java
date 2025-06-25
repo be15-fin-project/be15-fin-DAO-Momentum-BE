@@ -12,7 +12,7 @@ import lombok.Setter;
 public class OrgEvaluationListRequestDto {
 
     @Schema(description = "평가자 사번", example = "1001")
-    private Long empNo;
+    private String empNo;
 
     @Schema(description = "평가 양식 ID", example = "5")
     private Integer formId;

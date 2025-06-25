@@ -33,4 +33,13 @@ public class HrRate {
 
     @Column(name = "rate_d", nullable = false)
     private Integer rateD;
+
+
+    public void update(int rateS, int rateA, int rateB, int rateC, int rateD) {
+        this.rateS = rateS;
+        this.rateA = rateA;
+        this.rateB = rateB;
+        this.rateC = rateC;
+        this.rateD = rateD;
+    }
 }
