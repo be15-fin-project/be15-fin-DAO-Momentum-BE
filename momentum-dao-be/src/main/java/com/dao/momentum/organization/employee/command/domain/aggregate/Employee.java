@@ -86,4 +86,10 @@ public class Employee {
             this.positionId = afterPositionId;
         }
     }
+
+    public void updateVacations(int remainingDayoffHours, int remainingRefreshDays) {
+        this.remainingDayoffHours = remainingDayoffHours;
+        this.remainingRefreshDays = remainingRefreshDays;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

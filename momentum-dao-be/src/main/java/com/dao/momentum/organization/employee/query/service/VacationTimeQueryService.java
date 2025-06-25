@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class VacationTimeService {
+public class VacationTimeQueryService {
     private static final int WORKING_HOURS_IN_DAY = 8;
     private static final int MONTHS_IN_YEAR = 12;
     private static final int STANDARD_DAYOFF = 15;
