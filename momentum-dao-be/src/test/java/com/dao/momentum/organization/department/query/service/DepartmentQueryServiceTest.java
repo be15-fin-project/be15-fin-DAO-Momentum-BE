@@ -102,18 +102,21 @@ class DepartmentQueryServiceTest {
                 .contact("010-1234-5678")
                 .email("employee1@exmaple.com")
                 .position("부장")
+                .isDeptHead(true)
                 .build();
         DepartmentMemberDTO member2 = DepartmentMemberDTO.builder()
                 .name("강감찬")
                 .contact("010-1234-5678")
                 .email("employee2@exmaple.com")
                 .position("대리")
+                .isDeptHead(false)
                 .build();
         DepartmentMemberDTO member3 = DepartmentMemberDTO.builder()
                 .name("홍길동")
                 .contact("010-1234-5678")
                 .email("employee3@exmaple.com")
                 .position("사원")
+                .isDeptHead(false)
                 .build();
 
         List<DepartmentMemberDTO> departmentMemberDTOList = List.of(
