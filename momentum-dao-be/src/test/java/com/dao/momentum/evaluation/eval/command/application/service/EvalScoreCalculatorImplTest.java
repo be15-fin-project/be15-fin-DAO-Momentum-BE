@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -123,4 +124,60 @@ class EvalScoreCalculatorImplTest {
             throw new RuntimeException("리플렉션 주입 실패: " + fieldName, e);
         }
     }
+
+    @Test
+    @DisplayName("calculateOverallScore - 점수 계산 성공")
+    void calculateOverallScore_success() {
+        // given
+        Map<Integer, Integer> scoreMap = Map.of(
+                1, 80,  // perform
+                2, 90,  // team
+                3, 70,  // attitude
+                4, 60,  // growth
+                5, 100, // engagement
+                6, 50   // result
+        );
+
+        HrWeight weight = HrWeight.builder()
+                .performWt(10)
+                .teamWt(20)
+                .attitudeWt(10)
+                .growthWt(20)
+                .engagementWt(20)
+                .resultWt(20)
+                .build();
+
+        // when
+        int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+
+        // then
+        assertThat(finalScore).isEqualTo(75); // 계산 공식과 동일
+    }
+
+    @Test
+    @DisplayName("calculateOverallScore - 일부 키 누락 시 기본값 0 처리")
+    void calculateOverallScore_missingFactors_defaultsToZero() {
+        // given
+        Map<Integer, Integer> scoreMap = Map.of(
+                1, 80,
+                2, 90 // 나머지 3~6번 요인 없음 → 0으로 처리
+        );
+
+        HrWeight weight = HrWeight.builder()
+                .performWt(10)
+                .teamWt(20)
+                .attitudeWt(10)
+                .growthWt(20)
+                .engagementWt(20)
+                .resultWt(20)
+                .build();
+
+        // when
+        int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+
+        // then
+        // 계산: (80*10 + 90*20 + 0 + 0 + 0 + 0)/100 = (800 + 1800) / 100 = 26
+        assertThat(finalScore).isEqualTo(26);
+    }
+
 }

@@ -43,4 +43,17 @@ public class EvalResponse {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    public void updateScore(int score) {
+        this.score = score;
+    }
+
+    public void updateReason(String reason) {
+        this.reason = reason;
+    }
+
+    public void updateScoreAndReason(int score, String reason) {
+        this.score = score;
+        this.reason = reason;
+    }
 }

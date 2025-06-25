@@ -158,4 +158,50 @@ class HrObjectionServiceImplTest {
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.HR_OBJECTION_NOT_FOUND.getMessage());
     }
+
+
+    @Test
+    @DisplayName("이의제기 승인 - 성공")
+    void approve_success() {
+        HrObjection objection = HrObjection.builder()
+                .objectionId(1L)
+                .statusId(1)
+                .build();
+
+        given(objectionRepository.findById(1L)).willReturn(Optional.of(objection));
+
+        assertThatCode(() -> service.approve(1L, "수정된 사유")).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("이의제기 반려 - 성공")
+    void reject_success() {
+        HrObjection objection = HrObjection.builder()
+                .objectionId(1L)
+                .statusId(1)
+                .build();
+
+        given(objectionRepository.findById(1L)).willReturn(Optional.of(objection));
+
+        assertThatCode(() -> service.reject(1L, "반려 사유")).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("이의제기 ID로 평가 결과 ID 조회 - 성공")
+    void getResultId_success() {
+        given(objectionRepository.findResultIdByObjectionId(1L)).willReturn(Optional.of(42L));
+
+        Long resultId = service.getResultIdByObjectionId(1L);
+        assertThat(resultId).isEqualTo(42L);
+    }
+
+    @Test
+    @DisplayName("이의제기 ID로 평가 결과 ID 조회 - 실패")
+    void getResultId_notFound() {
+        given(objectionRepository.findResultIdByObjectionId(1L)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.getResultIdByObjectionId(1L))
+                .isInstanceOf(HrException.class)
+                .hasMessageContaining(ErrorCode.HR_OBJECTION_NOT_FOUND.getMessage());
+    }
 }

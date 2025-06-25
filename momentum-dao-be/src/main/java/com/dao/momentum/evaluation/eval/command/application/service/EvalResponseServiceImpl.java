@@ -8,6 +8,7 @@ import com.dao.momentum.evaluation.eval.command.domain.repository.EvalResponseRe
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -46,4 +47,21 @@ public class EvalResponseServiceImpl implements EvalResponseService {
 
         return evalResponseRepository.save(response);
     }
+
+    @Override
+    @Transactional
+    public void updateFinalScoreAndReason(Long resultId, int score, String reason) {
+        EvalResponse response = evalResponseRepository.findById(resultId)
+                .orElseThrow(() -> new EvalException(ErrorCode.EVALUATION_NOT_FOUND));
+
+        response.updateScoreAndReason(score, reason);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getRoundIdByResultId(Long resultId) {
+        return evalResponseRepository.findRoundIdByResultId(resultId)
+                .orElseThrow(() -> new EvalException(ErrorCode.EVALUATION_NOT_FOUND));
+    }
+
 }

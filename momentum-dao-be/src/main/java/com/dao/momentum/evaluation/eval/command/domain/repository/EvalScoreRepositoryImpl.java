@@ -14,6 +14,16 @@ public class EvalScoreRepositoryImpl implements EvalScoreRepository {
     private final JpaEvalScoreRepository jpaRepository;
 
     @Override
+    public void deleteByResultId(Long resultId) {
+        jpaRepository.deleteByResultId(resultId);
+    }
+
+    @Override
+    public EvalScore save(EvalScore score) {
+        return jpaRepository.save(score);
+    }
+
+    @Override
     public List<EvalScore> saveAll(List<EvalScore> scores) {
         return jpaRepository.saveAll(scores);
     }
