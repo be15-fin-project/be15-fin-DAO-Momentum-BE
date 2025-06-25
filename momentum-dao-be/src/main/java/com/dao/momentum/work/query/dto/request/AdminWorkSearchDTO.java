@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class AdminWorkSearchDTO {
-    private Long empNo;
+    private String empNo;
 
     private String empName;
 
@@ -36,5 +36,24 @@ public class AdminWorkSearchDTO {
 
     private int getLimit() {
         return getSize() == null ? 10 : getSize();
+    }
+
+    public static AdminWorkSearchDTO fromRequest(AdminWorkSearchRequest request) {
+        LocalDate rangeEndDate = request.getRangeEndDate();
+        Integer page = request.getPage();
+        Integer size = request.getSize();
+
+        return AdminWorkSearchDTO.builder()
+                .empNo(request.getEmpNo())
+                .empName(request.getEmpName())
+                .deptName(request.getDeptName())
+                .rangeStartDate(request.getRangeStartDate())
+                .rangeEndDate(rangeEndDate == null ?
+                        null : rangeEndDate.plusDays(1))
+                .typeName(request.getTypeName())
+                .order(request.getOrder())
+                .page(page == null ? 1 : page)
+                .size(size == null ? 10 : size)
+                .build();
     }
 }

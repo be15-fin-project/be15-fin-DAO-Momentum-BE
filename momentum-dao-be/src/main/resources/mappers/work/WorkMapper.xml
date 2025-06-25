@@ -48,7 +48,7 @@
         JOIN work_type AS wt ON work.type_id = wt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
-        <if test="request.empNo != null">
+        <if test="request.empNo != null and request.empNo != ''">
             AND emp.emp_no = #{request.empNo}
         </if>
         <if test="request.empName != null and request.empName != ''">
@@ -80,7 +80,7 @@
         JOIN work_type AS wt ON work.type_id = wt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
-        <if test="request.empNo != null">
+        <if test="request.empNo != null and request.empNo != ''">
             AND emp.emp_no = #{request.empNo}
         </if>
         <if test="request.empName != null and request.empName != ''">
