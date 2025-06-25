@@ -6,4 +6,8 @@ import java.util.List;
 
 public interface EvalScoreRepository {
     List<EvalScore> saveAll(List<EvalScore> scores);
+
+    void deleteByResultId(Long resultId);
+
+    EvalScore save(EvalScore score);
 }

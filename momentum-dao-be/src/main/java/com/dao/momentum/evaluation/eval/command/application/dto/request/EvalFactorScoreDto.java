@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.eval.command.application.dto.request;
 
+import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvalScore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -17,4 +18,6 @@ public class EvalFactorScoreDto {
     @Schema(description = "점수", example = "17")
     @NotNull
     private Integer score;
+
+
 }
