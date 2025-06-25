@@ -60,7 +60,7 @@ public class ApprovedWorkCommandService {
         if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
             deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
         }
-        saveMultiDayWork(empId, workType, startDate, endDate);
+        saveMultiDayWork(empId, workType, startDate, endDate, null);
     }
 
     private void applyBusinessTrip(long empId, LocalDate startDate, LocalDate endDate) {
@@ -68,7 +68,7 @@ public class ApprovedWorkCommandService {
         if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
             deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
         }
-        saveMultiDayWork(empId, workType, startDate, endDate);
+        saveMultiDayWork(empId, workType, startDate, endDate, null);
     }
 
     private void applyHalfDayoff(long empId, VacationType vacationType, LocalDate startDate) {
@@ -88,6 +88,8 @@ public class ApprovedWorkCommandService {
 
         final int requiredWorkMinutes = DEFAULT_WORK_HOURS * 60 / 2;
 
+        final Integer vacationTypeId = vacationType.getVacationTypeId();
+
         // 1. 기존 출근 기록 조회 후 있으면 수정
         workRepository.findByEmpIdAndDateAndTypeName(empId, startDate, WorkTypeName.WORK)
                 .ifPresent(work -> {
@@ -96,7 +98,7 @@ public class ApprovedWorkCommandService {
                                 halfDayStart : work.getStartAt();
                         LocalDateTime endAt = work.getEndAt();
                         int breakTime = workTimeService.getBreakTime(adjustedStart, endAt);
-                        work.fromCorrection(adjustedStart, endAt, breakTime);
+                        work.fromCorrection(adjustedStart, endAt, breakTime, vacationTypeId);
                         IsNormalWork isNormalWork = work.isNormalWork(requiredWorkMinutes) ?
                                 IsNormalWork.Y : IsNormalWork.N;
                         work.setIsNormalWork(isNormalWork);
@@ -105,7 +107,7 @@ public class ApprovedWorkCommandService {
                                 halfDayEnd : work.getEndAt();
                         LocalDateTime startAt = work.getStartAt();
                         int breakTime = workTimeService.getBreakTime(startAt, adjustedEnd);
-                        work.fromCorrection(startAt, adjustedEnd, breakTime);
+                        work.fromCorrection(startAt, adjustedEnd, breakTime, vacationTypeId);
                         IsNormalWork isNormalWork = work.isNormalWork(requiredWorkMinutes) ?
                                 IsNormalWork.Y : IsNormalWork.N;
                         work.setIsNormalWork(isNormalWork);
@@ -132,6 +134,7 @@ public class ApprovedWorkCommandService {
 
     private void applyVacation(long empId, VacationType vacationType, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.VACATION);
+        Integer vacationTypeId = vacationType.getVacationTypeId();
 
         boolean isAMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.AM_HALF_DAYOFF;
         boolean isPMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.PM_HALF_DAYOFF;
@@ -146,7 +149,7 @@ public class ApprovedWorkCommandService {
             deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
         }
         // 휴가 기록 새로 저장
-        saveMultiDayWork(empId, workType, startDate, endDate);
+        saveMultiDayWork(empId, workType, startDate, endDate, vacationTypeId);
     }
 
     private void applyWorkCorrection(long empId, LocalDateTime afterStartAt, LocalDateTime afterEndAt, long workId) {
@@ -159,7 +162,9 @@ public class ApprovedWorkCommandService {
         int breakTime = workTimeService.getBreakTime(afterStartAt, afterEndAt);
         LocalDate correctDate = afterStartAt.toLocalDate();
 
-        foundWork.fromCorrection(afterStartAt, afterEndAt, breakTime);
+        Integer vacationTypeId = null;
+
+        foundWork.fromCorrection(afterStartAt, afterEndAt, breakTime, vacationTypeId);
         final boolean hasAMHalfDayoff = workCreateValidator.hasAMHalfDayOff(empId, correctDate);
         final boolean hasPMHalfDayoff = workCreateValidator.hasPMHalfDayOff(empId, correctDate);
 
@@ -245,13 +250,14 @@ public class ApprovedWorkCommandService {
     }
 
     // 여러 날짜를 포괄하는 재택근무, 출장, 휴가 등 처리
-    private void saveMultiDayWork(long empId, WorkType workType, LocalDate startDate, LocalDate endDate) {
+    private void saveMultiDayWork(long empId, WorkType workType, LocalDate startDate, LocalDate endDate, Integer vacationTypeId) {
         LocalDate date = startDate;
 
         while (!date.isAfter(endDate)) {
             LocalDateTime startAt = date.atTime(workTimeService.getStartTime());
             LocalDateTime endAt = date.atTime(workTimeService.getEndTime());
-            saveWork(empId, workType, startAt, endAt);
+            int breakTime = workTimeService.getBreakTime(startAt, endAt);
+            saveWork(empId, workType, startAt, endAt, breakTime, vacationTypeId);
             date = date.plusDays(1);
         }
     }
@@ -313,12 +319,18 @@ public class ApprovedWorkCommandService {
 
     // 연장근무, 야간근무는 request로 부터 breakTime 값을 받아와서 별도 처리 필요
     private void saveWork(long empId, WorkType workType, LocalDateTime startAt, LocalDateTime endAt, int breakTime) {
+        saveWork(empId, workType, startAt, endAt, breakTime, null);
+    }
+
+    // 휴가일 경우 vacationTypeId insert 필요
+    private void saveWork(long empId, WorkType workType, LocalDateTime startAt, LocalDateTime endAt, int breakTime, Integer vacationTypeId) {
         Work workToInsert = Work.builder()
                 .empId(empId)
                 .startAt(startAt)
                 .endAt(endAt)
                 .typeId(workType.getTypeId())
                 .breakTime(breakTime)
+                .vacationTypeId(vacationTypeId)
                 .startPushedAt(null)
                 .build();
 

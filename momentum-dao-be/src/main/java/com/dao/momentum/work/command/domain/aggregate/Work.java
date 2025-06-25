@@ -22,6 +22,9 @@ public class Work {
     private long empId;
 
     private int typeId;
+
+    private Integer vacationTypeId;
+
     @NotNull
     private LocalDateTime startAt;
     @NotNull
@@ -38,13 +41,14 @@ public class Work {
     private IsNormalWork isNormalWork;
 
     @Builder
-    public Work(long empId, int typeId, LocalDateTime startAt, LocalDateTime endAt, int breakTime, LocalDateTime startPushedAt) {
+    public Work(long empId, int typeId, LocalDateTime startAt, LocalDateTime endAt, int breakTime, LocalDateTime startPushedAt, Integer vacationTypeId) {
         this.empId = empId;
         this.typeId = typeId;
         this.startAt = startAt;
         this.endAt = endAt;
         this.breakTime = breakTime;
         this.startPushedAt = startPushedAt;
+        this.vacationTypeId = vacationTypeId;
     }
 
     public void fromUpdate(LocalDateTime endAt, LocalDateTime endPushedAt, int breakTime) {
@@ -53,10 +57,11 @@ public class Work {
         this.breakTime = breakTime;
     }
 
-    public void fromCorrection(LocalDateTime afterStartAt, LocalDateTime afterEndAt, int breakTime) {
+    public void fromCorrection(LocalDateTime afterStartAt, LocalDateTime afterEndAt, int breakTime, Integer vacationTypeId) {
         this.startAt = afterStartAt;
         this.endAt = afterEndAt;
         this.breakTime = breakTime;
+        this.vacationTypeId = vacationTypeId;
     }
 
     public Duration getWorkTime() {

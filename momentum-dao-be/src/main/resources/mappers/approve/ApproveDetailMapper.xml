@@ -86,6 +86,7 @@
         SELECT
             receipt_type,
             store_name,
+            store_address,
             amount,
             used_at
         FROM approve_receipt

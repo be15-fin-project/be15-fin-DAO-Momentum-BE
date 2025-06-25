@@ -10,7 +10,8 @@ public enum WorkTypeName {
     OVERTIME("연장근무"),
     NIGHT("야간근무"),
     HOLIDAY("휴일근무"),
-    BUSINESS_TRIP("출장");
+    BUSINESS_TRIP("출장"),
+    ADDITIONAL("초과근무");
 
     private final String description;
 

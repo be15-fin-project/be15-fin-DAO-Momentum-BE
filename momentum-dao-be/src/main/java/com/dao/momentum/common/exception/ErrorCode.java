@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public enum ErrorCode {
-    //사원 오류(10001 - 199999)
+    //사원 오류(10001 - 10999)
     EMPLOYEE_ALREADY_EXISTS("10001", "해당 사원이 이미 존재합니다.",HttpStatus.CONFLICT),
     EMPLOYEE_NOT_FOUND("10002","해당 사원을 찾을 수 없습니다.",HttpStatus.NOT_FOUND),
     INVALID_CREDENTIALS("10003","유효하지 않은 입력입니다. 다시 입력해주세요",HttpStatus.NOT_FOUND),
@@ -35,6 +35,17 @@ public enum ErrorCode {
     INVALID_CONTRACT("12002", "연봉계약서가 아닌 경우 연봉을 작성할 수 없습니다.", HttpStatus.BAD_REQUEST),
     ATTACHMENT_REQUIRED("12003", "첨부파일이 없습니다.", HttpStatus.BAD_REQUEST), CONTRACT_NOT_FOUND("12004", "해당 계약서를 찾을 수 없습니다." , HttpStatus.NOT_FOUND),
     ATTACHMENT_NOT_FOUND("12004", "첨부파일을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+
+    // CSV 오류 (13001 - 13999)
+    CSV_NOT_FOUND("13001", "CSV 파일이 존재하지 않습니다." , HttpStatus.BAD_REQUEST),
+    NOT_A_CSV("13002", "CSV 파일이 아닙니다.", HttpStatus.BAD_REQUEST),
+    EMPTY_DATA_PROVIDED("13003", "입력할 데이터가 없습니다." , HttpStatus.BAD_REQUEST),
+    CSV_READ_FAILED("13004", "CSV 파일을 읽는 데 실패했습니다." , HttpStatus.BAD_REQUEST),
+    INVALID_CSV_HEADER("13005", "CSV 헤더가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_COLUMN_COUNT("13006", "[%d행] 컬럼 수(%d)가 헤더(%d)와 다릅니다.", HttpStatus.BAD_REQUEST),
+    REQUIRED_VALUE_NOT_FOUND("13007", "[%d행] '%s' 필드는 필수 입력입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS("13008", "존재하지 않는 재직 상태입니다." , HttpStatus.BAD_REQUEST),
 
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -70,6 +81,9 @@ public enum ErrorCode {
     KPI_REQUEST_NOT_FOUND("40005", "조회 가능한 KPI 요청 내역이 없습니다.", HttpStatus.NOT_FOUND),
     KPI_REQUEST_FORBIDDEN("40006", "본인의 KPI만 취소할 수 있습니다.", HttpStatus.BAD_REQUEST),
     KPI_INVALID_STATUS("40007", "취소 가능한 상태의 KPI가 아닙니다.", HttpStatus.BAD_REQUEST),
+    KPI_ALREADY_PROCESSED("40008", "이미 처리 된 KPI입니다.", HttpStatus.BAD_REQUEST),
+    KPI_REJECTION_REASON_REQUIRED("40009", "반려 할 경우 반드시 처리 사유가 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
+    KPI_EDIT_FORBIDDEN("40010", "진척도는 0 이상 100 이하 값만 가능합니다.", HttpStatus.BAD_REQUEST),
     // 평가 오류
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),

@@ -22,6 +22,10 @@ public class WorkDTO {
 
     private String typeName;
 
+    private Integer vacationTypeId;
+
+    private String vacationType;
+
     @NotNull
     private LocalDateTime startAt;
     @NotNull
