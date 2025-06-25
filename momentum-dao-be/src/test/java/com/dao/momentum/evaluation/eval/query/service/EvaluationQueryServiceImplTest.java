@@ -47,9 +47,9 @@ class EvaluationQueryServiceImplTest {
 
         PeerEvaluationResponseDto responseDto = PeerEvaluationResponseDto.builder()
                 .resultId(1L)
-                .evalNo(20250001L)
+                .evalNo("20250001")
                 .evalName("김현우")
-                .targetNo(20250002L)
+                .targetNo("20250002")
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -103,9 +103,9 @@ class EvaluationQueryServiceImplTest {
 
         PeerEvaluationResponseDto detail = PeerEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .evalNo(20250001L)
+                .evalNo("20250001")
                 .evalName("김현우")
-                .targetNo(20250002L)
+                .targetNo("20250002")
                 .targetName("정예준")
                 .formName("동료 평가")
                 .roundNo(2)
@@ -214,7 +214,7 @@ class EvaluationQueryServiceImplTest {
 
         OrgEvaluationResponseDto detail = OrgEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김현우")
                 .formName("직무 스트레스 자가진단")
                 .roundNo(2)
@@ -263,13 +263,13 @@ class EvaluationQueryServiceImplTest {
     void getSelfEvaluations_success() {
         // given
         SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
-        ReflectionTestUtils.setField(requestDto, "empNo", 20250001L);
+        ReflectionTestUtils.setField(requestDto, "empNo", "20250001");
         ReflectionTestUtils.setField(requestDto, "page", 1);
         ReflectionTestUtils.setField(requestDto, "size", 10);
 
         SelfEvaluationResponseDto responseDto = SelfEvaluationResponseDto.builder()
                 .resultId(201L)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김하진")
                 .formName("직업 만족도 진단")
                 .roundNo(1)
@@ -286,7 +286,7 @@ class EvaluationQueryServiceImplTest {
 
         // then
         assertThat(result.getList()).hasSize(1);
-        assertThat(result.getList().get(0).getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getList().get(0).getEmpNo()).isEqualTo("20250001");
         assertThat(result.getPagination().getCurrentPage()).isEqualTo(1);
         assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
 
@@ -299,7 +299,7 @@ class EvaluationQueryServiceImplTest {
     void getSelfEvaluations_notFound_throwsException() {
         // given
         SelfEvaluationListRequestDto requestDto = new SelfEvaluationListRequestDto();
-        ReflectionTestUtils.setField(requestDto, "empNo", 99999999L);
+        ReflectionTestUtils.setField(requestDto, "empNo", "99999999");
         ReflectionTestUtils.setField(requestDto, "page", 1);
         ReflectionTestUtils.setField(requestDto, "size", 10);
 
@@ -323,7 +323,7 @@ class EvaluationQueryServiceImplTest {
 
         SelfEvaluationResponseDto detail = SelfEvaluationResponseDto.builder()
                 .resultId(resultId)
-                .empNo(20250001L)
+                .empNo("20250001")
                 .evalName("김하진")
                 .formName("직무 스트레스 자가진단")
                 .roundNo(1)
@@ -345,7 +345,7 @@ class EvaluationQueryServiceImplTest {
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getDetail().getEmpNo()).isEqualTo(20250001L);
+        assertThat(result.getDetail().getEmpNo()).isEqualTo("20250001");
         assertThat(result.getDetail().getEvalName()).isEqualTo("김하진");
         assertThat(result.getFactorScores()).hasSize(2);
         assertThat(result.getFactorScores().get(1).getScore()).isEqualTo(72);
