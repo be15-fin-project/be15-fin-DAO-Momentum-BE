@@ -14,4 +14,5 @@ public class DepartmentMemberDTO {
     private String position;
     private String email;
     private String contact;
+    private boolean isDeptHead;
 }
