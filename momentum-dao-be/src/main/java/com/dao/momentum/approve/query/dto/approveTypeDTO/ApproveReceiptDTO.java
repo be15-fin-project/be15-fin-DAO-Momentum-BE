@@ -2,7 +2,7 @@ package com.dao.momentum.approve.query.dto.approveTypeDTO;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @ToString
@@ -13,7 +13,8 @@ public class ApproveReceiptDTO {
 
     private String receiptType;
     private String storeName;
+    private String storeAddress;
     private Integer amount;
-    private LocalDateTime usedAt;
+    private LocalDate usedAt;
 
 }

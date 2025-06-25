@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ApproveFileDTO {
 
-    private String url;
+    private String s3Key;
     private String type;
 
 }
