@@ -13,7 +13,7 @@ public class AdminContractDTO {
 
     private Long empId;
 
-    private Long empNo;
+    private String empNo;
 
     private String empName;
 

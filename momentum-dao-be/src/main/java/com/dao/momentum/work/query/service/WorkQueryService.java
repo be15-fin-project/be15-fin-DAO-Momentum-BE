@@ -25,7 +25,7 @@ public class WorkQueryService {
     public WorkListResponse getMyWorks(UserDetails userDetails, WorkSearchRequest workSearchRequest) {
         long empId = Long.parseLong(userDetails.getUsername());
 
-        WorkSearchDTO workSearchDTO = workSearchRequest.toDTO();
+        WorkSearchDTO workSearchDTO = WorkSearchDTO.fromRequest(workSearchRequest);
 
         List<WorkDTO> works = workMapper.getMyWorks(workSearchDTO, empId);
 
@@ -38,7 +38,7 @@ public class WorkQueryService {
     @Transactional(readOnly = true)
     public WorkListResponse getWorks(AdminWorkSearchRequest adminWorkSearchRequest) {
 
-        AdminWorkSearchDTO adminWorkSearchDTO = adminWorkSearchRequest.toDTO();
+        AdminWorkSearchDTO adminWorkSearchDTO = AdminWorkSearchDTO.fromRequest(adminWorkSearchRequest);
 
         List<WorkDTO> works = workMapper.getWorks(adminWorkSearchDTO);
         int page = adminWorkSearchDTO.getPage();

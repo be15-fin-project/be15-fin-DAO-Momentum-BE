@@ -4,6 +4,7 @@ import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.exception.NotExistTabException;
 import com.dao.momentum.approve.exception.NotFoundApproveException;
 import com.dao.momentum.approve.query.dto.*;
+import com.dao.momentum.approve.query.dto.approveTypeDTO.OvertimeDTO;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
@@ -18,7 +19,6 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.type.TrueFalseConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -170,6 +170,11 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
 
         // 3. 폼 정보 가져오기
         Object formDetail = resolveFormDetail(approveType, approveId);
+
+        // 먄약 초과 근무인 경우에는 시간 계산을 통해 연장, 야간, 휴일 근무 인지 저장하기
+        if (approveType == ApproveType.OVERTIME && formDetail instanceof OvertimeDTO overtimeDTO) {
+            overtimeDTO.classifyWorkTypes();
+        }
 
         return buildApproveDetailResponse(approveDTO, null, approveFileDTO, lineList, refList, formDetail);
     }

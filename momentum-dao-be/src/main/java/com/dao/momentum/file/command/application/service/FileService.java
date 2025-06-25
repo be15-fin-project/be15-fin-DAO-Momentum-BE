@@ -40,7 +40,7 @@ public class FileService {
 
         String prefix = request.prefixType();
         // s3 key 경로 prefix 검증
-        if (!prefix.equals("announcement") && !prefix.equals("contract") && !prefix.equals("approve")) {
+        if (!prefix.equals("announcement") && !prefix.equals("contract") && !prefix.equals("approve") && !prefix.equals("csv")) {
             throw new FileUploadFailedException(ErrorCode.INVALID_S3_PREFIX); // 커스텀 에러 코드
         }
 

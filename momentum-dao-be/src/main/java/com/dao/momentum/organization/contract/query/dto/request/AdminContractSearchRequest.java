@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Builder
 public class AdminContractSearchRequest {
-    private Long empNo;
+    private String empNo;
 
     private String empName;
 

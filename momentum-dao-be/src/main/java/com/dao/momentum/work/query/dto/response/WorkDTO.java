@@ -14,7 +14,7 @@ public class WorkDTO {
 
     private long empId;
 
-    private long empNo;
+    private String empNo;
 
     private String empName;
 
