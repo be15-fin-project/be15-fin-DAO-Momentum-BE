@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionContactMapper">
+<mapper namespace="com.dao.momentum.retention.interview.query.mapper.RetentionContactMapper">
 
-    <select id="findContacts" resultType="com.dao.momentum.retention.query.dto.response.RetentionContactItemDto">
+    <select id="findContacts" resultType="com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto">
         SELECT
             rc.created_at,
             t.emp_no AS targetNo,
@@ -73,7 +73,7 @@
     </select>
 
     <!-- 면담 상세 조회 -->
-    <select id="findContactDetailById" resultType="com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto">
+    <select id="findContactDetailById" resultType="com.dao.momentum.retention.interview.query.dto.response.RetentionContactDetailDto">
         SELECT
             rc.retention_id AS retentionId,
             t.name AS targetName,
