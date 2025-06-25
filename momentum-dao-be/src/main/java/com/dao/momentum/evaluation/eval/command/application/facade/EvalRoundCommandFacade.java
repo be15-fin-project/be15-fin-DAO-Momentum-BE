@@ -1,7 +1,9 @@
 package com.dao.momentum.evaluation.eval.command.application.facade;
 
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundCreateRequest;
+import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundUpdateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundCreateResponse;
+import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundUpdateResponse;
 import com.dao.momentum.evaluation.eval.command.application.service.EvalRoundService;
 import com.dao.momentum.evaluation.hr.command.application.service.HrRateService;
 import com.dao.momentum.evaluation.hr.command.application.service.HrWeightService;
@@ -27,4 +29,19 @@ public class EvalRoundCommandFacade {
 
         return EvalRoundCreateResponse.from(round);
     }
+
+    @Transactional
+    public EvalRoundUpdateResponse updateEvalRound(Integer roundId, EvalRoundUpdateRequest request) {
+        var roundDto = request.toRoundDto(roundId);
+        var round = evalRoundService.update(roundId, roundDto);
+
+        hrWeightService.update(round.getRoundId(), request.toWeightDto());
+        hrRateService.update(round.getRoundId(), request.toRateDto());
+
+        return EvalRoundUpdateResponse.builder()
+                .roundId(round.getRoundId())
+                .message("평가 회차가 성공적으로 수정되었습니다.")
+                .build();
+    }
+
 }

@@ -2,7 +2,9 @@ package com.dao.momentum.evaluation.eval.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundCreateRequest;
+import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundUpdateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundCreateResponse;
+import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundUpdateResponse;
 import com.dao.momentum.evaluation.eval.command.application.facade.EvalRoundCommandFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,15 @@ public class EvalRoundCommandController {
     public ApiResponse<EvalRoundCreateResponse> createEvalRound(
             @RequestBody @Valid EvalRoundCreateRequest request) {
         EvalRoundCreateResponse response = evalRoundCommandFacade.createEvalRound(request);
+        return ApiResponse.success(response);
+    }
+
+    @PatchMapping("/{roundId}")
+    public ApiResponse<EvalRoundUpdateResponse> updateEvalRound(
+            @PathVariable Integer roundId,
+            @RequestBody EvalRoundUpdateRequest request
+    ) {
+        EvalRoundUpdateResponse response = evalRoundCommandFacade.updateEvalRound(roundId, request);
         return ApiResponse.success(response);
     }
 }

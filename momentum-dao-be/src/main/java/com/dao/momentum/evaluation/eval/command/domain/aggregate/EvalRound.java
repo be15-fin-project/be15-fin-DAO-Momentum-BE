@@ -25,4 +25,9 @@ public class EvalRound {
     @Column(name = "start_at", nullable = false)
     private LocalDate startAt;
 
+    public void updateRound(int roundNo, LocalDate startAt) {
+        this.roundNo = roundNo;
+        this.startAt = startAt;
+    }
+
 }

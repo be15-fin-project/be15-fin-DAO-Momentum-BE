@@ -74,10 +74,13 @@ public enum ErrorCode {
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_REQUEST("40013", "평가 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_NOT_FOUND("40014", "평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
     MY_OBJECTIONS_NOT_FOUND("40022", "조회 가능한 인사 평가 이의제기 내역이 없습니다.", HttpStatus.NOT_FOUND),
     HR_EVALUATION_NOT_FOUND("40023", "인사 평가 세부 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_WEIGHT_NOT_FOUND("40024", "인사 평가 가중치 기준 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_RATE_NOT_FOUND("40025", "인사 평가 등급 기준 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
