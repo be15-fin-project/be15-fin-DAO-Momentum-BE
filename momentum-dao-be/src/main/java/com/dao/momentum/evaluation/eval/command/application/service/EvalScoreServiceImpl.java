@@ -8,14 +8,22 @@ import com.dao.momentum.evaluation.eval.command.domain.repository.EvalScoreRepos
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class EvalScoreServiceImpl implements EvalScoreService {
 
     private final EvalScoreRepository evalScoreRepository;
+
+    @Override
+    @Transactional
+    public void save(EvalScore score) {
+        evalScoreRepository.save(score);
+    }
 
     @Override
     public void saveFactorScores(Long resultId, List<EvalFactorScoreDto> factorScores) {
@@ -36,5 +44,32 @@ public class EvalScoreServiceImpl implements EvalScoreService {
                 .toList();
 
         evalScoreRepository.saveAll(scores);
+    }
+
+    @Override
+    @Transactional
+    public void updateScores(Long resultId, Map<Integer, Integer> scoreMap) {
+        evalScoreRepository.deleteByResultId(resultId);
+
+        for (Map.Entry<Integer, Integer> entry : scoreMap.entrySet()) {
+            EvalScore score = EvalScore.builder()
+                    .resultId(resultId)
+                    .propertyId(entry.getKey())
+                    .score(entry.getValue())
+                    .build();
+            evalScoreRepository.save(score);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteByResultId(Long resultId) {
+        evalScoreRepository.deleteByResultId(resultId);
+    }
+
+    @Override
+    @Transactional
+    public void saveAll(List<EvalScore> scoreEntities) {
+        evalScoreRepository.saveAll(scoreEntities);
     }
 }

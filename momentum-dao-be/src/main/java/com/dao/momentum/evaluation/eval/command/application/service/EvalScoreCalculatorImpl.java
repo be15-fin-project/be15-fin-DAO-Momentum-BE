@@ -51,4 +51,16 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
                     .sum() / factors.size();
         }
     }
+
+    @Override
+    public int calculateOverallScore(Map<Integer, Integer> scoreMap, HrWeight weight) {
+        return (
+                scoreMap.getOrDefault(1, 0) * weight.getPerformWt() +
+                        scoreMap.getOrDefault(2, 0) * weight.getTeamWt() +
+                        scoreMap.getOrDefault(3, 0) * weight.getAttitudeWt() +
+                        scoreMap.getOrDefault(4, 0) * weight.getGrowthWt() +
+                        scoreMap.getOrDefault(5, 0) * weight.getEngagementWt() +
+                        scoreMap.getOrDefault(6, 0) * weight.getResultWt()
+        ) / 100;
+    }
 }

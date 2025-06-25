@@ -18,4 +18,8 @@ public interface HrObjectionJpaRepository extends JpaRepository<HrObjection, Lon
     boolean existsEvaluation(@Param("resultId") Long resultId);
 
     Optional<HrObjection> findById(Long objectionId);
+
+    @Query("SELECT h.resultId FROM HrObjection h WHERE h.objectionId = :objectionId")
+    Optional<Long> findResultIdByObjectionId(@Param("objectionId") Long objectionId);
+
 }

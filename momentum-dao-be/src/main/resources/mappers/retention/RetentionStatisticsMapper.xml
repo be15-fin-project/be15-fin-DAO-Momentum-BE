@@ -2,12 +2,12 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionStatisticsMapper">
+<mapper namespace="com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper">
 
     <!-- 평균 근속 지수 조회 -->
     <select id="findAverageRetentionScore"
-            parameterType="com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto"
-            resultType="com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto">
+            parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto"
+            resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto">
         SELECT
         ROUND(AVG(rs.retention_score), 2) AS averageScore
         FROM
@@ -32,8 +32,8 @@
 
     <!-- 단일 결과 조회 (overall or 단일 부서/직급) -->
     <select id="findInsightDistribution"
-            parameterType="com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto"
-            resultType="com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto">
+            parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto"
+            resultType="com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto">
         SELECT
             d.name AS deptName,
             p.name AS positionName,
@@ -62,8 +62,8 @@
 
     <!-- 부서별 리스트 조회 (roundId는 필수, 부서 필터 없음) -->
     <select id="findInsightDistributionList"
-            parameterType="com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto"
-            resultType="com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto">
+            parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto"
+            resultType="com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto">
         SELECT
             d.name AS deptName,
             p.name AS positionName,
