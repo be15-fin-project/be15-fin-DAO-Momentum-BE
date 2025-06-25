@@ -9,7 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,6 +29,8 @@ public class VacationTimeCommandService {
     @Scheduled(cron = "0 0 0 1 1 *")
     @Transactional
     public void updateVacationTimes() {
+        LocalDateTime start = LocalDateTime.now();
+        log.info("[휴가 일수 Batch System] 휴가 일수 갱신 시작");
         int targetYear = LocalDate.now().getYear();
 
         List<Employee> employees = employeeRepository.findAllByStatus(Status.EMPLOYED); // 모든 직원
@@ -44,7 +48,10 @@ public class VacationTimeCommandService {
           }
         );
 
-        log.info("[Batch System] {}년 연차 갱신 완료 - 총 {}명", targetYear, employees.size());
+        LocalDateTime end = LocalDateTime.now();
+        long duration = Duration.between(start, end).toSeconds();
+        log.info("[휴가 일수 Batch System] {}년 연차 갱신 완료 - 총 {}명, 소요 시간 - {}초", targetYear, employees.size(), duration);
+        // 실패 시 로그는 spring이 남겨줌
     }
 
     int computeDayoffDays(int joinYear, int joinMonth, int targetYear) {
