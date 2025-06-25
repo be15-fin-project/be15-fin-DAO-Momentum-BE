@@ -36,4 +36,14 @@ public class HrWeight {
 
     @Column(name = "result_wt", nullable = false)
     private Integer resultWt;
+
+
+    public void update(int performWt, int teamWt, int attitudeWt, int growthWt, int engagementWt, int resultWt) {
+        this.performWt = performWt;
+        this.teamWt = teamWt;
+        this.attitudeWt = attitudeWt;
+        this.growthWt = growthWt;
+        this.engagementWt = engagementWt;
+        this.resultWt = resultWt;
+    }
 }
