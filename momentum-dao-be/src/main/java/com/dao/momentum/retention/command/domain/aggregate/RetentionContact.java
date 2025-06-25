@@ -25,6 +25,9 @@ public class RetentionContact {
     @Column(name = "manager_id", nullable = false)
     private Long managerId;
 
+    @Column(name = "writer_id", nullable = false)
+    private Long writerId;
+
     @Column(name = "reason", columnDefinition = "TEXT", nullable = false)
     private String reason;
 
@@ -41,6 +44,37 @@ public class RetentionContact {
     private String feedback;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "ENUM('Y','N') DEFAULT 'N'")
+    @Column(name = "is_deleted", nullable = false)
     private UseStatus isDeleted;
+
+
+    // 정적 생성 메서드
+    public static RetentionContact create(Long targetId, Long managerId, Long writerId, String reason) {
+        return RetentionContact.builder()
+                .targetId(targetId)
+                .managerId(managerId)
+                .writerId(writerId)
+                .reason(reason)
+                .createdAt(LocalDateTime.now())
+                .isDeleted(UseStatus.N)
+                .build();
+    }
+
+    // Soft delete 처리
+    public void markAsDeleted() {
+        this.isDeleted = UseStatus.Y;
+    }
+
+    // 대응 정보 저장
+    public void respond(String response, LocalDateTime responseAt) {
+        this.response = response;
+        this.responseAt = responseAt;
+    }
+
+    /**
+     * 인사 피드백 저장
+     */
+    public void giveFeedback(String feedback) {
+        this.feedback = feedback;
+    }
 }

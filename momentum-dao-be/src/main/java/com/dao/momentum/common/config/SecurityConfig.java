@@ -114,14 +114,9 @@ public class SecurityConfig {
 
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
-        auths.requestMatchers(
-                "/position",
-                "/position/**"
-        ).hasAuthority("MASTER");
-
-        auths.requestMatchers( HttpMethod.PUT,
-                "/company"
-        ).hasAuthority("MASTER");
+        auths.requestMatchers("/position", "/position/**").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.POST, "/departments").hasAuthority("MASTER")
+                .requestMatchers( HttpMethod.PUT, "/company").hasAuthority("MASTER");
     }
 
     // 인사관리자 전용
