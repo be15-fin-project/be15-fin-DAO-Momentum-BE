@@ -1,5 +1,6 @@
 package com.dao.momentum.common.exception;
 
+import com.dao.momentum.approve.exception.ApproveException;
 import com.dao.momentum.approve.exception.NotExistTabException;
 import com.dao.momentum.approve.exception.NotFoundApproveException;
 import com.dao.momentum.approve.exception.OcrRequestFailedException;
@@ -91,6 +92,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response,errorCode.getHttpStatus());
     }
 
+    @ExceptionHandler(ApproveException.class)
+    public ResponseEntity<ApiResponse<Void>> handleApproveException(ApproveException e){
+        ErrorCode errorCode = e.getErrorCode();
+
+        ApiResponse<Void> response
+                = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
+
+        return new ResponseEntity<>(response,errorCode.getHttpStatus());
+    }
 
     @ExceptionHandler(EmailFailException.class)
     public ResponseEntity<ApiResponse<Void>> handleMailError(EmailFailException e) {
