@@ -3,8 +3,10 @@ package com.dao.momentum.retention.command.application.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactFeedbackUpdateDto;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactResponseUpdateDto;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponseUpdateResponse;
 import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
@@ -101,6 +103,27 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .retentionId(contact.getRetentionId())
                 .response(contact.getResponse())
                 .responseAt(contact.getResponseAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public RetentionContactFeedbackUpdateResponse giveFeedback(RetentionContactFeedbackUpdateDto dto) {
+        // 1. 면담 요청 존재 확인
+        RetentionContact contact = repository.findById(dto.retentionId())
+                .orElseThrow(() -> new RetentionException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
+
+        // 2. 삭제 여부 확인
+        if (contact.getIsDeleted().isDeleted()) {
+            throw new RetentionException(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED);
+        }
+
+        // 3. 피드백 반영
+        contact.giveFeedback(dto.feedback());
+
+        return RetentionContactFeedbackUpdateResponse.builder()
+                .retentionId(contact.getRetentionId())
+                .feedback(contact.getFeedback())
                 .build();
     }
 }

@@ -5,6 +5,7 @@ import com.dao.momentum.retention.command.application.dto.request.*;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponseUpdateResponse;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
 import com.dao.momentum.retention.command.application.service.RetentionContactCommandService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -69,6 +70,23 @@ public class RetentionContactCommandController {
                 .build();
 
         RetentionContactResponseUpdateResponse response = contactCommandService.reportResponse(dto);
+        return ApiResponse.success(response);
+    }
+
+    @PostMapping("/{retentionId}/feedback")
+    public ApiResponse<RetentionContactFeedbackUpdateResponse> giveFeedback(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long retentionId,
+            @Valid @RequestBody RetentionContactFeedbackUpdateRequest request
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        RetentionContactFeedbackUpdateDto dto = RetentionContactFeedbackUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(empId)
+                .feedback(request.feedback())
+                .build();
+
+        RetentionContactFeedbackUpdateResponse response = contactCommandService.giveFeedback(dto);
         return ApiResponse.success(response);
     }
 }
