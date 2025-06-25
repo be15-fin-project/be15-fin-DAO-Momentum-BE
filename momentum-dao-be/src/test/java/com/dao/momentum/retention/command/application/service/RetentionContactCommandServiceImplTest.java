@@ -4,8 +4,10 @@ import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactResponseUpdateDto;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponseUpdateResponse;
 import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
 import com.dao.momentum.retention.command.domain.repository.RetentionContactRepository;
 import com.dao.momentum.retention.exception.RetentionException;
@@ -162,5 +164,96 @@ class RetentionContactCommandServiceImplTest {
                 .isInstanceOf(RetentionException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_FORBIDDEN.getMessage());
     }
+
+    @Test
+    @DisplayName("면담 보고 성공 - manager가 직접 응답 등록")
+    void reportResponse_success() {
+        // given
+        Long retentionId = 1L;
+        Long managerId = 2002L;
+        String responseContent = "면담을 6월 25일에 진행하였음";
+
+        RetentionContact entity = RetentionContact.builder()
+                .retentionId(retentionId)
+                .targetId(1001L)
+                .managerId(managerId)
+                .writerId(3003L)
+                .reason("근속 지수 낮음")
+                .createdAt(LocalDateTime.now())
+                .isDeleted(UseStatus.N)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(entity));
+
+        RetentionContactResponseUpdateDto dto = RetentionContactResponseUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(managerId)
+                .response(responseContent)
+                .build();
+
+        // when
+        RetentionContactResponseUpdateResponse result = service.reportResponse(dto);
+
+        // then
+        assertThat(result.retentionId()).isEqualTo(retentionId);
+        assertThat(result.response()).isEqualTo(responseContent);
+        assertThat(result.responseAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("면담 보고 실패 - 이미 삭제된 요청")
+    void reportResponse_alreadyDeleted_throwsException() {
+        // given
+        Long retentionId = 1L;
+        Long managerId = 2002L;
+
+        RetentionContact deleted = RetentionContact.builder()
+                .retentionId(retentionId)
+                .managerId(managerId)
+                .isDeleted(UseStatus.Y)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(deleted));
+
+        RetentionContactResponseUpdateDto dto = RetentionContactResponseUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(managerId)
+                .response("응답")
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.reportResponse(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
+    }
+
+    @Test
+    @DisplayName("면담 보고 실패 - manager가 아닌 사용자가 보고 시도")
+    void reportResponse_notManager_throwsException() {
+        // given
+        Long retentionId = 1L;
+        Long managerId = 2002L;
+        Long otherUserId = 9999L;
+
+        RetentionContact contact = RetentionContact.builder()
+                .retentionId(retentionId)
+                .managerId(managerId)
+                .isDeleted(UseStatus.N)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(contact));
+
+        RetentionContactResponseUpdateDto dto = RetentionContactResponseUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(otherUserId)
+                .response("응답")
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.reportResponse(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_RESPONSE_FORBIDDEN.getMessage());
+    }
+
 
 }
