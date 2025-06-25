@@ -24,4 +24,9 @@ public class EvalScore {
 
     @Column(name = "score", nullable = false)
     private Integer score;
+
+
+    public void updateScore(Integer score) {
+        this.score = score;
+    }
 }
