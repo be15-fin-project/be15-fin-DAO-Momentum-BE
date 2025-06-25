@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.hr.command.domain.aggregate;
 
+import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateDto;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,6 +23,9 @@ public class HrObjection {
     @Column(name = "result_id", nullable = false)
     private Long resultId;
 
+    @Column(name = "writer_id", nullable = false)
+    private Long writerId;
+
     @Column(name = "status_id", nullable = false)
     private Integer statusId;
 
@@ -37,6 +41,9 @@ public class HrObjection {
     @Column(name = "response_at")
     private LocalDateTime responseAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_deleted", nullable = false)
+    private UseStatus isDeleted;
 
     // === 생성 팩토리 메서드 ===
     public static HrObjection create(HrObjectionCreateDto dto, Integer defaultStatusId) {
@@ -45,12 +52,8 @@ public class HrObjection {
                 .statusId(defaultStatusId)
                 .reason(dto.getReason())
                 .createdAt(LocalDateTime.now())
+                .isDeleted(UseStatus.N)
                 .build();
     }
 
-    // === 응답 처리 메서드 (선택 기능용) ===
-    public void respond(String responseMessage) {
-        this.response = responseMessage;
-        this.responseAt = LocalDateTime.now();
-    }
 }

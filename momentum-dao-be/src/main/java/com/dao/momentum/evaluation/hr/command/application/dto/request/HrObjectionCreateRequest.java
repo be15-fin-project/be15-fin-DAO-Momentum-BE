@@ -17,7 +17,7 @@ public class HrObjectionCreateRequest {
     public HrObjectionCreateDto toDto(Long evaluationId, Long empId) {
         return HrObjectionCreateDto.builder()
                 .resultId(evaluationId)
-                .empId(empId)
+                .writerId(empId)
                 .reason(this.reason)
                 .build();
     }

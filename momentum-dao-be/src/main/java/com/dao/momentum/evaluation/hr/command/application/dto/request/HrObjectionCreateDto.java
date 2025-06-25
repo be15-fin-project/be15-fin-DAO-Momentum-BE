@@ -13,7 +13,7 @@ public class HrObjectionCreateDto {
     private Long resultId;
 
     @Schema(description = "사원 ID", example = "1001")
-    private Long empId;
+    private Long writerId;
 
     @Schema(description = "이의제기 사유", example = "성과 반영이 누락되어 정확하지 않은 평가입니다.")
     private String reason;
