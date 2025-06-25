@@ -1,4 +1,4 @@
-package com.dao.momentum.retention.query.service;
+package com.dao.momentum.retention.interview.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.interview.exception.InterviewException;

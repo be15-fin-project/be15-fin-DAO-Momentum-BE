@@ -1,6 +1,5 @@
-package com.dao.momentum.retention.query.controller;
+package com.dao.momentum.retention.prospect.query.controller;
 
-import com.dao.momentum.retention.prospect.query.controller.RetentionStatisticsQueryController;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;

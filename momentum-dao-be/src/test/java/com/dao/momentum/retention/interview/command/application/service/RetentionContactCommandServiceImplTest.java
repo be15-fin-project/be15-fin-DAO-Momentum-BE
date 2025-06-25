@@ -1,4 +1,4 @@
-package com.dao.momentum.retention.command.application.service;
+package com.dao.momentum.retention.interview.command.application.service;
 
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;

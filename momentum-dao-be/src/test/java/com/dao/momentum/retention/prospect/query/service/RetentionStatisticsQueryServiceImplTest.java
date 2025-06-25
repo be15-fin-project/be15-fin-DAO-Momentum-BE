@@ -1,4 +1,4 @@
-package com.dao.momentum.retention.query.service;
+package com.dao.momentum.retention.prospect.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.interview.exception.InterviewException;
@@ -7,7 +7,6 @@ import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatistics
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
-import com.dao.momentum.retention.prospect.query.service.RetentionStatisticsQueryServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

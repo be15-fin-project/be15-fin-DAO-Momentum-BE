@@ -1,4 +1,4 @@
-package com.dao.momentum.retention.query.controller;
+package com.dao.momentum.retention.interview.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.retention.interview.query.controller.RetentionContactQueryController;

@@ -1,10 +1,9 @@
-package com.dao.momentum.retention.query.service;
+package com.dao.momentum.retention.prospect.query.service;
 
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionRoundRawDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionRoundSearchRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundListResultDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionRoundMapper;
-import com.dao.momentum.retention.prospect.query.service.RetentionRoundQueryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

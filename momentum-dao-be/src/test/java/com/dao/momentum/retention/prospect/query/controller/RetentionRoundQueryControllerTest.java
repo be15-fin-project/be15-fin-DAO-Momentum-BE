@@ -1,7 +1,6 @@
-package com.dao.momentum.retention.query.controller;
+package com.dao.momentum.retention.prospect.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.retention.prospect.query.controller.RetentionRoundQueryController;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionRoundSearchRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundListResponseDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundListResultDto;

@@ -1,7 +1,6 @@
-package com.dao.momentum.retention.query.controller;
+package com.dao.momentum.retention.prospect.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.retention.prospect.query.controller.RetentionSupportQueryController;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionForecastRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionForecastItemDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionForecastResponseDto;
