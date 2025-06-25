@@ -4,8 +4,10 @@ import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactFeedbackUpdateDto;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactResponseUpdateDto;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponseUpdateResponse;
 import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
@@ -253,6 +255,81 @@ class RetentionContactCommandServiceImplTest {
         assertThatThrownBy(() -> service.reportResponse(dto))
                 .isInstanceOf(RetentionException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_RESPONSE_FORBIDDEN.getMessage());
+    }
+
+    @Test
+    @DisplayName("피드백 등록 성공")
+    void giveFeedback_success() {
+        // given
+        Long retentionId = 1L;
+        Long adminId = 9999L;
+        String feedback = "면담 내용 확인, 보상 검토 예정";
+
+        RetentionContact entity = RetentionContact.builder()
+                .retentionId(retentionId)
+                .managerId(2002L)
+                .writerId(3003L)
+                .reason("근속 문제")
+                .isDeleted(UseStatus.N)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(entity));
+
+        RetentionContactFeedbackUpdateDto dto = RetentionContactFeedbackUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(adminId)
+                .feedback(feedback)
+                .build();
+
+        // when
+        RetentionContactFeedbackUpdateResponse result = service.giveFeedback(dto);
+
+        // then
+        assertThat(result.retentionId()).isEqualTo(retentionId);
+        assertThat(result.feedback()).isEqualTo(feedback);
+    }
+
+    @Test
+    @DisplayName("피드백 등록 실패 - 삭제된 요청")
+    void giveFeedback_alreadyDeleted_throwsException() {
+        // given
+        Long retentionId = 1L;
+        RetentionContact deleted = RetentionContact.builder()
+                .retentionId(retentionId)
+                .isDeleted(UseStatus.Y)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(deleted));
+
+        RetentionContactFeedbackUpdateDto dto = RetentionContactFeedbackUpdateDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(9999L)
+                .feedback("이미 삭제된 요청에 피드백")
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.giveFeedback(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
+    }
+
+    @Test
+    @DisplayName("피드백 등록 실패 - 요청 없음")
+    void giveFeedback_notFound_throwsException() {
+        // given
+        when(repository.findById(999L)).thenReturn(Optional.empty());
+
+        RetentionContactFeedbackUpdateDto dto = RetentionContactFeedbackUpdateDto.builder()
+                .retentionId(999L)
+                .loginEmpId(9999L)
+                .feedback("없는 요청")
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.giveFeedback(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_NOT_FOUND.getMessage());
     }
 
 
