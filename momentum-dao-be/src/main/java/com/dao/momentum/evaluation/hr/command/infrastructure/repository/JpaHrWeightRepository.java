@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface JpaHrWeightRepository extends JpaRepository<HrWeight, Integer>, HrWeightRepository {
     Optional<HrWeight> findByRoundId(Integer roundId);
 
+    void deleteByRoundId(int roundId);
 }

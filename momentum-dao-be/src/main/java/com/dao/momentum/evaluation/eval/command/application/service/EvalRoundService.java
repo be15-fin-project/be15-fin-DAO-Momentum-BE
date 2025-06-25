@@ -12,4 +12,7 @@ public interface EvalRoundService {
 
     // 평가 회차 수정
     EvalRoundUpdateResponse update(Integer roundId, EvalRoundUpdateDTO dto);
+
+    // 평가 회차 삭제
+    void delete(Integer roundId);
 }

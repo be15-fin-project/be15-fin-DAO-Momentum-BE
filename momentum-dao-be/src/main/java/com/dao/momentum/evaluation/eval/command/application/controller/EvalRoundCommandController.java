@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundCreateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundUpdateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundCreateResponse;
+import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundDeleteResponse;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundUpdateResponse;
 import com.dao.momentum.evaluation.eval.command.application.facade.EvalRoundCommandFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,13 @@ public class EvalRoundCommandController {
             @RequestBody EvalRoundUpdateRequest request
     ) {
         EvalRoundUpdateResponse response = evalRoundCommandFacade.updateEvalRound(roundId, request);
+        return ApiResponse.success(response);
+    }
+
+    @DeleteMapping("/{roundId}")
+    @Operation(summary = "평가 회차 삭제")
+    public ApiResponse<EvalRoundDeleteResponse> deleteEvalRound(@PathVariable Integer roundId) {
+        EvalRoundDeleteResponse response = evalRoundCommandFacade.deleteEvalRound(roundId);
         return ApiResponse.success(response);
     }
 }

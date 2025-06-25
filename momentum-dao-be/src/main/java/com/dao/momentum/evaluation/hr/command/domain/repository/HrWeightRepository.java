@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface HrWeightRepository {
     HrWeight save(HrWeight hrWeight);
     Optional<HrWeight> findByRoundId(Integer roundId);
+
+    void deleteByRoundId(int roundId);
 }

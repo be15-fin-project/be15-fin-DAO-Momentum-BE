@@ -52,4 +52,10 @@ public class HrRateServiceImpl implements HrRateService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteByRoundId(int roundId) {
+        hrRateRepository.deleteByRoundId(roundId);
+    }
+
 }

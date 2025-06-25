@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.eval.command.application.facade;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundCreateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundUpdateRequest;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundCreateResponse;
+import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundDeleteResponse;
 import com.dao.momentum.evaluation.eval.command.application.dto.response.EvalRoundUpdateResponse;
 import com.dao.momentum.evaluation.eval.command.application.service.EvalRoundService;
 import com.dao.momentum.evaluation.hr.command.application.service.HrRateService;
@@ -41,6 +42,24 @@ public class EvalRoundCommandFacade {
         return EvalRoundUpdateResponse.builder()
                 .roundId(round.getRoundId())
                 .message("평가 회차가 성공적으로 수정되었습니다.")
+                .build();
+    }
+
+    @Transactional
+    public EvalRoundDeleteResponse deleteEvalRound(Integer roundId) {
+        // 1. 가중치 삭제
+        hrWeightService.deleteByRoundId(roundId);
+
+        // 2. 등급 삭제
+        hrRateService.deleteByRoundId(roundId);
+
+        // 3. 회차 삭제
+        evalRoundService.delete(roundId);
+
+        // 4. 응답 생성
+        return EvalRoundDeleteResponse.builder()
+                .roundId(roundId)
+                .message("평가 회차가 성공적으로 삭제되었습니다.")
                 .build();
     }
 

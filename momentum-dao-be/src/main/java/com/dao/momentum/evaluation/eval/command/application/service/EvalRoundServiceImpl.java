@@ -55,4 +55,11 @@ public class EvalRoundServiceImpl implements EvalRoundService {
                 .message("평가 회차가 성공적으로 수정되었습니다.")
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void delete(Integer roundId) {
+        evalRoundRepository.deleteById(roundId);
+    }
+
 }

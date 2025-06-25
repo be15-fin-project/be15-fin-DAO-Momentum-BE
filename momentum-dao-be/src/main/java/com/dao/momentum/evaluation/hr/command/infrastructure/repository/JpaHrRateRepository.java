@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface JpaHrRateRepository extends JpaRepository<HrRate, Integer>, HrRateRepository {
     Optional<HrRate> findByRoundId(Integer roundId);
+
+    void deleteByRoundId(int roundId);
 }

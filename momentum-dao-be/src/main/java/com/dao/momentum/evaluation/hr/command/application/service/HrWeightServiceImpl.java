@@ -56,4 +56,10 @@ public class HrWeightServiceImpl implements HrWeightService {
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteByRoundId(int roundId) {
+        hrWeightRepository.deleteByRoundId(roundId);
+    }
+
 }

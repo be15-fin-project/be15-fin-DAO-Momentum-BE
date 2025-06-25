@@ -11,4 +11,5 @@ public interface EvalRoundRepository {
 
     boolean existsByRoundNo(int roundNo);
 
+    void deleteById(Integer roundId);
 }
