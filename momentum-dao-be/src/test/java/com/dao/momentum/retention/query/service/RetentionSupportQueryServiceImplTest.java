@@ -1,11 +1,11 @@
 package com.dao.momentum.retention.query.service;
 
-import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.retention.query.dto.request.RetentionSupportRaw;
-import com.dao.momentum.retention.query.dto.request.RetentionForecastRequestDto;
-import com.dao.momentum.retention.query.dto.response.RetentionForecastResponseDto;
-import com.dao.momentum.retention.query.mapper.RetentionSupportMapper;
-import com.dao.momentum.retention.command.domain.aggregate.StabilityType;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportRaw;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionForecastRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionForecastResponseDto;
+import com.dao.momentum.retention.prospect.query.mapper.RetentionSupportMapper;
+import com.dao.momentum.retention.prospect.command.domain.aggregate.StabilityType;
+import com.dao.momentum.retention.prospect.query.service.RetentionSupportQueryServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

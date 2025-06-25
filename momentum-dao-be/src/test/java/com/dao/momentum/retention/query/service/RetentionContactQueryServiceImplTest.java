@@ -1,13 +1,13 @@
 package com.dao.momentum.retention.query.service;
 
-import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.retention.exception.RetentionException;
-import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactItemDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
-import com.dao.momentum.retention.query.mapper.RetentionContactMapper;
+import com.dao.momentum.retention.interview.exception.InterviewException;
+import com.dao.momentum.retention.interview.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactDetailDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactListResultDto;
+import com.dao.momentum.retention.interview.query.mapper.RetentionContactMapper;
+import com.dao.momentum.retention.interview.query.service.RetentionContactQueryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ class RetentionContactQueryServiceImplTest {
         when(mapper.findContacts(req)).thenReturn(null);
 
         assertThatThrownBy(() -> service.getContactList(req))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_NOT_FOUND.getMessage());
     }
 
@@ -149,7 +149,7 @@ class RetentionContactQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getContactDetail(retentionId, 34L))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_NOT_FOUND.getMessage());
     }
 

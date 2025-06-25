@@ -1,12 +1,13 @@
 package com.dao.momentum.retention.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.retention.query.dto.request.RetentionForecastRequestDto;
-import com.dao.momentum.retention.query.dto.response.RetentionForecastItemDto;
-import com.dao.momentum.retention.query.dto.response.RetentionForecastResponseDto;
-import com.dao.momentum.retention.command.domain.aggregate.StabilityType;
-import com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto;
-import com.dao.momentum.retention.query.service.RetentionSupportQueryService;
+import com.dao.momentum.retention.prospect.query.controller.RetentionSupportQueryController;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionForecastRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionForecastItemDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionForecastResponseDto;
+import com.dao.momentum.retention.prospect.command.domain.aggregate.StabilityType;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportDetailDto;
+import com.dao.momentum.retention.prospect.query.service.RetentionSupportQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;

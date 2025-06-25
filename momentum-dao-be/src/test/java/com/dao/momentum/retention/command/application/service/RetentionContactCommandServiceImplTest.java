@@ -2,17 +2,18 @@ package com.dao.momentum.retention.command.application.service;
 
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
-import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
-import com.dao.momentum.retention.command.application.dto.request.RetentionContactFeedbackUpdateDto;
-import com.dao.momentum.retention.command.application.dto.request.RetentionContactResponseUpdateDto;
-import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
-import com.dao.momentum.retention.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
-import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
-import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponseUpdateResponse;
-import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
-import com.dao.momentum.retention.command.domain.repository.RetentionContactRepository;
-import com.dao.momentum.retention.exception.RetentionException;
+import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
+import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
+import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactResponseUpdateDto;
+import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactDeleteResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponseUpdateResponse;
+import com.dao.momentum.retention.interview.command.application.service.RetentionContactCommandServiceImpl;
+import com.dao.momentum.retention.interview.command.domain.aggregate.RetentionContact;
+import com.dao.momentum.retention.interview.command.domain.repository.RetentionContactRepository;
+import com.dao.momentum.retention.interview.exception.InterviewException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -84,7 +85,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.createContact(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER.getMessage());
     }
 
@@ -139,7 +140,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.deleteContact(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
     }
 
@@ -163,7 +164,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.deleteContact(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_FORBIDDEN.getMessage());
     }
 
@@ -225,7 +226,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.reportResponse(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
     }
 
@@ -253,7 +254,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.reportResponse(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_RESPONSE_FORBIDDEN.getMessage());
     }
 
@@ -310,7 +311,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.giveFeedback(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
     }
 
@@ -328,7 +329,7 @@ class RetentionContactCommandServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.giveFeedback(dto))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_NOT_FOUND.getMessage());
     }
 

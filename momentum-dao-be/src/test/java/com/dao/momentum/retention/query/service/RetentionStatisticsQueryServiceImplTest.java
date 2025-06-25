@@ -1,13 +1,13 @@
 package com.dao.momentum.retention.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.retention.exception.RetentionException;
-import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
-import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
-import com.dao.momentum.retention.query.dto.request.StabilityRatioByDeptRaw;
-import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
-import com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto;
-import com.dao.momentum.retention.query.mapper.RetentionStatisticsMapper;
+import com.dao.momentum.retention.interview.exception.InterviewException;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
+import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
+import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
+import com.dao.momentum.retention.prospect.query.service.RetentionStatisticsQueryServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,7 +59,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getAverageScore(req))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -103,7 +103,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -147,7 +147,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -159,7 +159,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(RetentionException.class)
+                .isInstanceOf(InterviewException.class)
                 .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
     }
 }

@@ -1,10 +1,11 @@
 package com.dao.momentum.retention.query.controller;
 
-import com.dao.momentum.retention.query.dto.request.RetentionInsightRequestDto;
-import com.dao.momentum.retention.query.dto.request.RetentionStatisticsRequestDto;
-import com.dao.momentum.retention.query.dto.response.RetentionAverageScoreDto;
-import com.dao.momentum.retention.query.dto.response.StabilityDistributionByDeptDto;
-import com.dao.momentum.retention.query.service.RetentionStatisticsQueryService;
+import com.dao.momentum.retention.prospect.query.controller.RetentionStatisticsQueryController;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
+import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
+import com.dao.momentum.retention.prospect.query.service.RetentionStatisticsQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

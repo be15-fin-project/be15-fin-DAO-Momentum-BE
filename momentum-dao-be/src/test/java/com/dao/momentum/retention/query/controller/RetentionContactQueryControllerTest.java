@@ -1,11 +1,12 @@
 package com.dao.momentum.retention.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.retention.query.dto.request.RetentionContactListRequestDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactDetailDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactItemDto;
-import com.dao.momentum.retention.query.dto.response.RetentionContactListResultDto;
-import com.dao.momentum.retention.query.service.RetentionContactQueryService;
+import com.dao.momentum.retention.interview.query.controller.RetentionContactQueryController;
+import com.dao.momentum.retention.interview.query.dto.request.RetentionContactListRequestDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactDetailDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto;
+import com.dao.momentum.retention.interview.query.dto.response.RetentionContactListResultDto;
+import com.dao.momentum.retention.interview.query.service.RetentionContactQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
