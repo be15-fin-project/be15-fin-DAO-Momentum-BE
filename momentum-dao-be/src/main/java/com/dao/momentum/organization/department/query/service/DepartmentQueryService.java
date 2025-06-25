@@ -1,8 +1,14 @@
 package com.dao.momentum.organization.department.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.department.exception.DepartmentException;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailDTO;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
+import com.dao.momentum.organization.employee.query.dto.response.DepartmentMemberDTO;
+import com.dao.momentum.organization.employee.query.mapper.EmployeeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DepartmentQueryService {
     private final DepartmentMapper departmentMapper;
+    private final EmployeeMapper employeeMapper;
 
     @Transactional(readOnly = true)
     public DepartmentsInfoResponse getDepartmentsInfo() {
@@ -46,6 +53,21 @@ public class DepartmentQueryService {
         }
         return DepartmentsInfoResponse.builder()
                 .departmentInfoDTOList(result)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public DepartmentDetailResponse getDepartmentDetails(int deptId) {
+        DepartmentDetailDTO departmentDetailDTO =  departmentMapper.getDepartmentDetail(deptId);
+        if(departmentDetailDTO == null){
+            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND);
+        }
+        List<DepartmentMemberDTO> departmentMemberDTOList = employeeMapper.getEmployeeByDeptId(deptId);
+
+
+        return DepartmentDetailResponse.builder()
+                .departmentDetailDTO(departmentDetailDTO)
+                .departmentMemberDTOList(departmentMemberDTOList)
                 .build();
     }
 }

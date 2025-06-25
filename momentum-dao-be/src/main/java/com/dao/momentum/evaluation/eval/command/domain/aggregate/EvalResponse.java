@@ -30,12 +30,17 @@ public class EvalResponse {
     @Column(name = "target_id")
     private Long targetId;
 
-    @Column(name = "property_score", columnDefinition = "TEXT", nullable = false)
-    private String propertyScore;
+    @Column(name = "score", nullable = false)
+    private Integer score;
 
     @Column(name = "reason", length = 255)
     private String reason;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 }

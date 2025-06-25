@@ -1,10 +1,15 @@
 package com.dao.momentum.organization.department.query.service;
 
+
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.department.exception.DepartmentException;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailDTO;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
+import com.dao.momentum.organization.employee.query.dto.response.DepartmentMemberDTO;
+import com.dao.momentum.organization.employee.query.mapper.EmployeeMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -22,6 +28,9 @@ import static org.mockito.Mockito.when;
 class DepartmentQueryServiceTest {
     @Mock
     private DepartmentMapper departmentMapper;
+
+    @Mock
+    private EmployeeMapper employeeMapper;
 
     @InjectMocks
     private DepartmentQueryService departmentQueryService;
@@ -79,17 +88,66 @@ class DepartmentQueryServiceTest {
     }
 
     @Test
-    @DisplayName("부서 정보 조회_NULL 반환")
-    void getDepartmentsInfo_shouldThrowException_whenMapperReturnsNull() {
-        // given
-        when(departmentMapper.getDepartments()).thenReturn(null);
+    @DisplayName("부서 상세 조회_성공")
+    void getDepartmentDetails_success(){
+        int deptId = 1;
+        DepartmentDetailDTO departmentDetailDTO = DepartmentDetailDTO.builder()
+                .name("경영지원본부")
+                .contact("000-0001-0001")
+                .createdAt(LocalDate.parse("2025-06-13"))
+                .build();
 
-        // when & then
-        DepartmentException exception = assertThrows(
-                DepartmentException.class,
-                () -> departmentQueryService.getDepartmentsInfo()
+        DepartmentMemberDTO member1 = DepartmentMemberDTO.builder()
+                .name("홍길동")
+                .contact("010-1234-5678")
+                .email("employee1@exmaple.com")
+                .position("부장")
+                .isDeptHead(true)
+                .build();
+        DepartmentMemberDTO member2 = DepartmentMemberDTO.builder()
+                .name("강감찬")
+                .contact("010-1234-5678")
+                .email("employee2@exmaple.com")
+                .position("대리")
+                .isDeptHead(false)
+                .build();
+        DepartmentMemberDTO member3 = DepartmentMemberDTO.builder()
+                .name("홍길동")
+                .contact("010-1234-5678")
+                .email("employee3@exmaple.com")
+                .position("사원")
+                .isDeptHead(false)
+                .build();
+
+        List<DepartmentMemberDTO> departmentMemberDTOList = List.of(
+                member1, member2, member3
         );
 
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DEPARTMENT_NOT_FOUND);
+        //given
+        when(departmentMapper.getDepartmentDetail(deptId)).thenReturn(departmentDetailDTO);
+        when(employeeMapper.getEmployeeByDeptId(deptId)).thenReturn(departmentMemberDTOList);
+
+        //when
+        DepartmentDetailResponse response = departmentQueryService.getDepartmentDetails(deptId);
+
+        //then
+        assertEquals(response.getDepartmentDetailDTO(), departmentDetailDTO);
+        assertEquals(response.getDepartmentMemberDTOList(), departmentMemberDTOList);
     }
+
+    @Test
+    @DisplayName("부서 상세 조회 실패_부서 없음")
+    void getDepartmentDetails_fail_department_not_found(){
+        DepartmentDetailDTO departmentDetailDTO = null;
+        int deptId = 1;
+
+        when(departmentMapper.getDepartmentDetail(deptId)).thenReturn(departmentDetailDTO);
+
+        DepartmentException exception = assertThrows(DepartmentException.class,
+                () -> departmentQueryService.getDepartmentDetails(deptId));
+
+        assertEquals(ErrorCode.DEPARTMENT_NOT_FOUND, exception.getErrorCode());
+    }
+
+
 }
