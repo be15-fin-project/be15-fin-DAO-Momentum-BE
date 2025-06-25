@@ -113,6 +113,9 @@ public enum ErrorCode {
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
     RETENTION_CONTACT_NOT_FOUND("50002", "조회 가능한 면담 요청 내역 정보가 없습니다.", HttpStatus.NOT_FOUND),
     RETENTION_CONTACT_TARGET_EQUALS_MANAGER("50003", "면담 대상자와 요청자는 같을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_ALREADY_DELETED("50004", "이미 삭제된 면담 요청입니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다..", HttpStatus.BAD_REQUEST),
 
 
     //공지사항 오류(60001 - 69999)
