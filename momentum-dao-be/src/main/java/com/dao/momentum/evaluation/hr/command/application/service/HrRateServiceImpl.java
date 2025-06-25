@@ -19,6 +19,8 @@ public class HrRateServiceImpl implements HrRateService {
     @Override
     @Transactional
     public void create(int roundId, HrRateCreateDTO dto) {
+        validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+
         HrRate rate = HrRate.builder()
                 .roundId(roundId)
                 .rateS(dto.getRateS())
@@ -34,10 +36,20 @@ public class HrRateServiceImpl implements HrRateService {
     @Override
     @Transactional
     public void update(Integer roundId, HrRateUpdateDTO dto) {
+        validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+
         HrRate rate = hrRateRepository.findByRoundId(roundId)
                 .orElseThrow(() -> new HrException(ErrorCode.HR_RATE_NOT_FOUND));
 
         rate.update(dto.getRateS(), dto.getRateA(), dto.getRateB(),
                 dto.getRateC(), dto.getRateD());
     }
+
+    private void validateRateSum(int s, int a, int b, int c, int d) {
+        int total = s + a + b + c + d;
+        if (total != 100) {
+            throw new HrException(ErrorCode.HR_RATE_INVALID_SUM);
+        }
+    }
+
 }

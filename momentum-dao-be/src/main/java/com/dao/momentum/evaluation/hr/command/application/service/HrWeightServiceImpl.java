@@ -19,6 +19,9 @@ public class HrWeightServiceImpl implements HrWeightService {
     @Override
     @Transactional
     public void create(int roundId, HrWeightCreateDTO dto) {
+        validateWeightSum(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
+                dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+
         HrWeight weight = HrWeight.builder()
                 .roundId(roundId)
                 .performWt(dto.getPerformWt())
@@ -35,10 +38,22 @@ public class HrWeightServiceImpl implements HrWeightService {
     @Override
     @Transactional
     public void update(Integer roundId, HrWeightUpdateDTO dto) {
+        validateWeightSum(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
+                dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+
         HrWeight weight = hrWeightRepository.findByRoundId(roundId)
                 .orElseThrow(() -> new HrException(ErrorCode.HR_WEIGHT_NOT_FOUND));
 
         weight.update(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
                 dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
     }
+
+    private void validateWeightSum(int perform, int team, int attitude,
+                                   int growth, int engagement, int result) {
+        int total = perform + team + attitude + growth + engagement + result;
+        if (total != 100) {
+            throw new HrException(ErrorCode.HR_WEIGHT_INVALID_SUM);
+        }
+    }
+
 }
