@@ -1,0 +1,31 @@
+package com.dao.momentum.approve.command.application.dto.request.approveType;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Getter
+@RequiredArgsConstructor
+@Builder
+public class WorkCorrectionRequest {
+
+    @NotNull(message="정정하고자 하는 근무 번호는 반드시 선택해야 합니다.")
+    private final Long workId;
+
+    @NotNull(message="기존 출근 일시는 반드시 작성해야 합니다.")
+    private final LocalDateTime beforeStartAt;
+
+    @NotNull(message="기존 퇴근 일시는 반드시 작성해야 합니다.")
+    private final LocalDateTime beforeEndAt;
+
+    @NotNull(message="수정 출근 일시는 반드시 작성해야 합니다.")
+    private final LocalDateTime afterStartAt;
+
+    @NotNull(message="수정 퇴근 일시는 반드시 작성해야 합니다.")
+    private final LocalDateTime afterEndAt;
+
+    @NotNull(message="출퇴근 정정 사유는 반드시 작성해야 합니다.")
+    private final String reason;
+
+}
