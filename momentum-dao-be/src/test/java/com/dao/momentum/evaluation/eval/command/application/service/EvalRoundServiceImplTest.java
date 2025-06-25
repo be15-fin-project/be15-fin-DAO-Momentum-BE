@@ -104,4 +104,18 @@ class EvalRoundServiceImplTest {
 
         then(evalRoundRepository).should().findById(roundId);
     }
+
+    @Test
+    @DisplayName("평가 회차 삭제 - 성공")
+    void delete_success() {
+        // given
+        int roundId = 1;
+
+        // when
+        evalRoundService.delete(roundId);
+
+        // then
+        then(evalRoundRepository).should().deleteById(roundId);
+    }
+
 }

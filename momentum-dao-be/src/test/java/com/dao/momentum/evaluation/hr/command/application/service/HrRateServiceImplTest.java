@@ -92,4 +92,18 @@ class HrRateServiceImplTest {
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.HR_RATE_INVALID_SUM.getMessage());
     }
+
+    @Test
+    @DisplayName("등급 비율 삭제 - 성공")
+    void delete_success() {
+        // given
+        int roundId = 1;
+
+        // when
+        service.deleteByRoundId(roundId);
+
+        // then
+        then(hrRateRepository).should().deleteByRoundId(roundId);
+    }
+
 }

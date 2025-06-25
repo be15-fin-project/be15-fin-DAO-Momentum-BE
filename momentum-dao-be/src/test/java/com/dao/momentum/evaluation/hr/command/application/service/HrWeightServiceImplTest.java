@@ -96,4 +96,18 @@ class HrWeightServiceImplTest {
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.HR_WEIGHT_INVALID_SUM.getMessage());
     }
+
+    @Test
+    @DisplayName("가중치 삭제 - 성공")
+    void delete_success() {
+        // given
+        int roundId = 1;
+
+        // when
+        service.deleteByRoundId(roundId);
+
+        // then
+        then(hrWeightRepository).should().deleteByRoundId(roundId);
+    }
+
 }
