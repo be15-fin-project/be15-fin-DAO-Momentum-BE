@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.hr.command.application.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateDto;
 import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionCreateResponse;
+import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionDeleteResponse;
 import com.dao.momentum.evaluation.hr.command.domain.aggregate.HrObjection;
 import com.dao.momentum.evaluation.hr.command.domain.repository.HrObjectionRepository;
 import com.dao.momentum.evaluation.hr.exception.HrException;
@@ -45,6 +46,31 @@ public class HrObjectionServiceImpl implements HrObjectionService {
                 .objectionId(saved.getObjectionId())
                 .status("대기")
                 .createdAt(saved.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public HrObjectionDeleteResponse deleteById(Long objectionId, Long requesterId) {
+        HrObjection objection = objectionRepository.findById(objectionId)
+                .orElseThrow(() -> new HrException(ErrorCode.HR_OBJECTION_NOT_FOUND));
+
+        // 본인 확인
+        if (!objection.getWriterId().equals(requesterId)) {
+            throw new HrException(ErrorCode.HR_OBJECTION_FORBIDDEN);
+        }
+
+        // 상태 확인 (대기 상태만 삭제 가능)
+        if (!objection.getStatusId().equals(DEFAULT_STATUS_ID)) {
+            throw new HrException(ErrorCode.HR_OBJECTION_CANNOT_DELETE);
+        }
+
+        // soft delete 처리
+        objection.markAsDeleted();
+
+        return HrObjectionDeleteResponse.builder()
+                .objectionId(objectionId)
+                .message("인사 평가 이의 제기가 성공적으로 삭제되었습니다.")
                 .build();
     }
 }

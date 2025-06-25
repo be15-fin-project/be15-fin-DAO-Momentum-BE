@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateDto;
 import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateRequest;
 import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionCreateResponse;
+import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionDeleteResponse;
 import com.dao.momentum.evaluation.hr.command.application.service.HrObjectionService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -33,4 +34,16 @@ public class HrObjectionController {
         HrObjectionCreateResponse response = hrObjectionService.create(dto);
         return ApiResponse.success(response);
     }
+
+    @Operation(summary = "이의제기 삭제", description = "사원이 본인이 작성한 대기 상태의 이의제기를 삭제합니다.")
+    @DeleteMapping("/{objectionId}")
+    public ApiResponse<HrObjectionDeleteResponse> deleteObjection(
+            @PathVariable("objectionId") Long objectionId,
+            @AuthenticationPrincipal UserDetails user
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        HrObjectionDeleteResponse response = hrObjectionService.deleteById(objectionId, empId);
+        return ApiResponse.success(response);
+    }
+
 }

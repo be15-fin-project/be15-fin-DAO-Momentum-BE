@@ -105,6 +105,9 @@ public enum ErrorCode {
     HR_WEIGHT_INVALID_SUM("40027", "가중치의 총합은 100이어야 합니다.", HttpStatus.BAD_REQUEST),
     EVALUATION_NOT_FOUND("40028", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ALREADY_SUBMITTED_OBJECTION("40029", "이미 이의제기를 제출한 평가입니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_NOT_FOUND("40030", "이의제기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_OBJECTION_FORBIDDEN("40031", "본인의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_CANNOT_DELETE("40032", "대기 상태의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),

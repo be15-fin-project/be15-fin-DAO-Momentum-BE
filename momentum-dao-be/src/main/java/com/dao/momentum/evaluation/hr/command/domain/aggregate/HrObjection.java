@@ -56,4 +56,8 @@ public class HrObjection {
                 .build();
     }
 
+    public void markAsDeleted() {
+        this.isDeleted = UseStatus.Y;
+    }
+
 }
