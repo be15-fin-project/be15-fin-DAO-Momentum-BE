@@ -60,4 +60,18 @@ public class HrObjection {
         this.isDeleted = UseStatus.Y;
     }
 
+    // 처리 승인 메서드
+    public void approve(String reason) {
+        this.statusId = 2; // 예: 2 = 승인
+        this.response = reason;
+        this.responseAt = LocalDateTime.now();
+    }
+
+    // 처리 반려 메서드
+    public void reject(String rejectReason) {
+        this.statusId = 3; // 예: 3 = 반려
+        this.response = rejectReason;
+        this.responseAt = LocalDateTime.now();
+    }
+
 }

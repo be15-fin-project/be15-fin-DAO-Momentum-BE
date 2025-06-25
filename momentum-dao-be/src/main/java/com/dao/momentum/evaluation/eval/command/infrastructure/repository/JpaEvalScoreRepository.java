@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface JpaEvalScoreRepository extends JpaRepository<EvalScore, Long> {
 
+    void deleteByResultId(Long resultId);
 }
