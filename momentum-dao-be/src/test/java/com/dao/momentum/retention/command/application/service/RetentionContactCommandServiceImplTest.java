@@ -1,7 +1,10 @@
 package com.dao.momentum.retention.command.application.service;
 
+import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
 import com.dao.momentum.retention.command.domain.repository.RetentionContactRepository;
@@ -13,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -78,6 +82,85 @@ class RetentionContactCommandServiceImplTest {
         assertThatThrownBy(() -> service.createContact(dto))
                 .isInstanceOf(RetentionException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER.getMessage());
+    }
+
+    @Test
+    @DisplayName("면담 요청 삭제 성공 - 작성자 본인")
+    void deleteContact_success_asWriter() {
+        // given
+        Long writerId = 3003L;
+        Long retentionId = 1L;
+        RetentionContact entity = RetentionContact.builder()
+                .retentionId(retentionId)
+                .targetId(1001L)
+                .managerId(2002L)
+                .writerId(writerId)
+                .reason("테스트")
+                .createdAt(LocalDateTime.now())
+                .isDeleted(UseStatus.N)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(entity));
+
+        RetentionContactDeleteDto dto = RetentionContactDeleteDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(writerId)
+                .build();
+
+        // when
+        RetentionContactDeleteResponse result = service.deleteContact(dto);
+
+        // then
+        assertThat(result.retentionId()).isEqualTo(retentionId);
+        assertThat(result.message()).contains("삭제");
+    }
+
+    @Test
+    @DisplayName("면담 요청 삭제 실패 - 이미 삭제된 상태")
+    void deleteContact_alreadyDeleted_throwsException() {
+        // given
+        Long retentionId = 1L;
+        RetentionContact deletedContact = RetentionContact.builder()
+                .retentionId(retentionId)
+                .writerId(3003L)
+                .isDeleted(UseStatus.Y) // 이미 삭제됨
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(deletedContact));
+
+        RetentionContactDeleteDto dto = RetentionContactDeleteDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(3003L)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.deleteContact(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED.getMessage());
+    }
+
+    @Test
+    @DisplayName("면담 요청 삭제 실패 - 권한 없음")
+    void deleteContact_noPermission_throwsException() {
+        // given
+        Long retentionId = 1L;
+        RetentionContact contact = RetentionContact.builder()
+                .retentionId(retentionId)
+                .writerId(3003L)
+                .isDeleted(UseStatus.N)
+                .build();
+
+        when(repository.findById(retentionId)).thenReturn(Optional.of(contact));
+
+        RetentionContactDeleteDto dto = RetentionContactDeleteDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(9999L) // 작성자 아님
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> service.deleteContact(dto))
+                .isInstanceOf(RetentionException.class)
+                .hasMessageContaining(ErrorCode.RETENTION_CONTACT_FORBIDDEN.getMessage());
     }
 
 }
