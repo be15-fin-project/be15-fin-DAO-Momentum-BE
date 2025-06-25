@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.hr.command.domain.aggregate;
 
+import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,4 +36,21 @@ public class HrObjection {
 
     @Column(name = "response_at")
     private LocalDateTime responseAt;
+
+
+    // === 생성 팩토리 메서드 ===
+    public static HrObjection create(HrObjectionCreateDto dto, Integer defaultStatusId) {
+        return HrObjection.builder()
+                .resultId(dto.getResultId())
+                .statusId(defaultStatusId)
+                .reason(dto.getReason())
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    // === 응답 처리 메서드 (선택 기능용) ===
+    public void respond(String responseMessage) {
+        this.response = responseMessage;
+        this.responseAt = LocalDateTime.now();
+    }
 }
