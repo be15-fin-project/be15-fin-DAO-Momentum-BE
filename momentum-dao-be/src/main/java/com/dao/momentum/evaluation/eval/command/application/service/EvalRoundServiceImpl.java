@@ -20,6 +20,15 @@ public class EvalRoundServiceImpl implements EvalRoundService {
     @Transactional
     @Override
     public EvalRound create(EvalRoundCreateDTO dto) {
+
+        if (evalRoundRepository.existsByRoundNo(dto.getRoundNo())) {
+            throw new EvalException(ErrorCode.EVAL_ROUND_DUPLICATE);
+        }
+
+        if (dto.getStartAt().isBefore(java.time.LocalDate.now().plusDays(1))) {
+            throw new EvalException(ErrorCode.EVAL_ROUND_INVALID_START_DATE);
+        }
+
         EvalRound evalRound = EvalRound.builder()
                 .roundNo(dto.getRoundNo())
                 .startAt(dto.getStartAt())
@@ -31,6 +40,11 @@ public class EvalRoundServiceImpl implements EvalRoundService {
     @Override
     @Transactional
     public EvalRoundUpdateResponse update(Integer roundId, EvalRoundUpdateDTO dto) {
+
+        if (dto.getStartAt().isBefore(java.time.LocalDate.now().plusDays(1))) {
+            throw new EvalException(ErrorCode.EVAL_ROUND_INVALID_START_DATE);
+        }
+
         EvalRound round = evalRoundRepository.findById(roundId)
                 .orElseThrow(() -> new EvalException(ErrorCode.EVAL_ROUND_NOT_FOUND));
 

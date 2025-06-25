@@ -1,7 +1,6 @@
 package com.dao.momentum.organization.department.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.service.DepartmentQueryService;
 import io.swagger.v3.oas.annotations.Operation;

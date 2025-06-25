@@ -8,4 +8,7 @@ public interface EvalRoundRepository {
     EvalRound save(EvalRound evalRound);
 
     Optional<EvalRound> findById(Integer roundId);
+
+    boolean existsByRoundNo(int roundNo);
+
 }
