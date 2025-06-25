@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.department.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.service.DepartmentQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -20,6 +22,16 @@ public class DepartmentQueryController {
     @GetMapping
     public ResponseEntity<ApiResponse<DepartmentsInfoResponse>> getDepartmentsInfo(){
         DepartmentsInfoResponse response = departmentQueryService.getDepartmentsInfo();
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "부서 상세조회", description = "사원은 부서의 상세 정보를 조회할 수 있다.")
+    @GetMapping("/{deptId}")
+    public ResponseEntity<ApiResponse<DepartmentDetailResponse>> getDepartmentDetails(
+            @PathVariable int deptId
+    ){
+        DepartmentDetailResponse response = departmentQueryService.getDepartmentDetails(deptId);
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }

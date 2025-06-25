@@ -9,4 +9,6 @@ public interface DepartmentRepository {
     Optional<Department> findById(int deptId);
 
     Optional<Department> findByNameAndIsDeleted(String deptName, IsDeleted isDeleted);
+
+    Department save(Department department);
 }

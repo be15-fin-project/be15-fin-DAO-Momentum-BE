@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.eval.command.domain.aggregate;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -23,4 +24,10 @@ public class EvalRound {
 
     @Column(name = "start_at", nullable = false)
     private LocalDate startAt;
+
+    public void updateRound(int roundNo, LocalDate startAt) {
+        this.roundNo = roundNo;
+        this.startAt = startAt;
+    }
+
 }
