@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class WorkCorrectionRequest {
 
-    @NotNull(message="정정하고자 하는 근무 번호는 반드시 입력해야 합니다.")
+    @NotNull(message="정정하고자 하는 근무 번호는 반드시 선택해야 합니다.")
     private final Long workId;
 
     @NotNull(message="기존 출근 일시는 반드시 작성해야 합니다.")

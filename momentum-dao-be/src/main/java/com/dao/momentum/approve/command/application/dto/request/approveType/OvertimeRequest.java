@@ -18,7 +18,7 @@ public class OvertimeRequest {
 
     private final int breakTime;
 
-    @NotNull(message="출장 이유는 반드시 작성해야 합니다.")
+    @NotNull(message="초과 근무 사유는 반드시 작성해야 합니다.")
     private final String reason;
 
 }
