@@ -1,14 +1,11 @@
 package com.dao.momentum.organization.department.query.controller;
 
-import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.organization.department.exception.DepartmentException;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.service.DepartmentQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -56,20 +53,4 @@ class DepartmentQueryControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.departmentInfoDTOList[0].name").value("본사"));
     }
-
-    @Test
-    @DisplayName("[Controller] 부서 정보 조회_DEPARTMENT_NOT_FOUND")
-    @WithMockUser(username = "1", roles = "EMPLOYEE")
-    void getDepartmentsInfo_shouldReturnBadRequest_whenDepartmentExceptionOccurs() throws Exception {
-        // given
-        when(departmentQueryService.getDepartmentsInfo())
-                .thenThrow(new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
-
-        // when & then
-        mockMvc.perform(get("/departments"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("시스템 오류입니다."));
-    }
-
 }

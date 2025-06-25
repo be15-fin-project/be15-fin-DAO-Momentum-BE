@@ -25,4 +25,14 @@ public class DepartmentQueryController {
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
+
+    @Operation(summary = "부서 상세조회", description = "사원은 부서의 상세 정보를 조회할 수 있다.")
+    @GetMapping("/{deptId}")
+    public ResponseEntity<ApiResponse<DepartmentDetailResponse>> getDepartmentDetails(
+            @PathVariable int deptId
+    ){
+        DepartmentDetailResponse response = departmentQueryService.getDepartmentDetails(deptId);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
 }

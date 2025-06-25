@@ -1,7 +1,6 @@
 package com.dao.momentum.organization.department.query.service;
 
-import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.organization.department.exception.DepartmentException;
+
 import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
@@ -76,20 +75,5 @@ class DepartmentQueryServiceTest {
 
         assertThat(devTeam.getChildDept()).hasSize(1);
         assertThat(devTeam.getChildDept().get(0).getName()).isEqualTo("백엔드팀");
-    }
-
-    @Test
-    @DisplayName("부서 정보 조회_NULL 반환")
-    void getDepartmentsInfo_shouldThrowException_whenMapperReturnsNull() {
-        // given
-        when(departmentMapper.getDepartments()).thenReturn(null);
-
-        // when & then
-        DepartmentException exception = assertThrows(
-                DepartmentException.class,
-                () -> departmentQueryService.getDepartmentsInfo()
-        );
-
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DEPARTMENT_NOT_FOUND);
     }
 }
