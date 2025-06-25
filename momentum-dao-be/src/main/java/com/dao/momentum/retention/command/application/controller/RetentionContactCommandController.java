@@ -3,9 +3,12 @@ package com.dao.momentum.retention.command.application.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.retention.command.application.dto.request.CreateRetentionContactRequest;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.application.service.RetentionContactCommandService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +38,21 @@ public class RetentionContactCommandController {
 
         // 생성 요청
         RetentionContactResponse response = contactCommandService.createContact(dto);
+        return ApiResponse.success(response);
+    }
+
+    @DeleteMapping("/{retentionId}")
+    public ApiResponse<RetentionContactDeleteResponse> deleteContact(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable @NotNull Long retentionId
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        RetentionContactDeleteDto dto = RetentionContactDeleteDto.builder()
+                .retentionId(retentionId)
+                .loginEmpId(empId)
+                .build();
+
+        RetentionContactDeleteResponse response = contactCommandService.deleteContact(dto);
         return ApiResponse.success(response);
     }
 }

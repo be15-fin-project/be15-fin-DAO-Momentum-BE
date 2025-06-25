@@ -2,6 +2,8 @@ package com.dao.momentum.retention.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.command.application.dto.request.RetentionContactCreateDto;
+import com.dao.momentum.retention.command.application.dto.request.RetentionContactDeleteDto;
+import com.dao.momentum.retention.command.application.dto.response.RetentionContactDeleteResponse;
 import com.dao.momentum.retention.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.command.domain.aggregate.RetentionContact;
 import com.dao.momentum.retention.command.domain.repository.RetentionContactRepository;
@@ -41,6 +43,32 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .writerId(saved.getWriterId())
                 .reason(saved.getReason())
                 .createdAt(saved.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public RetentionContactDeleteResponse deleteContact(RetentionContactDeleteDto dto) {
+        RetentionContact contact = repository.findById(dto.retentionId())
+                .orElseThrow(() -> new RetentionException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
+
+        // 이미 삭제되었는지 확인
+        if (contact.getIsDeleted().isDeleted()) {
+            throw new RetentionException(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED);
+        }
+
+        // 삭제 권한 확인: 작성자 본인 또는 관리자 권한 보유
+        boolean isWriter = contact.getWriterId().equals(dto.loginEmpId());
+        if (!isWriter) {
+            throw new RetentionException(ErrorCode.RETENTION_CONTACT_FORBIDDEN);
+        }
+
+        // 삭제 처리
+        contact.markAsDeleted();
+
+        return RetentionContactDeleteResponse.builder()
+                .retentionId(contact.getRetentionId())
+                .message("면담 요청이 성공적으로 삭제되었습니다.")
                 .build();
     }
 }
