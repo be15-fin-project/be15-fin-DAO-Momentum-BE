@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class HolidayQueryController {
     private final HolidayQueryService holidayQueryService;
 
-    @Operation(summary="회사 휴일 조회", description = "사원은 회사의 휴일을 조회할 수 있다.")
+    @Operation(summary="회사 휴일 조회", description = "관리자는 회사의 휴일을 조회할 수 있다.")
     @GetMapping
     public ResponseEntity<ApiResponse<HolidayGetResponse>> getHolidays(
             @RequestBody HolidaySearchRequest request
