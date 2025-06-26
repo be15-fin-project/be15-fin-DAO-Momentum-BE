@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.prospect.command.domain.aggregate;
 
+import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,4 +49,20 @@ public class RetentionSupport {
 
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
+
+    public static RetentionSupport of(Integer roundId, Long empId, RetentionSupportDto dto) {
+        return new RetentionSupport(
+                null,
+                empId,
+                roundId,
+                dto.jobLevel(),
+                dto.compLevel(),
+                dto.relationLevel(),
+                dto.growthLevel(),
+                dto.tenureLevel(),
+                dto.wlbLevel(),
+                dto.retentionScore(),
+                LocalDateTime.now()
+        );
+    }
 }

@@ -24,4 +24,12 @@ public class RetentionRound {
 
     @Column(name = "month", nullable = false)
     private Integer month;
+
+    public static RetentionRound create(int roundNo, int year, int month) {
+        return new RetentionRound(null, roundNo, year, month);
+    }
+
+    public void updateRoundNo(int roundNo) {
+        this.roundNo = roundNo;
+    }
 }

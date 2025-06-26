@@ -148,7 +148,7 @@ class EvalScoreServiceImplTest {
     }
 
     @Test
-    @DisplayName("여러 점수 리스트 저장 - saveAll 성공")
+    @DisplayName("여러 점수 리스트 저장 - saveAllSupports 성공")
     void saveAll_scores_success() {
         // given
         List<EvalScore> scores = List.of(

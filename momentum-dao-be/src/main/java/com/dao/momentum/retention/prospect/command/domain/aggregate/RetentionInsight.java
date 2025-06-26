@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.prospect.command.domain.aggregate;
 
+import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionInsightDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,4 +52,21 @@ public class RetentionInsight {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    public static RetentionInsight of(Integer roundId, RetentionInsightDto dto) {
+        return new RetentionInsight(
+                null,
+                dto.deptId(),
+                dto.positionId(),
+                roundId,
+                dto.retentionScore(),
+                dto.empCount(),
+                dto.progress20(),
+                dto.progress40(),
+                dto.progress60(),
+                dto.progress80(),
+                dto.progress100(),
+                LocalDateTime.now()
+        );
+    }
 }

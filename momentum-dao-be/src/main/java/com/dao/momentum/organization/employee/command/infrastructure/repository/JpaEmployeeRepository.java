@@ -5,6 +5,7 @@ import com.dao.momentum.organization.employee.command.domain.repository.Employee
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JpaEmployeeRepository extends EmployeeRepository, JpaRepository<Employee, Integer> {
@@ -21,4 +22,9 @@ public interface JpaEmployeeRepository extends EmployeeRepository, JpaRepository
     String findMaxEmpNo();
 
     Boolean existsByPositionId(Integer positionId);
+
+
+    // 근속 전망 확인을 위한 현 재직 중인 사원 목록 조회
+    List<Employee> findByStatus(String status); // Spring Data JPA 규칙 기반
+
 }
