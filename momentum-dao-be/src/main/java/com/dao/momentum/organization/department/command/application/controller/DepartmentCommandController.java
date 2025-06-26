@@ -2,7 +2,9 @@ package com.dao.momentum.organization.department.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.department.command.application.dto.request.DepartmentCreateRequest;
+import com.dao.momentum.organization.department.command.application.dto.request.DepartmentUpdateRequest;
 import com.dao.momentum.organization.department.command.application.dto.response.DepartmentCreateResponse;
+import com.dao.momentum.organization.department.command.application.dto.response.DepartmentUpdateResponse;
 import com.dao.momentum.organization.department.command.application.service.DepartmentCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -25,6 +28,16 @@ public class DepartmentCommandController {
             @RequestBody @Valid DepartmentCreateRequest request
     ){
         DepartmentCreateResponse response = departmentCommandService.createDepartment(request);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @Operation(summary="부서 수정", description = "관리자는 회사의 부서를 수정할 수 있다.")
+    @PutMapping
+    public ResponseEntity<ApiResponse<DepartmentUpdateResponse>> updateDepartment(
+            @RequestBody @Valid DepartmentUpdateRequest request
+    ){
+        DepartmentUpdateResponse response = departmentCommandService.updateDepartment(request);
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }

@@ -29,6 +29,8 @@ public enum ErrorCode {
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     DEPARTMENT_NOT_FOUND("11002", "시스템 오류입니다." , HttpStatus.NOT_FOUND),
+    INVALID_PARENT_DEPT("11003", "유효하지 않은 상위 부서입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_DEPT_HEAD("11004", "유효하지 않은 부서장입니다.", HttpStatus.BAD_REQUEST),
 
     // 계약서 오류 (12001 - 12999)
     INVALID_SALARY_AGREEMENT("12001", "연봉계약서에는 연봉이 작성되어야 합니다.", HttpStatus.BAD_REQUEST),

@@ -97,7 +97,9 @@ public class SecurityConfig {
             "/employees/login",
                 "/employees",
                 "/employees/reset-password",
-                "/employees/reset-password/request"
+                "/employees/reset-password/request",
+                "/swagger-ui/**",
+                "/v3/api-docs/**"
         ).permitAll();
     }
 
@@ -119,7 +121,7 @@ public class SecurityConfig {
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers("/position", "/position/**").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.POST, "/departments").hasAuthority("MASTER")
-                .requestMatchers( HttpMethod.PUT, "/company").hasAuthority("MASTER");
+                .requestMatchers( HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER");
     }
 
     // 인사관리자 전용

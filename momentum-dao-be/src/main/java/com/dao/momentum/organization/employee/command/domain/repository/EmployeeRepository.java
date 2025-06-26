@@ -19,5 +19,7 @@ public interface EmployeeRepository {
 
     boolean existsByEmpId(Long empId);
 
+    boolean existsByEmpIdAndDeptId(Long empId, Integer DeptId);
+
     List<Employee> findAllByStatus(Status status);
 }
