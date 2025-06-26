@@ -97,7 +97,9 @@ public class SecurityConfig {
             "/employees/login",
                 "/employees",
                 "/employees/reset-password",
-                "/employees/reset-password/request"
+                "/employees/reset-password/request",
+                "/swagger-ui/**",
+                "/v3/api-docs/**"
         ).permitAll();
     }
 
