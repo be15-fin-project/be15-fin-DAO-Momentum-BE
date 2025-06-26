@@ -6,6 +6,7 @@ import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRe
 import com.dao.momentum.organization.employee.query.dto.response.AppointListResponse;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
 import com.dao.momentum.organization.employee.query.dto.response.EmployeeListResponse;
+import com.dao.momentum.organization.employee.query.dto.response.UserRolesResponse;
 import com.dao.momentum.organization.employee.query.service.EmployeeQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,5 +58,14 @@ public class AdminEmployeeQueryController {
                         employeeQueryService.getAppoints(appointSearchRequest)
                 )
         );
+    }
+
+    @GetMapping("/roles")
+    @Operation(summary = "권한 목록 조회", description = "관리자가 서비스 권한 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<UserRolesResponse>> getRoles(
+    ) {
+        UserRolesResponse response = employeeQueryService.getUserRoles();
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
