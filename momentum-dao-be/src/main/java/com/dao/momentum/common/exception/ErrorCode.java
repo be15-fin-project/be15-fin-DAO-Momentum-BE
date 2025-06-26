@@ -51,6 +51,9 @@ public enum ErrorCode {
     REQUIRED_VALUE_NOT_FOUND("13007", "[%d행] '%s' 필드는 필수 입력입니다.", HttpStatus.BAD_REQUEST),
     INVALID_STATUS("13008", "존재하지 않는 재직 상태입니다." , HttpStatus.BAD_REQUEST),
 
+    // 권한 오류 (14001 - 14999)
+    USER_ROLE_NOT_FOUND("14001", "요청된 사용자 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
     IP_NOT_ALLOWED("20002", "출퇴근 등록이 불가능한 IP입니다.", HttpStatus.BAD_REQUEST),
