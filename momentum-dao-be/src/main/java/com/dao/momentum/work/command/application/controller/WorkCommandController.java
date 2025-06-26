@@ -6,6 +6,7 @@ import com.dao.momentum.work.command.application.dto.request.WorkStartRequest;
 import com.dao.momentum.work.command.application.dto.response.WorkEndResponse;
 import com.dao.momentum.work.command.application.dto.response.WorkStartResponse;
 import com.dao.momentum.work.command.application.service.WorkCommandService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +41,7 @@ public class WorkCommandController {
     }
 
     @PutMapping
-    @Operation(summary = "퇴근 등록", description = "사원이 출근 버튼을 클릭하여 출근을 등록합니다.")
+    @Operation(summary = "퇴근 등록", description = "사원이 퇴근 버튼을 클릭하여 퇴근을 등록합니다.")
     public ResponseEntity<ApiResponse<WorkEndResponse>> updateWork(
             @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpServletRequest
     ) {
@@ -53,6 +54,7 @@ public class WorkCommandController {
         );
     }
 
+    @Hidden
     @PostMapping("/test")
     @Operation(summary = "출근 등록 테스트", description = "사원이 출근 버튼을 클릭하여 출근을 등록합니다. (당일이 아니어도 출근 등록 가능)")
     public ResponseEntity<ApiResponse<WorkStartResponse>> testCreateWork(
@@ -70,8 +72,9 @@ public class WorkCommandController {
         );
     }
 
+    @Hidden
     @PutMapping("/test")
-    @Operation(summary = "퇴근 등록 테스트", description = "사원이 출근 버튼을 클릭하여 출근을 등록합니다. (당일이 아니어도 퇴근 등록 가능)")
+    @Operation(summary = "퇴근 등록 테스트", description = "사원이 퇴근 버튼을 클릭하여 퇴근을 등록합니다. (당일이 아니어도 퇴근 등록 가능)")
     public ResponseEntity<ApiResponse<WorkEndResponse>> testUpdateWork(
             @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpServletRequest, @RequestBody WorkEndRequest workEndRequest
     ) {

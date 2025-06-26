@@ -1,6 +1,5 @@
 package com.dao.momentum.organization.employee.command.domain.aggregate;
 
-import com.dao.momentum.organization.employee.command.application.dto.response.AppointDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
