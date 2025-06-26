@@ -10,6 +10,7 @@ import com.dao.momentum.organization.employee.query.dto.response.UserRolesRespon
 import com.dao.momentum.organization.employee.query.service.EmployeeQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class AdminEmployeeQueryController {
     @GetMapping
     @Operation(summary = "사원 전체 목록 조회", description = "관리자가 회사의 사원 전체 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<EmployeeListResponse>> getEmployees(
-            @ModelAttribute EmployeeSearchRequest employeeSearchRequest
+            @Valid @ModelAttribute EmployeeSearchRequest employeeSearchRequest
     ) {
 
         return ResponseEntity.ok(
@@ -50,7 +51,7 @@ public class AdminEmployeeQueryController {
     @GetMapping("/appoints")
     @Operation(summary = "사원 발령 내역 조회", description = "관리자가 사원 발령 내역을 조회합니다.")
     public ResponseEntity<ApiResponse<AppointListResponse>> getAppoints(
-            @ModelAttribute AppointSearchRequest appointSearchRequest
+            @Valid @ModelAttribute AppointSearchRequest appointSearchRequest
     ) {
 
         return ResponseEntity.ok(

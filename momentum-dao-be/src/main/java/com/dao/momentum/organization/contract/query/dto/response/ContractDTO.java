@@ -29,6 +29,6 @@ public class ContractDTO {
     @Schema(description = "첨부파일 ID", example = "1")
     private Long attachmentId;
 
-    @Schema(description = "다운로드 url")
-    private String url;
+    @Schema(description = "다운로드 키")
+    private String s3Key;
 }

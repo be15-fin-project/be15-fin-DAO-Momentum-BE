@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.contract.command.domain.aggregate;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,8 +21,10 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long contractId;
 
+    @NotNull
     private Long empId;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private ContractType type;
 
