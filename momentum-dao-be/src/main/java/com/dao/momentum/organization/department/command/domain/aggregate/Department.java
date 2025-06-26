@@ -1,5 +1,6 @@
 package com.dao.momentum.organization.department.command.domain.aggregate;
 
+import com.dao.momentum.organization.department.command.application.dto.request.DepartmentUpdateRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -42,4 +43,9 @@ public class Department {
     @Enumerated(EnumType.STRING)
     private IsDeleted isDeleted = IsDeleted.N;
 
+    public void update(DepartmentUpdateRequest request) {
+        this.contact = request.getContact();
+        this.name = request.getName();
+        this.parentDeptId = request.getParentDeptId();
+    }
 }
