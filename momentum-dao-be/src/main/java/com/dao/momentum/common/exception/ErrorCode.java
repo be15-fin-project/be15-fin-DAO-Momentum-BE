@@ -24,7 +24,6 @@ public enum ErrorCode {
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_CORRECT("10014", "유효하지 않은 비밀번호 변경입니다.", HttpStatus.BAD_REQUEST),
     EMAIL_SENDING_FAILED("10015", "이메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PARENT_APPROVE_ID_REQUIRED("30013", "취소 결재 요청 시 상위 결재 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -76,7 +75,15 @@ public enum ErrorCode {
     NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     FAILED_OCR_CALL("30011", "OCR API 요청에 실패했습니다.", HttpStatus.BAD_REQUEST),
     RECEIPT_IMAGE_REQUIRED("30012", "영수증 결재에는 반드시 이미지 파일이 필요합니다.", HttpStatus.BAD_REQUEST),
-
+    PARENT_APPROVE_ID_REQUIRED("30013", "취소 결재 요청 시 상위 결재 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_APPROVE_LINE("30014", "존재하지 않는 결재선입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_APPROVE_LINE_LIST("30015", "존재하지 않는 결재선 목록 입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ACCESS_DENIED("30016", "접근할 수 없는 결재입니다.", HttpStatus.FORBIDDEN),
+    MISSING_APPROVAL_REASON("30017", "반려 시 결재 사유는 필수로 입력해야 합니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_LINE_ALREADY_PROCESSED("30018", "이미 승인/반려 된 결재선입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ALREADY_PROCESSED("30019", "이미 승인/반려 된 결재입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ALREADY_CANCELED("30020", "이미 취소된 결재는 다시 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    PREVIOUS_APPROVAL_NOT_COMPLETED("30021", "이전 단계 결재가 완료 되지 않아 결재를 진행할 수 없습니다.", HttpStatus.BAD_REQUEST),
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
     STATISTICS_NOT_FOUND("40001", "해당 조건에 대한 KPI 통계가 없습니다.", HttpStatus.NOT_FOUND),
