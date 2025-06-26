@@ -24,7 +24,7 @@ public class ContractCommandController {
 
     private final ContractCommandService contractCommandService;
 
-    @Operation(summary = "계약서 등록", description = "관리자는 계약서를 등록할 수 있다.")
+    @Operation(summary = "계약서 등록", description = "관리자가 계약서를 등록합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<ContractCreateResponse>> createContract(
             @RequestBody @Valid ContractCreateRequest contractCreateRequest,
@@ -35,7 +35,7 @@ public class ContractCommandController {
                 .body(ApiResponse.success(response));
     }
 
-    @Operation(summary = "계약서 삭제", description = "관리자는 계약서를 삭제할 수 있다.")
+    @Operation(summary = "계약서 삭제", description = "관리자가 계약서를 삭제합니다.")
     @DeleteMapping("/{contractId}")
     public ResponseEntity<ApiResponse<ContractDeleteResponse>> deleteContract(
             @PathVariable long contractId,
