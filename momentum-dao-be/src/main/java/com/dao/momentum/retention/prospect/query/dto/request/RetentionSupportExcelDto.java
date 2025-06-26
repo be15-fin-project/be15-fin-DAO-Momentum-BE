@@ -3,7 +3,6 @@ package com.dao.momentum.retention.prospect.query.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
-@Builder
 @Schema(description = "근속 지원 엑셀 다운로드용 DTO")
 public record RetentionSupportExcelDto(
 
@@ -39,4 +38,7 @@ public record RetentionSupportExcelDto(
 
     @Schema(description = "워라밸 만족도", example = "85.0")
     Double wlbSatisfaction
-) {}
+) {
+    @Builder
+    public RetentionSupportExcelDto {}
+}

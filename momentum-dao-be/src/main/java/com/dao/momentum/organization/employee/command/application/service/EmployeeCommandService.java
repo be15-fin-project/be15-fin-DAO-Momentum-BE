@@ -7,9 +7,11 @@ import com.dao.momentum.email.service.EmailService;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
+import com.dao.momentum.organization.employee.command.application.dto.request.MyInfoUpdateRequest;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.response.MyInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRecords;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
@@ -19,6 +21,7 @@ import com.dao.momentum.organization.employee.command.domain.repository.Employee
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -259,5 +262,19 @@ public class EmployeeCommandService {
                 .toList();
     }
 
+    @Transactional
+    public MyInfoUpdateResponse updateMyInfo(MyInfoUpdateRequest request, UserDetails userDetails) {
+        long empId = Long.parseLong(userDetails.getUsername());
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
+        employee.fromUpdateMyInfo(request);
+        employeeRepository.save(employee);
+
+        log.info("개인 정보 수정 완료 - 사원 ID: {}", empId);
+        return MyInfoUpdateResponse.builder()
+                .empId(empId)
+                .message("개인 정보 수정 완료")
+                .build();
+    }
 }

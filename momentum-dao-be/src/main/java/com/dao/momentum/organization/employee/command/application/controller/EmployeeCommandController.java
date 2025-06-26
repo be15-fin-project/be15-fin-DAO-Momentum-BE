@@ -4,18 +4,13 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
 import com.dao.momentum.file.command.application.service.FileService;
-import com.dao.momentum.organization.employee.command.application.dto.request.AppointCreateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.application.dto.response.AppointCreateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeCSVResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.request.*;
+import com.dao.momentum.organization.employee.command.application.dto.response.*;
 import com.dao.momentum.organization.employee.command.application.service.AppointCommandService;
 import com.dao.momentum.organization.employee.command.application.service.CSVService;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -48,6 +43,17 @@ public class EmployeeCommandController {
         //관리자 권한 검사 로그인 기능 구현 이후 추후 추가
         employeeService.createEmployee(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "사원 기본 정보 수정", description = "사원이 본인의 기본 정보를 수정합니다.")
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<MyInfoUpdateResponse>> updateMyInfo(
+            @RequestBody @Valid MyInfoUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        MyInfoUpdateResponse response = employeeService.updateMyInfo(request, userDetails);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Operation(summary = "CSV 양식 다운로드", description = "관리자는 사원 CSV 등록에 필요한 CSV 양식 파일을 다운로드할 수 있다.")
