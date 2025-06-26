@@ -85,6 +85,7 @@ public class Employee {
         if (this.positionId != afterPositionId) {
             this.positionId = afterPositionId;
         }
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void updateVacations(int remainingDayoffHours, int remainingRefreshDays) {
