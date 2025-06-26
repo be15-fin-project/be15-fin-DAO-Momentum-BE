@@ -1,5 +1,7 @@
 package com.dao.momentum.evaluation.kpi.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.kpi.exception.KpiException;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiExcelDto;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiExcelMapper;
@@ -18,6 +20,15 @@ public class KpiExcelDownloadServiceImpl implements KpiExcelDownloadService {
     @Override
     public byte[] downloadKpisAsExcel(KpiListRequestDto requestDto) {
         List<KpiExcelDto> data = kpiExcelMapper.selectKpisForExcel(requestDto);
-        return KpiExcelGenerator.generate(data);
+
+        if (data == null || data.isEmpty()) {
+            throw new KpiException(ErrorCode.KPI_LIST_NOT_FOUND);
+        }
+
+        try {
+            return KpiExcelGenerator.generate(data);
+        } catch (Exception e) {
+            throw new KpiException(ErrorCode.EXCEL_GENERATION_FAILED);
+        }
     }
 }
