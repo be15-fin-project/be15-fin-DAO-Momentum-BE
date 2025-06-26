@@ -53,6 +53,9 @@ public class SecurityConfig {
 //                            hrManagerEndpoints(auth);
 //                            bookkeepingEndpoints(auth);
 
+                            // 공통 엔드포인트
+                            adminEndpoints(auth);
+
                             // 이 외의 요청은 인증 필요
                             auth.anyRequest().authenticated();
                         }
@@ -135,5 +138,11 @@ public class SecurityConfig {
         ).hasAuthority("BOOKKEEPING");
     }
 
+    // 마스터 관리자 및 인사 관리자 공용
+    private void adminEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
+        auths.requestMatchers(
+                HttpMethod.GET, "/works"
+        ).hasAnyAuthority("MASTER", "HR_MANAGER");
+    }
 
 }
