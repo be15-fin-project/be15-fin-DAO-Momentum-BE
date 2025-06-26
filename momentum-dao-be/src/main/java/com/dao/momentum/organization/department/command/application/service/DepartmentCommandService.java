@@ -8,6 +8,7 @@ import com.dao.momentum.organization.department.command.application.dto.response
 import com.dao.momentum.organization.department.command.application.dto.response.DepartmentUpdateResponse;
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.aggregate.DeptHead;
+import com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import com.dao.momentum.organization.department.command.domain.repository.DeptHeadRepository;
 import com.dao.momentum.organization.department.exception.DepartmentException;
@@ -55,16 +56,17 @@ public class DepartmentCommandService {
         Department department = departmentRepository.findById(deptId).orElseThrow(
                 () -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND)
         );
+        if(parentDeptId!=null){
+            //상위 부서 존재 확인
+            if(!departmentRepository.existsByDeptIdAndIsDeleted(parentDeptId, IsDeleted.N)) {
+                throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND);
+            }
 
-        //상위 부서 존재 확인
-        departmentRepository.findById(parentDeptId).orElseThrow(
-                () -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND)
-        );
-
-        //데이터 정합성 확인(본인 or 하위 부서를 부모로 하려는지)
-        if(department.getDeptId().equals(parentDeptId)
-                || departmentRepository.isSubDepartment(deptId,parentDeptId)==1){
-            throw new DepartmentException(ErrorCode.INVALID_PARENT_DEPT);
+            //데이터 정합성 확인(본인 or 하위 부서를 부모로 하려는지)
+            if(department.getDeptId().equals(parentDeptId)
+                    || departmentRepository.isSubDepartment(deptId,parentDeptId)==1){
+                throw new DepartmentException(ErrorCode.INVALID_PARENT_DEPT);
+            }
         }
 
         //부서장 정보

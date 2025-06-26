@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.department.command.infrastructure.repository;
 
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
+import com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,5 +23,4 @@ public interface JpaDepartmentRepository extends DepartmentRepository, JpaReposi
     )
     """, nativeQuery = true)
     Integer isSubDepartment(@Param("parentDeptId") int parentDeptId, @Param("childDeptId") int childDeptId);
-
 }

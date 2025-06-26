@@ -18,7 +18,7 @@ public class DepartmentCreateRequest {
     @NotBlank
     @Pattern(
             regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$",
-            message = "유효한 휴대폰 번호 형식이 아닙니다. 예: 010-1234-5678"
+            message = "유효한 전화번호 형식이 아닙니다. 예: 010-1234-5678"
     )
     private String contact;
 

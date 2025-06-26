@@ -10,7 +10,6 @@ public class DepartmentUpdateRequest {
     @NotNull
     private Integer deptId;
 
-    @NotNull
     private Integer parentDeptId;
 
     @NotBlank

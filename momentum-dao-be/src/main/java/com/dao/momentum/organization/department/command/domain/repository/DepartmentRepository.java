@@ -14,4 +14,6 @@ public interface DepartmentRepository {
     Department save(Department department);
 
     Integer isSubDepartment(int parentDeptId,int childDeptId);
+
+    boolean existsByDeptIdAndIsDeleted(Integer deptId, IsDeleted isDeleted);
 }
