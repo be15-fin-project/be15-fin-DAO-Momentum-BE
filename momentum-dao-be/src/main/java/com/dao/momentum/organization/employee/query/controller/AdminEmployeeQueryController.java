@@ -3,10 +3,7 @@ package com.dao.momentum.organization.employee.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.employee.query.dto.request.AppointSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
-import com.dao.momentum.organization.employee.query.dto.response.AppointListResponse;
-import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
-import com.dao.momentum.organization.employee.query.dto.response.EmployeeListResponse;
-import com.dao.momentum.organization.employee.query.dto.response.UserRolesResponse;
+import com.dao.momentum.organization.employee.query.dto.response.*;
 import com.dao.momentum.organization.employee.query.service.EmployeeQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,6 +62,16 @@ public class AdminEmployeeQueryController {
     public ResponseEntity<ApiResponse<UserRolesResponse>> getRoles(
     ) {
         UserRolesResponse response = employeeQueryService.getUserRoles();
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{empId}/roles")
+    @Operation(summary = "사원 권한 목록 조회", description = "관리자가 특정 사원의 서비스 권한 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<EmployeeRolesResponse>> getEmployeeRoles(
+            @PathVariable long empId
+    ) {
+        EmployeeRolesResponse response = employeeQueryService.getEmployeeRoles(empId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

@@ -86,4 +86,16 @@ public class EmployeeQueryService {
                 .userRoles(userRoles)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public EmployeeRolesResponse getEmployeeRoles(long empId) {
+        List<EmployeeRoleDTO> employeeRoles = userRoleMapper.getEmployeeRoles(empId);
+
+        List<Integer> userRolesIds = employeeRoles.stream()
+                .map(EmployeeRoleDTO::getUserRoleId).toList();
+
+        return EmployeeRolesResponse.builder()
+                .userRolesIds(userRolesIds)
+                .build();
+    }
 }
