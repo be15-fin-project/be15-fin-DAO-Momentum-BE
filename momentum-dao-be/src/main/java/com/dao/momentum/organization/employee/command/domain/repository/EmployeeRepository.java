@@ -22,4 +22,6 @@ public interface EmployeeRepository {
     boolean existsByEmpIdAndDeptId(Long empId, Integer DeptId);
 
     List<Employee> findAllByStatus(Status status);
+
+    boolean existsByDeptIdAndStatusIsNot(Integer deptId,Status status);
 }
