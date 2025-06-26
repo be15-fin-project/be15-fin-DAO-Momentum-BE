@@ -12,7 +12,6 @@ public class DepartmentCreateRequest {
     @NotBlank
     private String name;
 
-    @NotNull
     private Integer parentDeptId;
 
     @NotBlank
