@@ -1,5 +1,7 @@
 package com.dao.momentum.evaluation.eval.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvalFormDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvalFormPromptRaw;
 import com.dao.momentum.evaluation.eval.query.mapper.EvalFormMapper;
@@ -20,7 +22,7 @@ public class EvalFormQueryServiceImpl implements EvalFormQueryService {
         List<EvalFormPromptRaw> rawList = evalFormMapper.findFormDetailByFormId(formId);
 
         if (rawList.isEmpty()) {
-            throw new IllegalArgumentException("해당 양식의 문항 정보를 찾을 수 없습니다.");
+            throw new EvalException(ErrorCode.EVALUATION_PROMPT_NOT_FOUND);
         }
 
         String formName = rawList.get(0).getFormName();
