@@ -44,4 +44,10 @@ public class ApproveLine {
         this.isRequiredAll = isRequiredAll;
         this.completeAt = completeAt;
     }
+
+    public void updateApproveLineStatus(int statusId) {
+        this.statusId = statusId;
+        this.completeAt = LocalDateTime.now();
+    }
+
 }

@@ -25,4 +25,34 @@
                 dept_id = #{deptId}
     </select>
 
+    <resultMap id="EmployeeSummaryResultMap" type="com.dao.momentum.organization.department.query.dto.response.EmployeeSummaryDTO">
+        <id property="empId" column="emp_id"/>
+        <result property="name" column="emp_name"/>
+        <result property="contact" column="contact"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <resultMap id="DepartmentNodeResultMap" type="com.dao.momentum.organization.department.query.dto.response.DepartmentNodeDTO">
+        <id property="deptId" column="dept_id"/>
+        <result property="parentDeptId" column="parent_dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <collection property="employees" ofType="com.example.dto.EmployeeSummaryDTO"
+                    resultMap="EmployeeSummaryResultMap"/>
+    </resultMap>
+
+    <select id="getDepartmentListWithEmployees" resultMap="DepartmentNodeResultMap">
+        SELECT
+                d.dept_id,
+                d.parent_dept_id,
+                d.name AS dept_name,
+                e.emp_id,
+                e.name AS emp_name,
+                e.status,
+                p.name AS position_name
+        FROM department d
+        LEFT JOIN employee e ON d.dept_id = e.dept_id AND e.status != 'RESIGNED'
+        LEFT JOIN position p ON e.position_id = p.position_id AND p.is_deleted = 'N'
+        WHERE d.is_deleted = 'N'
+        ORDER BY d.parent_dept_id, d.dept_id
+    </select>
 </mapper>

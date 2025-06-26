@@ -43,5 +43,17 @@ public class ApproveLineList {
         this.completeAt = completeAt;
         this.reason = reason;
     }
+
+    // 결재 상태를 업데이트
+    public void updateApproveLineListStatus(int statusId) {
+        this.statusId = statusId;
+    }
+
+    // 결재 상태를 업데이트
+    public void updateReason(String reason) {
+        this.reason = reason;
+        this.completeAt = LocalDateTime.now();
+    }
+    
 }
 

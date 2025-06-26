@@ -2,10 +2,7 @@ package com.dao.momentum.organization.department.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.department.exception.DepartmentException;
-import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailDTO;
-import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
-import com.dao.momentum.organization.department.query.dto.response.DepartmentInfoDTO;
-import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
+import com.dao.momentum.organization.department.query.dto.response.*;
 import com.dao.momentum.organization.department.query.mapper.DepartmentMapper;
 import com.dao.momentum.organization.employee.query.dto.response.DepartmentMemberDTO;
 import com.dao.momentum.organization.employee.query.mapper.EmployeeMapper;
@@ -68,6 +65,36 @@ public class DepartmentQueryService {
         return DepartmentDetailResponse.builder()
                 .departmentDetailDTO(departmentDetailDTO)
                 .departmentMemberDTOList(departmentMemberDTOList)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public DepartmentTreeResponse getDepartmentTreeWithEmployees() {
+        List<DepartmentNodeDTO> flatList = departmentMapper.getDepartmentListWithEmployees();
+
+        Map<Integer, DepartmentNodeDTO> deptMap = new HashMap<>();
+        List<DepartmentNodeDTO> rootList = new ArrayList<>();
+
+        // 모든 부서를 Map에 저장
+        for (DepartmentNodeDTO dept : flatList) {
+            deptMap.put(dept.getDeptId(), dept);
+        }
+
+        // 트리 구조 구성
+        for (DepartmentNodeDTO dept : flatList) {
+            Integer parentId = dept.getParentDeptId();
+            if (parentId == null) {
+                rootList.add(dept);
+            } else {
+                DepartmentNodeDTO parent = deptMap.get(parentId);
+                if (parent != null) {
+                    parent.getChildren().add(dept);
+                }
+            }
+        }
+
+        return DepartmentTreeResponse.builder()
+                .departmentNodeDTOList(rootList)
                 .build();
     }
 }

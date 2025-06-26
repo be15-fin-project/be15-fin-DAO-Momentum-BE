@@ -2,6 +2,7 @@ package com.dao.momentum.organization.department.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
+import com.dao.momentum.organization.department.query.dto.response.DepartmentTreeResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
 import com.dao.momentum.organization.department.query.service.DepartmentQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +33,14 @@ public class DepartmentQueryController {
             @PathVariable int deptId
     ){
         DepartmentDetailResponse response = departmentQueryService.getDepartmentDetails(deptId);
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "부서 목록 및 소속 사원 조회", description = "사원은 회사의 부서 목록 및 소속 사원을 조회할 수 있다.")
+    @GetMapping("/tree-with-employees")
+    public ResponseEntity<ApiResponse<DepartmentTreeResponse>> getDepartmentTreeWithEmployees(){
+        DepartmentTreeResponse response = departmentQueryService.getDepartmentTreeWithEmployees();
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
