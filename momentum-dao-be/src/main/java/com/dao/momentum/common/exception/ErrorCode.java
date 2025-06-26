@@ -121,7 +121,8 @@ public enum ErrorCode {
     RETENTION_CONTACT_TARGET_EQUALS_MANAGER("50003", "면담 대상자와 요청자는 같을 수 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_ALREADY_DELETED("50004", "이미 삭제된 면담 요청입니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
-    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다..", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_ROUND_NOT_FOUND("50007", "근속 전망 회차 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
 
     //공지사항 오류(60001 - 69999)

@@ -1,6 +1,8 @@
 package com.dao.momentum.retention.prospect.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.retention.prospect.exception.ProspectException;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionRoundRawDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionRoundSearchRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundListResponseDto;
@@ -24,6 +26,9 @@ public class RetentionRoundQueryServiceImpl implements RetentionRoundQueryServic
     @Transactional(readOnly = true)
     public RetentionRoundListResultDto getRetentionRounds(RetentionRoundSearchRequestDto req) {
         List<RetentionRoundRawDto> rawList = mapper.findRetentionRounds(req);
+        if (rawList == null) {
+            throw new ProspectException(ErrorCode.RETENTION_ROUND_NOT_FOUND);
+        }
         long total = mapper.countRetentionRounds(req);
 
         List<RetentionRoundListResponseDto> resultList = rawList.stream()
