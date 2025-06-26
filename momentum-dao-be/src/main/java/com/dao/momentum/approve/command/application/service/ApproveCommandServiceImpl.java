@@ -97,9 +97,11 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
             createApproveRef(approveId, approveRefRequests);
         }
 
+        notifyFirstApproveLine(approveId);
+
     }
 
-    // 결재선 생성하기 (결재선, 결재자 목록)
+    /* 결재선 생성하기 (결재선, 결재자 목록) */
     private void createApproveLine(Long approveId, List<ApproveLineRequest> approveLineRequests) {
         // 결재선은 여러 개 존재하기 때문에 반복문을 이용해 저장
         for (ApproveLineRequest lineRequest : approveLineRequests) {
@@ -126,7 +128,7 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         }
     }
 
-    // 참조인 생성하기
+    /* 참조인 생성하기 */
     private void createApproveRef(Long approveId, List<ApproveRefRequest> approveRefRequests) {
         // 참조인은 여러명 이기 때문에 반복문을 이용해 저장
         for (ApproveRefRequest refRequest : approveRefRequests) {
@@ -138,6 +140,20 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
 
             approveRefRepository.save(approveRef);
         }
+    }
+
+    /* 첫번째 결재선(결재선 번호가 1) 사람에게 알림 보내기 */
+    private void notifyFirstApproveLine(Long approveId) {
+        approveLineRepository.findFirstLine(approveId)
+                .ifPresent(firstLine -> {
+
+                    List<ApproveLineList> assignees =
+                            approveLineListRepository.findByApproveLineId(firstLine.getId());
+
+                    assignees.forEach(a -> {
+                        // 알림 전송하기 (다음 결재선 사람들에게 알림 전송하기)
+                    });
+                });
     }
 
 }
