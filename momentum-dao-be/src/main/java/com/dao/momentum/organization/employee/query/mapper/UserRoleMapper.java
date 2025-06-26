@@ -1,5 +1,6 @@
 package com.dao.momentum.organization.employee.query.mapper;
 
+import com.dao.momentum.organization.employee.query.dto.response.UserRoleDTO;
 import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
@@ -7,4 +8,5 @@ import java.util.List;
 public interface UserRoleMapper {
     List<String> findByEmpId (long empId);
 
+    List<UserRoleDTO> getUserRoles();
 }
