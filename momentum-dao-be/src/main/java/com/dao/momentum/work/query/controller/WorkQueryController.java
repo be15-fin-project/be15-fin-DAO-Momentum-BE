@@ -38,7 +38,7 @@ public class WorkQueryController {
     }
 
     @GetMapping
-    @Operation(summary = "관리자 출퇴근 조회", description = "관리자가 특정 사원의 출퇴근 내역을 조회합니다.")
+    @Operation(summary = "관리자 출퇴근 조회", description = "관리자가 회사에 등록된 출퇴근 내역을 조회합니다.")
     public ResponseEntity<ApiResponse<WorkListResponse>> getWorks(
             @ModelAttribute AdminWorkSearchRequest adminWorkSearchRequest
     ) {
