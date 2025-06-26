@@ -1,8 +1,6 @@
 package com.dao.momentum.organization.department.command.infrastructure.repository;
 
-import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.aggregate.DeptHead;
-import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import com.dao.momentum.organization.department.command.domain.repository.DeptHeadRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 

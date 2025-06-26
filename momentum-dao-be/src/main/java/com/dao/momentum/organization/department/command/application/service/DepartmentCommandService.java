@@ -4,6 +4,7 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.department.command.application.dto.request.DepartmentCreateRequest;
 import com.dao.momentum.organization.department.command.application.dto.request.DepartmentUpdateRequest;
 import com.dao.momentum.organization.department.command.application.dto.response.DepartmentCreateResponse;
+import com.dao.momentum.organization.department.command.application.dto.response.DepartmentDeleteResponse;
 import com.dao.momentum.organization.department.command.application.dto.response.DepartmentUpdateDTO;
 import com.dao.momentum.organization.department.command.application.dto.response.DepartmentUpdateResponse;
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
@@ -13,6 +14,7 @@ import com.dao.momentum.organization.department.command.domain.repository.Depart
 import com.dao.momentum.organization.department.command.domain.repository.DeptHeadRepository;
 import com.dao.momentum.organization.department.exception.DepartmentException;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -101,6 +103,31 @@ public class DepartmentCommandService {
 
         return DepartmentUpdateResponse.builder()
                 .departmentUpdateDTO(dto)
+                .build();
+    }
+
+    @Transactional
+    public DepartmentDeleteResponse deleteDepartment(Integer deptId) {
+        Department department = departmentRepository.findById(deptId).orElseThrow(
+                () -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND)
+        );
+
+        //퇴사자가 아닌 사원들이 속해있는지 검사
+        if(employeeRepository.existsByDeptIdAndStatusIsNot(deptId, Status.RESIGNED)){
+            throw new DepartmentException(ErrorCode.DEPARTMENT_NOT_EMPTY);
+        }
+
+        //하위 부서가 존재하는지 검사
+        if(departmentRepository.existsByParentDeptIdAndIsDeleted(deptId,IsDeleted.N)){
+            throw new DepartmentException(ErrorCode.DEPARTMENT_HAS_CHILD);
+        }
+
+        department.delete();
+
+        departmentRepository.save(department);
+
+        return DepartmentDeleteResponse.builder()
+                .deptId(deptId)
                 .build();
     }
 }

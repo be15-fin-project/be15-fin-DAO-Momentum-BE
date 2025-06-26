@@ -2,7 +2,6 @@ package com.dao.momentum.organization.department.command.domain.repository;
 
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.Optional;
 
@@ -16,4 +15,6 @@ public interface DepartmentRepository {
     Integer isSubDepartment(int parentDeptId,int childDeptId);
 
     boolean existsByDeptIdAndIsDeleted(Integer deptId, IsDeleted isDeleted);
+
+    boolean existsByParentDeptIdAndIsDeleted(Integer parentDeptId,IsDeleted isDeleted);
 }

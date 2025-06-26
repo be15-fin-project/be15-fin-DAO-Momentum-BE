@@ -48,4 +48,9 @@ public class Department {
         this.name = request.getName();
         this.parentDeptId = request.getParentDeptId();
     }
+
+    public void delete(){
+        this.isDeleted = IsDeleted.Y;
+    }
+
 }
