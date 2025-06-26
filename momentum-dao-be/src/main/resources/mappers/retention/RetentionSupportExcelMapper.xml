@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.retention.prospect.query.mapper.RetentionSupportExcelMapper">
+
+    <select id="selectSupportListForExcel"
+            resultType="com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExcelDto">
+        SELECT
+            e.emp_no           AS employeeNo,
+            e.name             AS employeeName,
+            rr.round_no        AS roundNo,
+            d.name             AS deptName,
+            rs.retention_score AS retentionScore,
+            rs.job_level       AS jobSatisfaction,
+            rs.comp_level      AS compensationSatisfaction,
+            rs.relation_level  AS relationSatisfaction,
+            rs.growth_level    AS growthSatisfaction,
+            rs.tenure_level    AS tenure,
+            rs.wlb_level       AS wlbSatisfaction
+        FROM retention_support rs
+        JOIN employee e ON rs.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        JOIN retention_round rr ON rs.round_id = rr.round_id
+            <where>
+                <if test="roundId != null">
+                    AND rs.round_id = #{roundId}
+                </if>
+                <if test="deptId != null">
+                    AND e.dept_id = #{deptId}
+                </if>
+                <if test="stabilityType != null">
+                    AND (
+                    CASE
+                    WHEN rs.retention_score >= 80 THEN 'STABLE'
+                    WHEN rs.retention_score >= 60 THEN 'WARNING'
+                    ELSE 'UNSTABLE'
+                    END = #{stabilityType}
+                    )
+                </if>
+            </where>
+        ORDER BY rr.round_no DESC
+        LIMIT 5000
+    </select>
+
+</mapper>
