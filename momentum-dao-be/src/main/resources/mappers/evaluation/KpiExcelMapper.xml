@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.evaluation.kpi.query.mapper.KpiExcelMapper">
+
+    <select id="selectKpisForExcel" resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiExcelDto">
+        SELECT
+            e.emp_no           AS employeeNo,
+            e.name             AS employeeName,
+            d.name             AS departmentName,
+            p.name             AS positionName,
+            k.goal             AS goal,
+            k.goal_value       AS goalValue,
+            k.kpi_progress     AS kpiProgress,
+            s.status_type      AS statusName,
+            DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
+            DATE_FORMAT(k.deadline, '%Y-%m-%d')   AS deadline
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p   ON e.position_id = p.position_id
+        JOIN status s ON k.status_id = s.status_id
+        <where>
+            k.is_deleted = 'N'
+
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+            <if test="statusId != null">
+                AND k.status_id = #{statusId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE(k.created_at) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE(k.created_at) &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY k.created_at DESC
+        LIMIT 5000
+    </select>
+
+</mapper>

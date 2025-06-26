@@ -33,11 +33,11 @@ public class KpiListRequestDto {
 
     @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
-    private int page = 1;
+    private Integer page = 1;
 
     @Builder.Default
     @Schema(description = "페이지당 항목 수", example = "10", defaultValue = "10")
-    private int size = 10;
+    private Integer size = 10;
 
     public int getOffset() {
         return (page - 1) * size;
