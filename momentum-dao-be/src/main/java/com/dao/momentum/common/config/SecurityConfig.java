@@ -124,7 +124,7 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers("/position", "/position/**").hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.POST, "/departments").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
                 .requestMatchers( HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
     }
