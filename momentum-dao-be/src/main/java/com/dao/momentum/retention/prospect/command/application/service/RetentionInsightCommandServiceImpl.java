@@ -1,9 +1,13 @@
 package com.dao.momentum.retention.prospect.command.application.service;
 
+import com.dao.momentum.organization.department.command.domain.aggregate.Department;
+import com.dao.momentum.organization.department.command.infrastructure.repository.JpaDepartmentRepository;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionInsightDto;
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionInsight;
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionSupport;
 import com.dao.momentum.retention.prospect.command.domain.repository.RetentionInsightRepository;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,8 @@ import java.util.stream.Collectors;
 public class RetentionInsightCommandServiceImpl implements RetentionInsightCommandService {
 
     private final RetentionInsightRepository insightRepository;
+    private final JpaDepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public void saveAll(List<RetentionInsight> insights) {
@@ -23,31 +29,75 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
 
     @Override
     public List<RetentionInsight> generateInsights(Integer roundId, List<RetentionSupport> supports) {
-        // TODO: 부서-직급별로 그룹핑하고 통계 계산 (샘플은 deptId만 고려)
+        // 1. 모든 하위부서 없는 활성 부서 조회
+        List<Department> activeLeafDepts = departmentRepository.findActiveLeafDepartments();
+
+        // 2. empId → deptId 매핑
+        Set<Long> empIds = supports.stream()
+                .map(RetentionSupport::getEmpId)
+                .collect(Collectors.toSet());
+
+        List<Employee> employees = employeeRepository.findAllById(empIds);
+
+        Map<Long, Integer> empIdToDeptIdMap = employees.stream()
+                .collect(Collectors.toMap(
+                        Employee::getEmpId,
+                        Employee::getDeptId,
+                        (a, b) -> a // 중복 처리
+                ));
+
+
+        // 3. deptId → List<RetentionSupport> 그룹핑
         Map<Integer, List<RetentionSupport>> grouped = supports.stream()
-                .collect(Collectors.groupingBy(s -> getDeptIdFromEmployee(s.getEmpId()))); // deptId는 별도 조회해야 정확함
+                .filter(s -> empIdToDeptIdMap.containsKey(s.getEmpId()))
+                .collect(Collectors.groupingBy(s -> empIdToDeptIdMap.get(s.getEmpId())));
 
         List<RetentionInsight> result = new ArrayList<>();
-        for (Map.Entry<Integer, List<RetentionSupport>> entry : grouped.entrySet()) {
-            Integer deptId = entry.getKey();
-            List<RetentionSupport> list = entry.getValue();
 
-            // TODO: 평균, 분위수 등 통계 계산 필요
+        for (Department dept : activeLeafDepts) {
+            List<RetentionSupport> list = grouped.getOrDefault(dept.getDeptId(), Collections.emptyList());
+            if (list.isEmpty()) continue;
+
+            List<Integer> scores = list.stream()
+                    .map(RetentionSupport::getRetentionScore)
+                    .sorted()
+                    .toList();
+
+            int empCount = scores.size();
+            int avg = (int) scores.stream().mapToInt(i -> i).average().orElse(0);
+
+            int p20 = percentileThreshold(scores, 0.2);
+            int p40 = percentileThreshold(scores, 0.4);
+            int p60 = percentileThreshold(scores, 0.6);
+            int p80 = percentileThreshold(scores, 0.8);
+
+            int count20 = (int) scores.stream().filter(score -> score <= p20).count();
+            int count40 = (int) scores.stream().filter(score -> score > p20 && score <= p40).count();
+            int count60 = (int) scores.stream().filter(score -> score > p40 && score <= p60).count();
+            int count80 = (int) scores.stream().filter(score -> score > p60 && score <= p80).count();
+            int count100 = empCount - count20 - count40 - count60 - count80;
+
             RetentionInsightDto dto = new RetentionInsightDto(
-                    deptId,
-                    null,
-                    (int) list.stream().mapToInt(RetentionSupport::getRetentionScore).average().orElse(0),
-                    list.size(),
-                    0, 0, 0, 0, 0 // TODO: 분위수 통계 계산
+                    dept.getDeptId(),
+                    avg,
+                    empCount,
+                    count20,
+                    count40,
+                    count60,
+                    count80,
+                    count100
             );
+
             result.add(RetentionInsight.of(roundId, dto));
         }
 
         return result;
     }
 
-    private Integer getDeptIdFromEmployee(Long empId) {
-        // TODO: employee 테이블 또는 캐시에서 부서 ID 가져오기
-        return 1;
+    private int percentileThreshold(List<Integer> sorted, double percentile) {
+        if (sorted.isEmpty()) return 0;
+        int index = (int) Math.floor(percentile * sorted.size());
+        index = Math.min(index, sorted.size() - 1);
+        return sorted.get(index);
     }
 }
