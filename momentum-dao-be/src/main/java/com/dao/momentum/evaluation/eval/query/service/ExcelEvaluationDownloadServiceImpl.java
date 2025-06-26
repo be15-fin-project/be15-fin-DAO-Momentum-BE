@@ -1,5 +1,7 @@
 package com.dao.momentum.evaluation.eval.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationExcelDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationExcelRequestDto;
 import com.dao.momentum.evaluation.eval.query.util.PeerEvaluationExcelGenerator;
@@ -18,6 +20,16 @@ public class ExcelEvaluationDownloadServiceImpl implements ExcelEvaluationDownlo
     @Override
     public byte[] downloadPeerEvaluationExcel(PeerEvaluationExcelRequestDto request) {
         List<PeerEvaluationExcelDto> data = excelEvaluationQueryMapper.selectPeerEvaluationsForExcel(request);
-        return PeerEvaluationExcelGenerator.generate(data);
+
+        if (data == null || data.isEmpty()) {
+            throw new EvalException(ErrorCode.EVALUATION_RESULT_NOT_FOUND);
+        }
+
+        try {
+            return PeerEvaluationExcelGenerator.generate(data);
+        } catch (Exception e) {
+            throw new EvalException(ErrorCode.EXCEL_GENERATION_FAILED);
+        }
     }
+
 }
