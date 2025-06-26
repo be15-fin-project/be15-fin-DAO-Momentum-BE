@@ -1,7 +1,9 @@
 package com.dao.momentum.organization.employee.command.domain.repository;
 
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EmployeeRepository {
@@ -18,4 +20,6 @@ public interface EmployeeRepository {
     boolean existsByEmpId(Long empId);
 
     boolean existsByEmpIdAndDeptId(Long empId, Integer DeptId);
+
+    List<Employee> findAllByStatus(Status status);
 }

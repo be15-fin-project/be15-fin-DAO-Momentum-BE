@@ -12,6 +12,8 @@ import com.dao.momentum.organization.employee.command.application.dto.response.A
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeCSVResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.service.AppointCommandService;
+import com.dao.momentum.organization.employee.command.application.service.CSVService;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,8 @@ public class EmployeeCommandController {
 
     private final EmployeeCommandService employeeService;
     private final FileService fileService;
+    private final CSVService csvService;
+    private final AppointCommandService appointCommandService;
 
     @Operation(summary = "사원 등록", description = "관리자는 사원의 정보를 입력하여 사원을 등록할 수 있다.")
     @PostMapping
@@ -59,13 +63,12 @@ public class EmployeeCommandController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-
         if (file.isEmpty()) {
             throw new EmployeeException(ErrorCode.CSV_NOT_FOUND);
         }
         validateFileType(file);
 
-        EmployeeCSVResponse response = employeeService.createEmployees(file, userDetails);
+        EmployeeCSVResponse response = csvService.createEmployees(file, userDetails);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
@@ -115,7 +118,7 @@ public class EmployeeCommandController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 ApiResponse.success(
-                        employeeService.createAppoint(userDetails, request)
+                        appointCommandService.createAppoint(userDetails, request)
                 )
         );
     }

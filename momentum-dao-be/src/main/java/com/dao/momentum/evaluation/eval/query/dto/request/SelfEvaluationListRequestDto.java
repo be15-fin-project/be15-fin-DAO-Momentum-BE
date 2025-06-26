@@ -10,7 +10,7 @@ import lombok.Setter;
 public class SelfEvaluationListRequestDto {
 
     @Schema(description = "평가자 사번", example = "20250001")
-    private Long empNo;
+    private String empNo;
 
     @Schema(description = "평가 양식 ID", example = "5")
     private Long formId;

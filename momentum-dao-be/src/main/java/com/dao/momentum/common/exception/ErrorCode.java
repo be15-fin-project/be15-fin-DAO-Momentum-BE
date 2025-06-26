@@ -90,14 +90,36 @@ public enum ErrorCode {
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_REQUEST("40013", "평가 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_NOT_FOUND("40014", "평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVAL_ROUND_DUPLICATE("40015", "이미 존재하는 회차 번호입니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_INVALID_START_DATE("40016", "시작일은 오늘 이후여야 합니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ALREADY_SUBMITTED("40017", "이미 제출된 평가입니다.", HttpStatus.BAD_REQUEST),
+    EVAL_INVALID_NOT_EXIST("40018", "요인별 점수가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_RESULT_REQUEST("40019", "평가 결과 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
+    EVALUATION_NOT_FOUND("40020", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
     MY_OBJECTIONS_NOT_FOUND("40022", "조회 가능한 인사 평가 이의제기 내역이 없습니다.", HttpStatus.NOT_FOUND),
     HR_EVALUATION_NOT_FOUND("40023", "인사 평가 세부 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_WEIGHT_NOT_FOUND("40024", "인사 평가 가중치 기준 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_RATE_NOT_FOUND("40025", "인사 평가 등급 기준 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_RATE_INVALID_SUM("40026", "등급 비율의 총합은 100이어야 합니다.", HttpStatus.BAD_REQUEST),
+    HR_WEIGHT_INVALID_SUM("40027", "가중치의 총합은 100이어야 합니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_SUBMITTED_OBJECTION("40028", "이미 이의제기를 제출한 평가입니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_NOT_FOUND("40029", "이의제기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    HR_OBJECTION_FORBIDDEN("40030", "본인의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_CANNOT_DELETE("40031", "대기 상태의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_CANNOT_MODIFY("40032", "이미 처리된 이의제기는 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    HR_OBJECTION_NOT_FOUND2("40033", "reult id searching failed", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
     RETENTION_CONTACT_NOT_FOUND("50002", "조회 가능한 면담 요청 내역 정보가 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_CONTACT_TARGET_EQUALS_MANAGER("50003", "면담 대상자와 요청자는 같을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_ALREADY_DELETED("50004", "이미 삭제된 면담 요청입니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다..", HttpStatus.BAD_REQUEST),
 
 
     //공지사항 오류(60001 - 69999)

@@ -2,10 +2,10 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.momentum.retention.query.mapper.RetentionSupportMapper">
+<mapper namespace="com.dao.momentum.retention.prospect.query.mapper.RetentionSupportMapper">
 
     <!-- 근속 전망 조회 -->
-    <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.query.dto.request.RetentionSupportRaw">
+    <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportRaw">
         SELECT
             e.name AS empName,
             e.emp_no AS empNo,
@@ -65,7 +65,7 @@
 
     <!-- 근속 전망 상세 조회 -->
     <select id="findSupportDetail"
-            resultType="com.dao.momentum.retention.query.dto.response.RetentionSupportDetailDto">
+            resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportDetailDto">
         SELECT
         e.name AS empName,
         e.emp_no AS empNo,

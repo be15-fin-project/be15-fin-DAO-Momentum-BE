@@ -71,7 +71,7 @@ class WorkCommandServiceTest {
         when(request.getHeader(anyString())).thenReturn(null);
         when(request.getRemoteAddr()).thenReturn(ip);
 
-        WorkType workType = new WorkType(1, WorkTypeName.WORK);
+        WorkType workType = new WorkType(1, WorkTypeName.WORK, null);
 
         Work existingWork = Work.builder()
                 .empId(empId)
