@@ -75,7 +75,7 @@ public class VacationTimeCommandService {
         }
 
         // 2년차 이상 -> 3년차부터, 2년마다 1일 추가 지급
-        int dayoffDays = STANDARD_DAYOFF + (yearsWorked - 2) / 2;
+        int dayoffDays = STANDARD_DAYOFF + (yearsWorked - 1) / 2;
         return Math.min(MAXIMUM_DAYOFF, dayoffDays);
     }
 

@@ -141,7 +141,26 @@ public class SecurityConfig {
     // 마스터 관리자 및 인사 관리자 공용
     private void adminEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                HttpMethod.GET, "/works"
+                "/contracts", // GET, POST
+                "/employees/csv", // GET, POST
+                "/employees/appoints",
+                "/employees/{empId}/hr-info"
+
+        ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.GET,
+                "/works"
+        ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.PUT,
+                "/employees/{empId}"
+        ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.DELETE,
+                "/contracts/{contractId}"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
     }
 
