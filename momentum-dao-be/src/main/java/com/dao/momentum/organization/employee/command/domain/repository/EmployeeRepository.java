@@ -3,10 +3,8 @@ package com.dao.momentum.organization.employee.command.domain.repository;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface EmployeeRepository {
     <S extends Employee> S save(Employee employee);
@@ -29,4 +27,6 @@ public interface EmployeeRepository {
     List<Employee> findByStatus(Status status);
 
     List<Employee> findAllById(Iterable<Long> ids);
+
+    boolean existsByDeptIdAndStatusIsNot(Integer deptId,Status status);
 }
