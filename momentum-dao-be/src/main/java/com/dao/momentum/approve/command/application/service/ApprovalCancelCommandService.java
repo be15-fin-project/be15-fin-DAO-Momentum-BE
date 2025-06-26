@@ -81,7 +81,7 @@ public class ApprovalCancelCommandService {
                 long workId = correction.getWorkId();
 
                 Work work = workRepository.findById(workId)
-                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_WORK));
+                        .orElseThrow(() -> new WorkException(ErrorCode.WORK_NOT_FOUND));
 
                 // 기존 출퇴근 시간으로 변경하기
                 work.changeBeforeWorkTime(correction.getBeforeStartAt(), correction.getBeforeEndAt());
