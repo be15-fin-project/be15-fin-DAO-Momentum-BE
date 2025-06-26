@@ -125,7 +125,8 @@ public class SecurityConfig {
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
                 "/position", "/position/**",
-                "/employees/roles"
+                "/employees/roles",
+                "/employees/{empId}/roles"
                 ).hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
