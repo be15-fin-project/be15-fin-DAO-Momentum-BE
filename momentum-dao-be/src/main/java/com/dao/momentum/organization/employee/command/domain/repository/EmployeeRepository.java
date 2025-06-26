@@ -23,5 +23,10 @@ public interface EmployeeRepository {
 
     List<Employee> findAllByStatus(Status status);
 
+    // 근속 전망 확인을 위한 현 재직 중인 사원 목록 조회
+    List<Employee> findByStatus(Status status);
+
+    List<Employee> findAllById(Iterable<Long> ids);
+
     boolean existsByDeptIdAndStatusIsNot(Integer deptId,Status status);
 }
