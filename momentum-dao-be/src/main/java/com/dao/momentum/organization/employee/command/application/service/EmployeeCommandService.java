@@ -4,14 +4,8 @@ import com.dao.momentum.common.auth.domain.aggregate.PasswordResetToken;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.jwt.JwtTokenProvider;
 import com.dao.momentum.email.service.EmailService;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRecordsUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
-import com.dao.momentum.organization.employee.command.application.dto.request.MyInfoUpdateRequest;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoDTO;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeInfoUpdateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeRecordsUpdateResponse;
-import com.dao.momentum.organization.employee.command.application.dto.response.MyInfoUpdateResponse;
+import com.dao.momentum.organization.employee.command.application.dto.request.*;
+import com.dao.momentum.organization.employee.command.application.dto.response.*;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRecords;
 import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeRoles;
@@ -21,7 +15,6 @@ import com.dao.momentum.organization.employee.command.domain.repository.Employee
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.UserRoleRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -276,5 +269,63 @@ public class EmployeeCommandService {
                 .empId(empId)
                 .message("개인 정보 수정 완료")
                 .build();
+    }
+
+    @Transactional
+    public RoleUpdateResponse updateRole(RoleUpdateRequest request, UserDetails userDetails) {
+        long adminId = Long.parseLong(userDetails.getUsername());
+        validateActiveAdmin(adminId);
+
+        long empId = request.getEmpId();
+        validateActiveEmployee(empId);
+
+       List<Integer> requestedRolesIds = request.getUserRoleIds();
+       validateUserRoles(requestedRolesIds);
+
+       employeeRolesRepository.deleteAllByEmpId(empId);
+       List<EmployeeRoles> employeeRoles = buildEmployeeRoles(empId, requestedRolesIds);
+
+       List<EmployeeRoles> savedRoles =
+               employeeRoles.stream().map(
+                       role -> (EmployeeRoles) employeeRolesRepository.save(role)
+               ).toList();
+
+       List<Long> savedEmpRolesIds = savedRoles.stream().map(EmployeeRoles::getEmployeeRolesId).toList();
+
+       List<Integer> savedRolesIds = savedRoles.stream().map(EmployeeRoles::getUserRoleId).toList();
+
+        log.info("사원 권한 수정 완료 - 대상 사원 ID: {}, 관리자 ID: {}, 부여된 사원-권한 ID: {}, 부여된 권한 ID: {}",
+                empId, adminId, savedEmpRolesIds, savedRolesIds);
+        return RoleUpdateResponse.builder()
+                .employeeRolesIds(savedEmpRolesIds)
+                .userRolesIds(savedRolesIds)
+                .message("사원 권한 수정 완료")
+                .build();
+    }
+
+    private void validateActiveEmployee(long empId) {
+        if (!employeeRepository.existsByEmpId(empId)) {
+            throw new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND);
+        }
+    }
+
+    private void validateUserRoles(List<Integer> requestedRolesIds) {
+        List<Integer> allowedRolesIds = userRoleRepository.findAllIds();
+
+        boolean isInvalid = requestedRolesIds.stream().anyMatch(
+                roleId -> !allowedRolesIds.contains(roleId)
+        );
+        if (isInvalid) {
+            throw new EmployeeException(ErrorCode.USER_ROLE_NOT_FOUND);
+        }
+    }
+
+    private List<EmployeeRoles> buildEmployeeRoles(long empId, List<Integer> userRoleIds) {
+        return userRoleIds.stream()
+                .map(id -> EmployeeRoles.builder()
+                        .userRoleId(id)
+                        .empId(empId)
+                        .build())
+                .toList();
     }
 }
