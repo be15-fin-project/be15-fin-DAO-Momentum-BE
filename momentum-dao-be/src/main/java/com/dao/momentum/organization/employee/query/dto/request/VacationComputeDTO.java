@@ -1,7 +1,5 @@
 package com.dao.momentum.organization.employee.query.dto.request;
 
-import com.dao.momentum.approve.query.dto.approveTypeDTO.VacationDTO;
-import com.dao.momentum.organization.employee.query.dto.response.VacationTimesDTO;
 import lombok.Builder;
 import lombok.Getter;
 

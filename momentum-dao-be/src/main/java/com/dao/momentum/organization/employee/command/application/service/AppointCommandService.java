@@ -9,6 +9,7 @@ import com.dao.momentum.organization.employee.command.application.dto.response.A
 import com.dao.momentum.organization.employee.command.domain.aggregate.Appoint;
 import com.dao.momentum.organization.employee.command.domain.aggregate.AppointType;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.AppointRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -18,11 +19,15 @@ import com.dao.momentum.organization.position.command.domain.repository.Position
 import com.dao.momentum.organization.position.exception.PositionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -81,18 +86,45 @@ public class AppointCommandService {
                 .build();
 
         appointRepository.save(appoint);
-
-        // TODO: 지정된 발령일에 따른 배치 작업 구현
-        emp.fromAppoint(afterDeptId, afterPositionId);
-        employeeRepository.save(emp);
-
         long appointId = appoint.getAppointId();
+
+        if (appointDate.equals(today)) { // 날짜가 오늘이면 바로 반영, 아니면 배치 처리
+            emp.fromAppoint(afterDeptId, afterPositionId);
+            employeeRepository.save(emp);
+        }
 
         log.info("인사 발령 등록 성공 - 발령 ID: {}, 발령 등록자 ID: {}, 발령 대상자 ID: {}, 등록 일시: {}", appointId, adminId, empId, LocalDateTime.now());
         return AppointCreateResponse.builder()
                 .appointId(appointId)
                 .message("인사 발령 등록 성공")
                 .build();
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정 배치작업
+    public void applyAppoint() {
+        LocalDateTime start = LocalDateTime.now();
+        log.info("[발령 등록 Batch System] 발령 등록 시작");
+        LocalDate today = LocalDate.now();
+        long countApplied = 0;
+
+        List<Appoint> pendingAppoints = appointRepository.findByAppointDateLessThanEqual(today);
+        for (Appoint appoint : pendingAppoints) {
+            long empId = appoint.getEmpId();
+            Employee emp = employeeRepository.findByEmpId(empId)
+                    .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+            boolean isApplied = emp.getDeptId() == appoint.getAfterDepartment() && emp.getPositionId() == appoint.getAfterPosition(); // 결과가 같다면 이미 처리 완료된 발령
+
+            if (!isApplied) {
+                countApplied++;
+                emp.fromAppoint(appoint.getAfterDepartment(), appoint.getAfterPosition());
+                employeeRepository.save(emp);
+            }
+        }
+        LocalDateTime end = LocalDateTime.now();
+        long duration = Duration.between(start, end).toSeconds();
+        log.info("[발령 등록 Batch System] 발령 등록 완료 - {}명, 소요 시간 - {}초", countApplied, duration);
     }
 
     private void validatePromotion(Employee emp, Position beforePosition, Position afterPosition, Department afterDept) {
