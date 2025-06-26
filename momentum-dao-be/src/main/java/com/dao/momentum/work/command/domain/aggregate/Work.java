@@ -62,6 +62,7 @@ public class Work {
         this.endAt = afterEndAt;
         this.breakTime = breakTime;
         this.vacationTypeId = vacationTypeId;
+        this.startPushedAt = null;
     }
 
     public Duration getWorkTime() {
@@ -73,4 +74,8 @@ public class Work {
         return this.getWorkTime().toMinutes() >= requiredMinutes;
     }
 
+    public void changeBeforeWorkTime(LocalDateTime startAt, LocalDateTime endAt) {
+        this.startAt = startAt;
+        this.endAt = endAt;
+    }
 }

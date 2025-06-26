@@ -1,11 +1,11 @@
 package com.dao.momentum.work.command.application.service;
 
+import com.dao.momentum.approve.command.domain.aggregate.Approve;
 import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.work.command.application.validator.WorkCreateValidator;
 import com.dao.momentum.work.command.domain.aggregate.*;
-import com.dao.momentum.work.command.domain.repository.WorkRepository;
-import com.dao.momentum.work.command.domain.repository.WorkTypeRepository;
+import com.dao.momentum.work.command.domain.repository.*;
 import com.dao.momentum.work.exception.WorkException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import static com.dao.momentum.work.command.application.service.WorkTimeService.
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ApprovedWorkCommandService {
+public class WorkApplyCommandService {
     private static final int BREAK_TIME_UNIT = 30;
     private static final int MINUTES_IN_HOUR = 60;
     private static final int ADD_BREAK_TIME_INTERVAL = 4 * MINUTES_IN_HOUR + BREAK_TIME_UNIT;
@@ -28,33 +28,66 @@ public class ApprovedWorkCommandService {
     private final WorkRepository workRepository;
     private final WorkTimeService workTimeService;
     private final WorkCreateValidator workCreateValidator;
-
-    // 재택, 출장, 휴가 등: 요청된 기간에 휴일, 주말 포함 여부도 검증 필요
+    private final BusinessTripRepository businessTripRepository;
+    private final OvertimeRepository overtimeRepository;
+    private final RemoteWorkRepository remoteWorkRepository;
+    private final VacationRepository vacationRepository;
+    private final VacationTypeRepository vacationTypeRepository;
+    private final WorkCorrectionRepository workCorrectionRepository;
 
     @Transactional
-    public void applyApprovedWork(
-            long empId,
-            VacationType vacationType,
-            ApproveType approveType,
-            LocalDate startDate,
-            LocalDate endDate,
-            LocalDateTime startAt,
-            LocalDateTime endAt,
-            long workId,
-            int breakTime
-    ) {
-        validateRequestedDates(startDate, endDate);
+    public void applyApprovalWork(Approve approve) {
+        ApproveType approveType = approve.getApproveType();
+        Long empId = approve.getEmpId();
+        Long approveId = approve.getApproveId();
+
         switch (approveType) {
-            case REMOTEWORK -> applyRemoteWork(empId, startDate, endDate);
-            case BUSINESSTRIP -> applyBusinessTrip(empId, startDate, endDate);
-            case VACATION -> applyVacation(empId, vacationType, startDate, endDate);
-            case WORKCORRECTION -> applyWorkCorrection(empId, startAt, endAt, workId);
-            case OVERTIME -> applyOvertime(empId, startAt, endAt, breakTime);
-            case RECEIPT, PROPOSAL, CANCEL -> {
+            case OVERTIME -> {
+                Overtime overtime = overtimeRepository.findByApproveId(approveId)
+                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_OVERTIME));
+
+                applyOvertime(empId, overtime.getStartAt(), overtime.getEndAt(), overtime.getBreakTime());
+            }
+
+            case VACATION -> {
+                Vacation vacation = vacationRepository.findByApproveId(approveId)
+                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_VACATION));
+
+                VacationType vacationType =
+                        vacationTypeRepository.getVacationTypeByVacationTypeId(vacation.getVacationTypeId());
+
+                applyVacation(empId, vacationType, vacation.getStartDate(), vacation.getEndDate());
+            }
+
+            case REMOTEWORK -> {
+                RemoteWork remote = remoteWorkRepository.findByApproveId(approveId)
+                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_REMOTE_WORK));
+
+                applyRemoteWork(empId, remote.getStartDate(), remote.getEndDate());
+            }
+
+            case BUSINESSTRIP -> {
+                BusinessTrip businessTrip = businessTripRepository.findByApproveId(approveId)
+                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_BUSINESS_TRIP));
+
+                applyBusinessTrip(empId, businessTrip.getStartDate(), businessTrip.getEndDate());
+            }
+
+            case WORKCORRECTION -> {
+                WorkCorrection correction = workCorrectionRepository.findByApproveId(approveId)
+                        .orElseThrow(() -> new WorkException(ErrorCode.NOT_EXIST_WORK_CORRECTION));
+
+                applyWorkCorrection(
+                        empId,
+                        correction.getAfterStartAt(),
+                        correction.getAfterEndAt(),
+                        correction.getWorkId()
+                );
             }
         }
     }
 
+    // 재택 근무
     private void applyRemoteWork(long empId, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.REMOTE_WORK);
         if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
@@ -63,6 +96,7 @@ public class ApprovedWorkCommandService {
         saveMultiDayWork(empId, workType, startDate, endDate, null);
     }
 
+    // 출장
     private void applyBusinessTrip(long empId, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.BUSINESS_TRIP);
         if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
@@ -71,6 +105,7 @@ public class ApprovedWorkCommandService {
         saveMultiDayWork(empId, workType, startDate, endDate, null);
     }
 
+    // 반차
     private void applyHalfDayoff(long empId, VacationType vacationType, LocalDate startDate) {
         WorkType vacationWorkType = getWorkType(WorkTypeName.VACATION);
 
@@ -132,6 +167,7 @@ public class ApprovedWorkCommandService {
         workRepository.save(newVacationWork);
     }
 
+    // 휴가
     private void applyVacation(long empId, VacationType vacationType, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.VACATION);
         Integer vacationTypeId = vacationType.getVacationTypeId();
@@ -152,6 +188,7 @@ public class ApprovedWorkCommandService {
         saveMultiDayWork(empId, workType, startDate, endDate, vacationTypeId);
     }
 
+    // 출퇴근 정정
     private void applyWorkCorrection(long empId, LocalDateTime afterStartAt, LocalDateTime afterEndAt, long workId) {
         Work foundWork = workRepository.findById(workId)
                 .orElseThrow(() -> {
@@ -180,6 +217,7 @@ public class ApprovedWorkCommandService {
         workRepository.save(foundWork);
     }
 
+    // 초과 근무
     private void applyOvertime(long empId, LocalDateTime startAt, LocalDateTime endAt, int requestedBreakTime) {
         LocalDateTime minStartAt = startAt.toLocalDate().atTime(workTimeService.getEndTime());
         if (startAt.isBefore(minStartAt)) {
@@ -207,11 +245,12 @@ public class ApprovedWorkCommandService {
 //        LocalDateTime nightEndTime = startAt.toLocalDate().plusDays(1).atTime(6, 0);
 
         // 휴일 여부 체크
-        boolean isSunday = startAt.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY;
-        if (isSunday) {
-            saveWork(empId, workTypeHoliday, startAt, endAt, requestedBreakTime);
-            return;
-        }
+        // isHoliday 에서도 일요일인지를 확인하고 있어서 이 부분은 주석 처리
+//        boolean isSunday = startAt.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY;
+//        if (isSunday) {
+//            saveWork(empId, workTypeHoliday, startAt, endAt, requestedBreakTime);
+//            return;
+//        }
         boolean isHoliday = workCreateValidator.isHoliday(startAt.toLocalDate());
         if (isHoliday) {
             // 휴일 전체 시간
