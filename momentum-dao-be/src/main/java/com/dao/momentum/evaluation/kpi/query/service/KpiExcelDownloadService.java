@@ -1,7 +1,7 @@
 package com.dao.momentum.evaluation.kpi.query.service;
 
-import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiExelRequestDto;
 
 public interface KpiExcelDownloadService {
-    byte[] downloadKpisAsExcel(KpiListRequestDto requestDto);
+    byte[] downloadKpisAsExcel(KpiExelRequestDto requestDto);
 }

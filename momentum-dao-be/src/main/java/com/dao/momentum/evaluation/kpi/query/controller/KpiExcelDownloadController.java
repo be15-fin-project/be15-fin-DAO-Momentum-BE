@@ -1,6 +1,6 @@
 package com.dao.momentum.evaluation.kpi.query.controller;
 
-import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiExelRequestDto;
 import com.dao.momentum.evaluation.kpi.query.service.KpiExcelDownloadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,7 +25,7 @@ public class KpiExcelDownloadController {
         description = "사번, 부서, 직위, 상태, 작성일 조건으로 필터링된 KPI 데이터를 엑셀로 다운로드합니다."
     )
     public ResponseEntity<byte[]> downloadExcel(
-            @Parameter(description = "필터링 파라미터") @ModelAttribute KpiListRequestDto requestDto
+            @Parameter(description = "필터링 파라미터") @ModelAttribute KpiExelRequestDto requestDto
     ) {
         byte[] excelFile = kpiExcelDownloadService.downloadKpisAsExcel(requestDto);
 
