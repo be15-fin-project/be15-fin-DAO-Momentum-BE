@@ -10,5 +10,7 @@ import java.util.List;
 public class RoleUpdateResponse {
     List<Long> employeeRolesIds;
 
+    List<Integer> userRolesIds;
+
     String message;
 }

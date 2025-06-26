@@ -277,39 +277,55 @@ public class EmployeeCommandService {
         validateActiveAdmin(adminId);
 
         long empId = request.getEmpId();
-        Employee emp = employeeRepository.findByEmpId(empId)
-                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        validateActiveEmployee(empId);
 
        List<Integer> requestedRolesIds = request.getUserRoleIds();
-       List<Integer> allowedRolesIds = userRoleRepository.findAllIds();
-
-       boolean isInValid = requestedRolesIds.stream().anyMatch(
-               roleId -> !allowedRolesIds.contains(roleId)
-       );
-       if (isInValid) {
-           throw new EmployeeException(ErrorCode.USER_ROLE_NOT_FOUND);
-       }
-
-       List<EmployeeRoles> employeeRoles = new ArrayList<>();
+       validateUserRoles(requestedRolesIds);
 
        employeeRolesRepository.deleteAllByEmpId(empId);
-       requestedRolesIds.forEach(
-               id -> employeeRoles.add(
-                       EmployeeRoles.builder()
-                               .userRoleId(id)
-                               .empId(empId)
-                               .build()
-               )
-       );
+       List<EmployeeRoles> employeeRoles = buildEmployeeRoles(empId, requestedRolesIds);
 
        List<EmployeeRoles> savedRoles =
                employeeRoles.stream().map(
                        role -> (EmployeeRoles) employeeRolesRepository.save(role)
                ).toList();
-       List<Long> savedRolesIds = savedRoles.stream().map(EmployeeRoles::getEmployeeRolesId).toList();
 
+       List<Long> savedEmpRolesIds = savedRoles.stream().map(EmployeeRoles::getEmployeeRolesId).toList();
+
+       List<Integer> savedRolesIds = savedRoles.stream().map(EmployeeRoles::getUserRoleId).toList();
+
+        log.info("사원 권한 수정 완료 - 대상 사원 ID: {}, 관리자 ID: {}, 부여된 사원-권한 ID: {}, 부여된 권한 ID: {}",
+                empId, adminId, savedEmpRolesIds, savedRolesIds);
         return RoleUpdateResponse.builder()
-                .employeeRolesIds(savedRolesIds)
+                .employeeRolesIds(savedEmpRolesIds)
+                .userRolesIds(savedRolesIds)
+                .message("사원 권한 수정 완료")
                 .build();
+    }
+
+    private void validateActiveEmployee(long empId) {
+        if (!employeeRepository.existsByEmpId(empId)) {
+            throw new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND);
+        }
+    }
+
+    private void validateUserRoles(List<Integer> requestedRolesIds) {
+        List<Integer> allowedRolesIds = userRoleRepository.findAllIds();
+
+        boolean isInvalid = requestedRolesIds.stream().anyMatch(
+                roleId -> !allowedRolesIds.contains(roleId)
+        );
+        if (isInvalid) {
+            throw new EmployeeException(ErrorCode.USER_ROLE_NOT_FOUND);
+        }
+    }
+
+    private List<EmployeeRoles> buildEmployeeRoles(long empId, List<Integer> userRoleIds) {
+        return userRoleIds.stream()
+                .map(id -> EmployeeRoles.builder()
+                        .userRoleId(id)
+                        .empId(empId)
+                        .build())
+                .toList();
     }
 }
