@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         auth -> {
                               permitAllEndpoints(auth);
-//                            employeeEndpoints(auth);
+                              employeeEndpoints(auth);
 //                            managerEndpoints(auth);
                               masterEndpoints(auth);
 //                            hrManagerEndpoints(auth);
@@ -106,8 +106,12 @@ public class SecurityConfig {
     // 회원(로그인 사용자)만 접근 가능
     private void employeeEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-              ""
-        ).hasAuthority("EMPLOYEE");
+                "/employees/me"
+        ).authenticated();
+
+//        auths.requestMatchers(
+//              ""
+//        ).hasAuthority("EMPLOYEE");
     }
 
     // 팀장 전용
@@ -151,7 +155,8 @@ public class SecurityConfig {
 
         auths.requestMatchers(
                 HttpMethod.GET,
-                "/works"
+                "/works",
+                "/employees/{empId}" // "/csv"는 여기서도 매칭되지만 위에서 먼저 처리했으므로 안 잡힘
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(

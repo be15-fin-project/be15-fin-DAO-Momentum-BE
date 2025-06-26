@@ -88,6 +88,7 @@ public enum ErrorCode {
     KPI_ALREADY_PROCESSED("40008", "이미 처리 된 KPI입니다.", HttpStatus.BAD_REQUEST),
     KPI_REJECTION_REASON_REQUIRED("40009", "반려 할 경우 반드시 처리 사유가 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
     KPI_EDIT_FORBIDDEN("40010", "진척도는 0 이상 100 이하 값만 가능합니다.", HttpStatus.BAD_REQUEST),
+    EXCEL_GENERATION_FAILED("40011", "엑셀 파일 생성에 실패했습니다.", HttpStatus.BAD_REQUEST),
     // 평가 오류
     EVALUATION_RESULT_NOT_FOUND("40011", "조회 가능한 평가 결과가 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_LIST_NOT_FOUND("40012", "제출할 평가가 없습니다.", HttpStatus.NOT_FOUND),
@@ -121,7 +122,8 @@ public enum ErrorCode {
     RETENTION_CONTACT_TARGET_EQUALS_MANAGER("50003", "면담 대상자와 요청자는 같을 수 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_ALREADY_DELETED("50004", "이미 삭제된 면담 요청입니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
-    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다..", HttpStatus.BAD_REQUEST),
+    RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+    RETENTION_ROUND_NOT_FOUND("50007", "근속 전망 회차 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
 
     //공지사항 오류(60001 - 69999)

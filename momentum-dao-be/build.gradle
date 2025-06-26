@@ -75,6 +75,9 @@ dependencies {
     // csv import 라이브러리
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
     implementation 'com.opencsv:opencsv:5.11.1'
+
+    // 엑셀 다운로드
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
 }
 
 tasks.named('test') {
