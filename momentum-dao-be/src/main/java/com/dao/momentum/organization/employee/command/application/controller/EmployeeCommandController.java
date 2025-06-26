@@ -10,7 +10,6 @@ import com.dao.momentum.organization.employee.command.application.service.Appoin
 import com.dao.momentum.organization.employee.command.application.service.CSVService;
 import com.dao.momentum.organization.employee.command.application.service.EmployeeCommandService;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
-import com.dao.momentum.organization.employee.query.dto.response.EmployeeDetailsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -127,6 +126,17 @@ public class EmployeeCommandController {
                         appointCommandService.createAppoint(userDetails, request)
                 )
         );
+    }
+
+    @Operation(summary = "사원 권한 수정", description = "관리자는 사원 권한을 수정할 수 있다.")
+    @PutMapping("/roles")
+    public ResponseEntity<ApiResponse<RoleUpdateResponse>> updateRole(
+            @RequestBody @Valid RoleUpdateRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        RoleUpdateResponse response = employeeService.updateRole(request, userDetails);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
 }

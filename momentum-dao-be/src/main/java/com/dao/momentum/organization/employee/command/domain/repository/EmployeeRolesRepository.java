@@ -4,4 +4,6 @@ import com.dao.momentum.organization.employee.command.domain.aggregate.EmployeeR
 
 public interface EmployeeRolesRepository {
     <S extends EmployeeRoles> S save(EmployeeRoles employeeRoles);
+
+    void deleteAllByEmpId(long empId);
 }
