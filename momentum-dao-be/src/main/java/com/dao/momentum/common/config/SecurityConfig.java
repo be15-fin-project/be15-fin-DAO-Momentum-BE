@@ -127,6 +127,7 @@ public class SecurityConfig {
                 "/position", "/position/**",
                 "/employees/roles"
                 ).hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.GET,"/holiday").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
