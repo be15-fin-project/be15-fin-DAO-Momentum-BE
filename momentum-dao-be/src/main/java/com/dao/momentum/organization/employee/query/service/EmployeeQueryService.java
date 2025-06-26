@@ -7,6 +7,7 @@ import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchDT
 import com.dao.momentum.organization.employee.query.dto.request.EmployeeSearchRequest;
 import com.dao.momentum.organization.employee.query.dto.response.*;
 import com.dao.momentum.organization.employee.query.mapper.AdminEmployeeMapper;
+import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.List;
 public class EmployeeQueryService {
 
     private final AdminEmployeeMapper adminEmployeeMapper;
+    private final UserRoleMapper userRoleMapper;
 
     @Transactional(readOnly = true)
     public EmployeeListResponse getEmployees(EmployeeSearchRequest employeeSearchRequest) {
@@ -73,6 +75,15 @@ public class EmployeeQueryService {
                                 .totalPage((int) Math.ceil((double) totalItems / size))
                                 .build()
                 )
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public UserRolesResponse getUserRoles() {
+        List<UserRoleDTO> userRoles = userRoleMapper.getUserRoles();
+
+        return UserRolesResponse.builder()
+                .userRoles(userRoles)
                 .build();
     }
 }

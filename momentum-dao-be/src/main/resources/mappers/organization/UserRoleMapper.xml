@@ -11,4 +11,12 @@
         WHERE er.emp_id = #{empId}
     </select>
 
+    <select id="getUserRoles" resultType="com.dao.momentum.organization.employee.query.dto.response.UserRoleDTO">
+        SELECT
+            user_role_id,
+            user_role_name
+        FROM user_role
+        ORDER BY user_role_id ASC
+    </select>
+
 </mapper>

@@ -94,7 +94,7 @@ public class SecurityConfig {
     private void permitAllEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         // 로그인 및 토큰 관련 (모두 허용)
         auths.requestMatchers(
-            "/employees/login",
+                "/employees/login",
                 "/employees",
                 "/employees/reset-password",
                 "/employees/reset-password/request",
@@ -123,9 +123,12 @@ public class SecurityConfig {
 
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
-        auths.requestMatchers("/position", "/position/**").hasAuthority("MASTER")
+        auths.requestMatchers(
+                "/position", "/position/**",
+                "/employees/roles"
+                ).hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
-                .requestMatchers( HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
     }
 
