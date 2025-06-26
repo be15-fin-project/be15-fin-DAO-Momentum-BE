@@ -16,4 +16,6 @@ public interface EmployeeRepository {
     Boolean existsByPositionId(Integer positionId);
 
     boolean existsByEmpId(Long empId);
+
+    boolean existsByEmpIdAndDeptId(Long empId, Integer DeptId);
 }

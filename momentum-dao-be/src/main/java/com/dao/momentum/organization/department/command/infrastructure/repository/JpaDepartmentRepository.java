@@ -2,7 +2,25 @@ package com.dao.momentum.organization.department.command.infrastructure.reposito
 
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface JpaDepartmentRepository extends DepartmentRepository, JpaRepository<Department, Integer> {
+    @Query(value = """
+    WITH RECURSIVE dept_tree AS (
+        SELECT dept_id, parent_dept_id
+        FROM department
+        WHERE dept_id = :parentDeptId
+        UNION ALL
+        SELECT d.dept_id, d.parent_dept_id
+        FROM department d
+        INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+    )
+    SELECT EXISTS (
+        SELECT 1 FROM dept_tree WHERE dept_id = :childDeptId
+    )
+    """, nativeQuery = true)
+    Integer isSubDepartment(@Param("parentDeptId") int parentDeptId, @Param("childDeptId") int childDeptId);
+
 }
