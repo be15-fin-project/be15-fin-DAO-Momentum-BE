@@ -35,10 +35,11 @@ public class DepartmentCommandService {
     @Transactional
     public DepartmentCreateResponse createDepartment(DepartmentCreateRequest request) {
         Department department = modelMapper.map(request, Department.class);
-
-        departmentRepository.findById(department.getParentDeptId()).orElseThrow(
-                () -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND)
-        );
+        if(department.getParentDeptId()!=null){
+            departmentRepository.findById(department.getParentDeptId()).orElseThrow(
+                    () -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND)
+            );
+        }
 
         Department savedDepartment = departmentRepository.save(department);
 
