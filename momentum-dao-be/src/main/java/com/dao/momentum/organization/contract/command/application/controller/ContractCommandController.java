@@ -1,5 +1,6 @@
 package com.dao.momentum.organization.contract.command.application.controller;
 
+import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.contract.command.application.dto.request.ContractCreateRequest;
 import com.dao.momentum.organization.contract.command.application.dto.response.ContractCreateResponse;
 import com.dao.momentum.organization.contract.command.application.dto.response.ContractDeleteResponse;
@@ -25,22 +26,24 @@ public class ContractCommandController {
 
     @Operation(summary = "계약서 등록", description = "관리자는 계약서를 등록할 수 있다.")
     @PostMapping
-    public ResponseEntity<ContractCreateResponse> createContract(
+    public ResponseEntity<ApiResponse<ContractCreateResponse>> createContract(
             @RequestBody @Valid ContractCreateRequest contractCreateRequest,
             @AuthenticationPrincipal UserDetails userDetails                                                     ) {
         ContractCreateResponse response = contractCommandService.createContract(contractCreateRequest, userDetails);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
     }
 
     @Operation(summary = "계약서 삭제", description = "관리자는 계약서를 삭제할 수 있다.")
     @DeleteMapping("/{contractId}")
-    public ResponseEntity<ContractDeleteResponse> deleteContract(
+    public ResponseEntity<ApiResponse<ContractDeleteResponse>> deleteContract(
             @PathVariable long contractId,
             @AuthenticationPrincipal UserDetails userDetails                                                     ) {
         ContractDeleteResponse response = contractCommandService.deleteContract(contractId, userDetails);
 
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok()
+                .body(ApiResponse.success(response));
     }
 
 
