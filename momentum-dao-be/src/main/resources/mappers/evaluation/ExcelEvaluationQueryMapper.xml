@@ -45,4 +45,77 @@
         LIMIT 5000
     </select>
 
+    <select id="selectOrgEvaluationsForExcel"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationExcelDto">
+        SELECT
+            r.round_no       AS roundNo,
+            e.emp_no         AS evalEmpNo,
+            e.name           AS evalName,
+            d.name           AS departmentName,
+            p.name           AS positionName,
+            er.score         AS score,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i') AS submittedAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p   ON e.position_id = p.position_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_form f ON er.form_id = f.form_id
+        JOIN eval_type et ON f.type_id = et.type_id
+        <where>
+            AND et.name = 'ORG'
+
+            <if test="roundId != null">
+                AND r.round_id = #{roundId}
+            </if>
+            <if test="evalEmpNo != null and evalEmpNo != ''">
+                AND e.emp_no = #{evalEmpNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+        </where>
+        ORDER BY r.round_no DESC, e.emp_no
+        LIMIT 5000
+    </select>
+
+    <select id="selectSelfEvaluationsForExcel"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationExcelDto">
+        SELECT
+            r.round_no       AS roundNo,
+            e.emp_no         AS empNo,
+            e.name           AS name,
+            d.name           AS departmentName,
+            p.name           AS positionName,
+            er.score         AS score,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i') AS submittedAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p   ON e.position_id = p.position_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_form f ON er.form_id = f.form_id
+        JOIN eval_type et ON f.type_id = et.type_id
+        <where>
+            AND et.name = 'SELF'
+
+            <if test="roundId != null">
+                AND r.round_id = #{roundId}
+            </if>
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+        </where>
+        ORDER BY r.round_no DESC, e.emp_no
+        LIMIT 5000
+    </select>
 </mapper>
