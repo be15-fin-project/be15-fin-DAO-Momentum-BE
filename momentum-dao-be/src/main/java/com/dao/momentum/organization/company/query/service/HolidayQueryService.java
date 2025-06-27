@@ -44,7 +44,7 @@ public class HolidayQueryService {
     }
 
     @Transactional(readOnly = true)
-    public MonthPerHolidayGetResponse getMonthPerHolidays(YearMonth yearMonth) {
+    public MonthPerHolidayGetResponse getHolidaysPerMonth(YearMonth yearMonth) {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
