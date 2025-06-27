@@ -3,9 +3,11 @@ package com.dao.momentum.work.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
+import com.dao.momentum.work.query.dto.response.AttendanceResponse;
 import com.dao.momentum.work.query.dto.response.WorkDetailsResponse;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import com.dao.momentum.work.query.service.WorkQueryService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/works")
@@ -31,6 +36,37 @@ public class WorkQueryController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         workQueryService.getMyWorks(userDetails, workSearchRequest)
+                )
+        );
+    }
+
+    @GetMapping("/me/today")
+    @Operation(summary = "당일 출근 여부 조회", description = "사원이 자신의 출근 등록 여부를 조회합니다.")
+    public ResponseEntity<ApiResponse<AttendanceResponse>> getMyTodaysAttendance(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        LocalDate today = LocalDate.now();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getMyTodaysAttendance(userDetails, today)
+                )
+        );
+    }
+
+    @Hidden
+    @GetMapping("/me/today/test") // 개발자 테스트용
+    public ResponseEntity<ApiResponse<AttendanceResponse>> getMyTodaysAttendanceTest(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(required = false) LocalDate today
+    ) {
+        if (today == null) {
+            today = LocalDate.now();
+        }
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getMyTodaysAttendance(userDetails, today)
                 )
         );
     }
@@ -60,7 +96,6 @@ public class WorkQueryController {
                 )
         );
     }
-
 
 
 }

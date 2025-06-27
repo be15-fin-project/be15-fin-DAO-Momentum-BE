@@ -107,4 +107,31 @@
         FROM work
         WHERE work_id = #{workId}
     </select>
+
+    <select id="getMyTodaysAttendance" resultType="com.dao.momentum.work.query.dto.response.AttendanceDTO">
+        SELECT
+            'Y' AS isAttended,
+            work.work_id,
+            work.emp_id
+        FROM work AS work
+        WHERE work.emp_id = #{empId}
+        AND work.start_at &gt;= #{today}
+        AND work.start_at &lt; #{tomorrow}
+
+        UNION ALL
+
+        SELECT
+            'N' AS isAttended,
+            null AS workId,
+            null AS empId
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM work
+            WHERE emp_id = #{empId}
+            AND work.start_at &gt;= #{today}
+            AND work.start_at &lt; #{tomorrow}
+        )
+        LIMIT 1
+    </select>
 </mapper>
