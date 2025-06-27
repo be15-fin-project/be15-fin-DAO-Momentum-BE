@@ -1,7 +1,7 @@
 package com.dao.momentum.retention.prospect.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.retention.interview.exception.InterviewException;
+import com.dao.momentum.retention.prospect.exception.ProspectException;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
@@ -58,7 +58,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getAverageScore(req))
-                .isInstanceOf(InterviewException.class)
+                .isInstanceOf(ProspectException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -102,7 +102,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(InterviewException.class)
+                .isInstanceOf(ProspectException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -146,7 +146,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
-                .isInstanceOf(InterviewException.class)
+                .isInstanceOf(ProspectException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
     }
 
@@ -158,7 +158,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(InterviewException.class)
+                .isInstanceOf(ProspectException.class)
                 .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
     }
 }
