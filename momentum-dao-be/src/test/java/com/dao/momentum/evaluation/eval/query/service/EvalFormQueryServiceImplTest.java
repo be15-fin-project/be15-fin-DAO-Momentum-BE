@@ -1,5 +1,7 @@
 package com.dao.momentum.evaluation.eval.query.service;
 
+import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvalFormDetailResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvalFormPromptRaw;
 import com.dao.momentum.evaluation.eval.query.mapper.EvalFormMapper;
@@ -69,8 +71,8 @@ class EvalFormQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> evalFormQueryService.getFormDetail(999, null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("해당 양식의 문항 정보를 찾을 수 없습니다.");
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVALUATION_PROMPT_NOT_FOUND.getMessage());
     }
 
     // 유틸: private 필드 세팅
