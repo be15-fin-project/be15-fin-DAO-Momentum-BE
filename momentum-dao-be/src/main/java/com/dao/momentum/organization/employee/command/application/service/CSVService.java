@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.employee.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.email.service.EmailService;
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import com.dao.momentum.organization.department.exception.DepartmentException;
@@ -45,6 +46,7 @@ public class CSVService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
+    private final EmailService emailService;
 
 
     @Transactional
@@ -62,6 +64,10 @@ public class CSVService {
                         entity.setEmpNo(employeeCommandService.generateNextEmpNo());
                     }
                     employeeRepository.save(entity);
+
+                    String passwordResetToken = employeeCommandService.getPasswordResetToken(entity.getEmpId());
+
+                    emailService.sendPasswordResetEmail(entity, passwordResetToken);
                 });
 
         List<Long> empIds = entities.stream().map(Employee::getEmpId).toList();
