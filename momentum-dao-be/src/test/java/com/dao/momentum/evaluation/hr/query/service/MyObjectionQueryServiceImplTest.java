@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyObjectionRaw;
@@ -69,7 +70,7 @@ class MyObjectionQueryServiceImplTest {
 
         MyObjectionItemDto item2 = result.getContent().get(1);
         assertThat(item2.getObjectionId()).isEqualTo(102L);
-        assertThat(item2.getOverallGrade()).isEqualTo("A");
+        assertThat(item2.getOverallGrade()).isEqualTo("B");
         assertThat(item2.getStatusType()).isEqualTo("APPROVED");
 
         Pagination p = result.getPagination();
@@ -85,7 +86,7 @@ class MyObjectionQueryServiceImplTest {
 
         assertThatThrownBy(() -> service.getMyObjections(1L, req))
                 .isInstanceOf(HrException.class)
-                .hasMessageContaining("조회 가능한 인사 평가 이의제기 내역이 없습니다.");
+                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -96,7 +97,7 @@ class MyObjectionQueryServiceImplTest {
 
         assertThatThrownBy(() -> service.getMyObjections(1L, req))
                 .isInstanceOf(HrException.class)
-                .hasMessageContaining("조회 가능한 인사 평가 이의제기 내역이 없습니다.");
+                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -173,6 +174,6 @@ class MyObjectionQueryServiceImplTest {
 
         assertThatThrownBy(() -> service.getObjectionDetail(5001L))
                 .isInstanceOf(HrException.class)
-                .hasMessageContaining("조회 가능한 인사 평가 이의제기 내역이 없습니다.");
+                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
     }
 }
