@@ -65,5 +65,17 @@ public class ApproveCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PatchMapping("/documents/{documentId}/reference")
+    @Operation(summary = "결재 참조 열람", description = "결재 참조자가 결재 내역을 열람합니다.")
+    public ResponseEntity<ApiResponse<Void>> viewAsReference(
+            @PathVariable Long documentId ,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+
+        approveCommandService.viewAsReference(documentId, empId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
 }
