@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.approve.query.mapper.ApproveMapper">
+
+    <select id="findEmployeeLeader" resultType="com.dao.momentum.approve.query.dto.EmployeeLeaderDto">
+        SELECT
+            -- 상위 결재자의 이름 + 직위명
+            CASE
+                WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN CONCAT(ceo.name, ' ', p_ceo.name, '님')
+                WHEN e.position_id BETWEEN 2 AND 4 THEN CONCAT(eh_sup.name, ' ', p_sup.name, '님')
+                ELSE CONCAT(eh_cur.name, ' ', p_cur.name)
+            END AS team_leader_name,
+
+            -- 상위 결재자의 사번
+            CASE
+                WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN ceo.emp_id
+                WHEN e.position_id BETWEEN 2 AND 4 THEN dh_sup.emp_id
+                ELSE dh_cur.emp_id
+            END AS team_leader_id
+
+        FROM employee e
+
+        JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN department d_sup ON d.parent_dept_id = d_sup.dept_id
+
+        LEFT JOIN dept_head dh_cur ON e.dept_id = dh_cur.dept_id
+        LEFT JOIN employee eh_cur ON dh_cur.emp_id = eh_cur.emp_id
+        LEFT JOIN position p_cur ON eh_cur.position_id = p_cur.position_id
+
+        LEFT JOIN dept_head dh_sup ON d_sup.dept_id = dh_sup.dept_id
+        LEFT JOIN employee eh_sup ON dh_sup.emp_id = eh_sup.emp_id
+        LEFT JOIN position p_sup ON eh_sup.position_id = p_sup.position_id
+
+        LEFT JOIN employee ceo ON ceo.emp_id = 1
+        LEFT JOIN position p_ceo ON ceo.position_id = p_ceo.position_id
+
+        WHERE e.emp_id = #{empId}
+    </select>
+
+</mapper>
