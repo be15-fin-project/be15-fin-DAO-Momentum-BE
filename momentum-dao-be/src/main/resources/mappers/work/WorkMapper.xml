@@ -114,9 +114,11 @@
             work.work_id,
             work.emp_id
         FROM work AS work
+        JOIN work_type AS wt ON work.type_id = wt.type_id
         WHERE work.emp_id = #{empId}
         AND work.start_at &gt;= #{today}
         AND work.start_at &lt; #{tomorrow}
+        AND wt.type_name = 'WORK'
 
         UNION ALL
 
@@ -128,9 +130,11 @@
         WHERE NOT EXISTS (
             SELECT 1
             FROM work
+            JOIN work_type AS wt ON work.type_id = wt.type_id
             WHERE emp_id = #{empId}
             AND work.start_at &gt;= #{today}
             AND work.start_at &lt; #{tomorrow}
+            AND wt.type_name = 'WORK'
         )
         LIMIT 1
     </select>
