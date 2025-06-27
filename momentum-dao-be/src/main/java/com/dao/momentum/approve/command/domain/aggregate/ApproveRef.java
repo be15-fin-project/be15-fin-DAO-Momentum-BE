@@ -33,4 +33,9 @@ public class ApproveRef {
         this.empId = empId;
         this.isConfirmed = isConfirmed;
     }
+
+    /* 참조 상태를 '확인'으로 변경하는 메소드 */
+    public void updateRefStatus() {
+        isConfirmed = IsConfirmed.Y;
+    }
 }
