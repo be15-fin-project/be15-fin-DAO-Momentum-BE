@@ -19,4 +19,12 @@
         ORDER BY user_role_id ASC
     </select>
 
+    <select id="getEmployeeRoles" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeRoleDTO">
+        SELECT
+            user_role_id
+        FROM employee_roles
+        WHERE emp_id = #{empId}
+        ORDER BY user_role_id ASC
+    </select>
+
 </mapper>

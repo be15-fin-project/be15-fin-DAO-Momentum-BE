@@ -8,8 +8,8 @@ import java.util.List;
 
 @Getter
 @Builder
-@Schema(description = "사용자 권한 응답 객체")
-public class UserRolesResponse {
-    @Schema(description = "사용자 권한 목록")
-    private List<UserRoleDTO> userRoles;
+@Schema(description = "사원 권한 응답 객체")
+public class EmployeeRolesResponse {
+    @Schema(description = "사용자 권한 ID 목록")
+    private List<Integer> userRolesIds;
 }
