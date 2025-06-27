@@ -3,6 +3,7 @@ package com.dao.momentum.work.query.mapper;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.response.WorkDTO;
+import com.dao.momentum.work.query.dto.response.WorkDetailsDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,4 +17,5 @@ public interface WorkMapper {
 
     long countWorks(@Param("request") AdminWorkSearchDTO request);
 
+    WorkDetailsDTO getWorkDetails(long workId);
 }

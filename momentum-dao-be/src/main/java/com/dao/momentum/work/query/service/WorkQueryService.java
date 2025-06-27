@@ -6,6 +6,8 @@ import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
 import com.dao.momentum.work.query.dto.response.WorkDTO;
+import com.dao.momentum.work.query.dto.response.WorkDetailsDTO;
+import com.dao.momentum.work.query.dto.response.WorkDetailsResponse;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import com.dao.momentum.work.query.mapper.WorkMapper;
 import lombok.RequiredArgsConstructor;
@@ -58,4 +60,12 @@ public class WorkQueryService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public WorkDetailsResponse getWorkDetails(long workId) {
+        WorkDetailsDTO workDetails = workMapper.getWorkDetails(workId);
+
+        return WorkDetailsResponse.builder()
+                .workDetails(workDetails)
+                .build();
+    }
 }
