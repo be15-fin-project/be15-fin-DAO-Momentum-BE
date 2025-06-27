@@ -73,8 +73,16 @@ public class EmployeeCommandService {
             employeeRolesRepository.save(new EmployeeRoles(null, employee.getEmpId(), userRoleId));
         }
 
+        String passwordResetToken = getPasswordResetToken(employee.getEmpId());
+
+        //이메일 처리
+        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+
+    }
+
+    public String getPasswordResetToken(long empId) {
         String passwordResetToken = jwtTokenProvider.createPasswordResetToken(
-                String.valueOf(employee.getEmpId())
+                String.valueOf(empId)
         );
 
         PasswordResetToken redisPasswordResetToken = PasswordResetToken.builder()
@@ -82,14 +90,12 @@ public class EmployeeCommandService {
                 .build();
 
         passwordResetTokenRedisTemplate.opsForValue().set(
-                String.valueOf(employee.getEmpId()),
+                String.valueOf(empId),
                 redisPasswordResetToken,
                 Duration.ofDays(1)
         );
 
-        //이메일 처리
-        emailService.sendPasswordResetEmail(employee,passwordResetToken);
-
+        return passwordResetToken;
     }
 
     public String generateRandomPassword() {

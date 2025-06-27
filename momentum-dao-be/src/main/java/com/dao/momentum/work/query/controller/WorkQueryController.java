@@ -3,6 +3,7 @@ package com.dao.momentum.work.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
+import com.dao.momentum.work.query.dto.response.WorkDetailsResponse;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import com.dao.momentum.work.query.service.WorkQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/works")
@@ -46,6 +44,19 @@ public class WorkQueryController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         workQueryService.getWorks(adminWorkSearchRequest)
+                )
+        );
+    }
+
+    @GetMapping("/{workId}")
+    @Operation(summary = "관리자 출퇴근 상세 조회", description = "관리자가 회사에 등록된 출퇴근 항목의 세부 내용을 조회합니다.")
+    public ResponseEntity<ApiResponse<WorkDetailsResponse>> getWorkDetails(
+            @PathVariable long workId
+    ) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getWorkDetails(workId)
                 )
         );
     }

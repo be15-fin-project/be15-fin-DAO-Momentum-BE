@@ -1,6 +1,6 @@
 package com.dao.momentum.organization.employee.command.application.dto.request;
 
-import com.dao.momentum.organization.employee.query.dto.response.RecordType;
+import com.dao.momentum.organization.employee.command.domain.aggregate.RecordType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
