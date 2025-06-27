@@ -8,4 +8,6 @@ public interface ApproveCommandService {
 
     void createApproval(ApproveRequest approveRequest, Long empId);
 
+    void viewAsReference(Long approveId, Long empId);
+
 }

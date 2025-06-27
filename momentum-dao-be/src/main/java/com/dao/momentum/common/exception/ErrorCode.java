@@ -88,6 +88,8 @@ public enum ErrorCode {
     APPROVAL_ALREADY_PROCESSED("30019", "이미 승인/반려 된 결재입니다.", HttpStatus.BAD_REQUEST),
     APPROVAL_ALREADY_CANCELED("30020", "이미 취소된 결재는 다시 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
     PREVIOUS_APPROVAL_NOT_COMPLETED("30021", "이전 단계 결재가 완료 되지 않아 결재를 진행할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_REF("30022", "존재하지 않는 참조 내역입니다.", HttpStatus.BAD_REQUEST),
+
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
     STATISTICS_NOT_FOUND("40001", "해당 조건에 대한 KPI 통계가 없습니다.", HttpStatus.NOT_FOUND),
