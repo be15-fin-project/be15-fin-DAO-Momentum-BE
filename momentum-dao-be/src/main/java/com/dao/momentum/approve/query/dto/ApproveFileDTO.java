@@ -2,8 +2,6 @@ package com.dao.momentum.approve.query.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 @ToString
 @NoArgsConstructor
