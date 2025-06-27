@@ -1,0 +1,34 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.momentum.organization.company.query.mapper.HolidayMapper">
+    <select id="searchHolidays" resultType="com.dao.momentum.organization.company.query.dto.response.HolidayGetDTO">
+        SELECT
+                holiday_id,
+                holiday_name,
+                date
+        FROM holiday
+        WHERE 1 = 1
+        <if test="year != null">
+            AND YEAR(date) = #{year}
+        </if>
+        <if test="month != null">
+            AND MONTH(date) = #{month}
+        </if>
+        ORDER BY date
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 개수 조회 -->
+    <select id="countHolidays" resultType="long">
+        SELECT COUNT(*)
+        FROM holiday
+        WHERE 1=1
+        <if test="year != null">
+            AND YEAR(date) = #{year}
+        </if>
+        <if test="month != null">
+            AND MONTH(date) = #{month}
+        </if>
+    </select>
+</mapper>
