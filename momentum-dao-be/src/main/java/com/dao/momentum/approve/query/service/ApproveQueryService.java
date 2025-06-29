@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.service;
 
+import com.dao.momentum.approve.query.dto.EmployeeLeaderDto;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
@@ -25,5 +26,9 @@ public interface ApproveQueryService {
 
     /* 결재 상세 조회 메서드 */
     ApproveDetailResponse getApproveDetail(Long approveId);
+
+
+    /* 사원의 팀장 조회 메서드 */
+    EmployeeLeaderDto getEmployeeLeader(Long empId);
 
 }
