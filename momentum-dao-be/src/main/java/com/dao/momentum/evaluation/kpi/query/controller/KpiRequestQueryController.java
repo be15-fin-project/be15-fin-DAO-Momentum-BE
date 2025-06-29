@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,12 +27,12 @@ public class KpiRequestQueryController {
             description = "부서 내 구성원의 KPI 요청 목록을 조회합니다."
     )
     public ApiResponse<KpiRequestListResultDto> getKpiRequests(
+            @AuthenticationPrincipal UserDetails user,
             @ModelAttribute KpiRequestListRequestDto requestDto
     ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long requesterEmpId = Long.valueOf(auth.getName()); // JWT subject: empId
+        Long empId = Long.parseLong(user.getUsername());
 
-        KpiRequestListResultDto result = kpiRequestQueryService.getKpiRequests(requesterEmpId, requestDto);
+        KpiRequestListResultDto result = kpiRequestQueryService.getKpiRequests(empId, requestDto);
         return ApiResponse.success(result);
     }
 }

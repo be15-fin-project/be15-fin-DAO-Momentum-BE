@@ -8,6 +8,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseD
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import java.util.List;
 public class KpiStatisticsServiceImpl implements KpiStatisticsService {
 
     private final KpiStatisticsMapper kpiStatisticsMapper;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -42,7 +44,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
 
         KpiTimeseriesRequestDto updatedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empId(requestDto.getEmpId())
+                .empNo(requestDto.getEmpNo())
                 .build();
 
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
@@ -56,15 +58,17 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
 
     // 권한 반영된 단일 통계 조회
     @Override
-    public KpiStatisticsResponseDto getStatisticsWithAccessControl(KpiStatisticsRequestDto dto, Long requesterEmpId) {
+    public KpiStatisticsResponseDto getStatisticsWithAccessControl(KpiStatisticsRequestDto dto, Long empId) {
         boolean isPrivileged = hasPrivilegedRole();
+        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
+
         KpiStatisticsRequestDto resolvedDto = isPrivileged
                 ? dto
                 : KpiStatisticsRequestDto.builder()
                 .year(dto.getYear())
                 .month(dto.getMonth())
                 .deptId(dto.getDeptId())
-                .empId(requesterEmpId)
+                .empNo(empNo)
                 .build();
 
         return getStatistics(resolvedDto);
@@ -72,18 +76,19 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
 
     // 권한 반영된 시계열 통계 조회
     @Override
-    public KpiTimeseriesResponseDto getTimeseriesWithAccessControl(KpiTimeseriesRequestDto dto, Long requesterEmpId) {
+    public KpiTimeseriesResponseDto getTimeseriesWithAccessControl(KpiTimeseriesRequestDto dto, Long empId) {
         boolean isPrivileged = hasPrivilegedRole();
         int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
+        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
 
         KpiTimeseriesRequestDto resolvedDto = isPrivileged
                 ? KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empId(dto.getEmpId())
+                .empNo(dto.getEmpNo())
                 .build()
                 : KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empId(requesterEmpId)
+                .empNo(empNo)
                 .build();
 
         return getTimeseriesStatistics(resolvedDto);

@@ -29,4 +29,6 @@ public interface EmployeeRepository {
     List<Employee> findAllById(Iterable<Long> ids);
 
     boolean existsByDeptIdAndStatusIsNot(Integer deptId,Status status);
+
+    String findEmpNoByEmpId(Long empId);
 }

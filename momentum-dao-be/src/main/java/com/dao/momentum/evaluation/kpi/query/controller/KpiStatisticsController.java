@@ -12,7 +12,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,9 +34,12 @@ public class KpiStatisticsController {
             summary = "KPI 통계 조회",
             description = "특정 연월/부서/사원 기준으로 KPI 통계를 조회합니다 (총 KPI 수, 완료 수, 평균 진척률)."
     )
-    public ApiResponse<KpiStatisticsResponseDto> getKpiStatistics(@ModelAttribute KpiStatisticsRequestDto requestDto) {
-        Long requesterEmpId = getAuthenticatedEmpId();
-        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithAccessControl(requestDto, requesterEmpId);
+    public ApiResponse<KpiStatisticsResponseDto> getKpiStatistics(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiStatisticsRequestDto requestDto
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithAccessControl(requestDto, empId);
         return ApiResponse.success(result);
     }
 
@@ -43,14 +48,12 @@ public class KpiStatisticsController {
             summary = "KPI 시계열 통계 조회",
             description = "연도별 월간 KPI 작성 수, 완료 수, 평균 진척률을 시계열로 조회합니다."
     )
-    public ApiResponse<KpiTimeseriesResponseDto> getTimeseriesStatistics(@ModelAttribute KpiTimeseriesRequestDto requestDto) {
-        Long requesterEmpId = getAuthenticatedEmpId();
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(requestDto, requesterEmpId);
+    public ApiResponse<KpiTimeseriesResponseDto> getTimeseriesStatistics(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiTimeseriesRequestDto requestDto
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(requestDto, empId);
         return ApiResponse.success(result);
-    }
-
-    private Long getAuthenticatedEmpId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return Long.parseLong(auth.getName()); // JWT subject = emp_id
     }
 }

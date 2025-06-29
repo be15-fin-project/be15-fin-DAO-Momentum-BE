@@ -16,6 +16,12 @@ public class KpiTimeseriesRequestDto {
     )
     private Integer year;
 
-    @Schema(description = "사원 ID", example = "1001")
-    private Long empId;
+    @Schema(description = "사원 번호", example = "1001")
+    private String empNo;
+
+    @Schema(description = "부서 ID", example = "10")
+    private Long deptId;
+
+    @Schema(description = "직위 ID", example = "5")
+    private Integer positionId;
 }
