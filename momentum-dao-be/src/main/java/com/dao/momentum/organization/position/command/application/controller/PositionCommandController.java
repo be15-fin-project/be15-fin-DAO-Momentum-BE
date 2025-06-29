@@ -1,6 +1,5 @@
 package com.dao.momentum.organization.position.command.application.controller;
 
-import com.dao.momentum.announcement.exception.AnnouncementAccessDeniedException;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.position.command.application.dto.request.PositionCreateRequest;
