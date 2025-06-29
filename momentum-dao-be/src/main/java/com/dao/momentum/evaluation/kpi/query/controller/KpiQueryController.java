@@ -11,13 +11,10 @@ import com.dao.momentum.evaluation.kpi.query.service.KpiQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,8 +30,11 @@ public class KpiQueryController {
             summary = "KPI 전체 내역 조회",
             description = "사번, 부서 ID, 직위 ID, 상태 ID, 작성일 범위로 KPI를 조회합니다. 페이징 지원."
     )
-    public ApiResponse<KpiListResultDto> getKpiList(@ModelAttribute KpiListRequestDto request) {
-        Long empId = getAuthenticatedEmpId();
+    public ApiResponse<KpiListResultDto> getKpiList(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiListRequestDto request
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
 
         // 사번 조회 (builder 처리를 서비스로 넘기되, empNo만 컨트롤러에서 보완해도 됨)
         String empNo = employeeRepository.findByEmpId(empId)
@@ -60,13 +60,10 @@ public class KpiQueryController {
             description = "부서, 연도, 월 기준으로 사원별 KPI 통계를 조회합니다. 평균 진척도, 완료 KPI 수, 완료율 등을 반환합니다."
     )
     public ApiResponse<KpiEmployeeSummaryResultDto> getEmployeeKpiSummaries(
-            @ParameterObject @ModelAttribute KpiEmployeeSummaryRequestDto requestDto
+            @ModelAttribute KpiEmployeeSummaryRequestDto requestDto
     ) {
         KpiEmployeeSummaryResultDto result = kpiQueryService.getEmployeeKpiSummaries(requestDto);
         return ApiResponse.success(result);
     }
 
-    private Long getAuthenticatedEmpId() {
-        return Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName());
-    }
 }

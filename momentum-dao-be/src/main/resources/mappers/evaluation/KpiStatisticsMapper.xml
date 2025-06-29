@@ -25,8 +25,11 @@
             <if test="deptId != null">
                 AND e.dept_id = #{deptId}
             </if>
-            <if test="empId != null">
-                AND k.emp_id = #{empId}
+            <if test="empNo != null">
+                AND k.emp_No = #{empNo}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
             </if>
         </where>
 
@@ -42,11 +45,18 @@
             SUM(CASE WHEN k.kpi_progress = 100 THEN 1 ELSE 0 END) AS completedKpiCount,
             ROUND(AVG(k.kpi_progress), 2) AS averageProgress
         FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
         WHERE k.is_deleted = 'N'
             AND k.status_id = 2
             AND YEAR(k.created_at) = #{year}
-            <if test="empId != null">
-                AND emp_id = #{empId}
+            <if test="empNo != null">
+                AND emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id = #{deptId}
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
             </if>
         GROUP BY MONTH(k.created_at)
         ORDER BY month
