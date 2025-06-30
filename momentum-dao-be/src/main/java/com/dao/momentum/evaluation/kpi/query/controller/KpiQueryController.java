@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class KpiQueryController {
 
     private final KpiQueryService kpiQueryService;
-    private final EmployeeRepository employeeRepository;
 
     @GetMapping("/list")
     @Operation(
@@ -36,12 +35,21 @@ public class KpiQueryController {
     ) {
         Long empId = Long.parseLong(user.getUsername());
 
-        // 사번 조회 (builder 처리를 서비스로 넘기되, empNo만 컨트롤러에서 보완해도 됨)
-        String empNo = employeeRepository.findByEmpId(empId)
-                .orElseThrow(() -> new RuntimeException("사원 정보를 찾을 수 없습니다."))
-                .getEmpNo();
+        return ApiResponse.success(kpiQueryService.getKpiListWithAccessControl(request, empId));
+    }
 
-        return ApiResponse.success(kpiQueryService.getKpiListWithAccessControl(request, empId, empNo));
+    @GetMapping("/my-list")
+    @Operation(
+            summary = "자신의 KPI 전체 내역 조회",
+            description = "사번, 부서 ID, 직위 ID, 상태 ID, 작성일 범위로 KPI를 조회합니다. 페이징 지원."
+    )
+    public ApiResponse<KpiListResultDto> getMyKpiList(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiListRequestDto request
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+
+        return ApiResponse.success(kpiQueryService.getKpiListWithControl(request, empId));
     }
 
     @GetMapping("/{kpiId}")

@@ -17,5 +17,8 @@ public interface KpiQueryService {
     KpiEmployeeSummaryResultDto getEmployeeKpiSummaries(KpiEmployeeSummaryRequestDto requestDto);
 
     // 권한 반영
-    KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long requesterEmpId, String empNo);
+    KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long empId);
+
+    // 사원 본인의 KPI 전체 조회
+    KpiListResultDto getKpiListWithControl(KpiListRequestDto requestDto, Long empId);
 }

@@ -27,8 +27,6 @@ public class KpiStatisticsController {
 
     private final KpiStatisticsService kpiStatisticsService;
 
-    private final EmployeeRepository employeeRepository;
-
     @GetMapping("/statistics")
     @Operation(
             summary = "KPI 통계 조회",
@@ -54,6 +52,33 @@ public class KpiStatisticsController {
     ) {
         Long empId = Long.parseLong(user.getUsername());
         KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(requestDto, empId);
+        return ApiResponse.success(result);
+    }
+    @GetMapping("/my-statistics")
+    @Operation(
+            summary = "자신의 KPI 통계 조회",
+            description = "특정 연월/부서/사원 기준으로 KPI 통계를 조회합니다 (총 KPI 수, 완료 수, 평균 진척률)."
+    )
+    public ApiResponse<KpiStatisticsResponseDto> getMyKpiStatistics(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiStatisticsRequestDto requestDto
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithControl(requestDto, empId);
+        return ApiResponse.success(result);
+    }
+
+    @GetMapping("/my-timeseries")
+    @Operation(
+            summary = "자신의 KPI 시계열 통계 조회",
+            description = "연도별 월간 KPI 작성 수, 완료 수, 평균 진척률을 시계열로 조회합니다."
+    )
+    public ApiResponse<KpiTimeseriesResponseDto> getMyTimeseriesStatistics(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiTimeseriesRequestDto requestDto
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithControl(requestDto, empId);
         return ApiResponse.success(result);
     }
 }
