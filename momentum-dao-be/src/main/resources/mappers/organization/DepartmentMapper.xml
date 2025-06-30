@@ -55,4 +55,22 @@
         WHERE d.is_deleted = 'N'
         ORDER BY d.parent_dept_id, d.dept_id
     </select>
+
+    <select id="getLeafDepartment" resultType="com.dao.momentum.organization.department.query.dto.response.LeafDepartmentDTO">
+        SELECT
+                d.dept_id,
+                d.name
+        FROM
+                Department d
+        WHERE
+                d.is_deleted = 'N'
+        AND
+                d.dept_id
+        NOT IN (
+                SELECT DISTINCT sub.parent_dept_id
+                 FROM Department sub
+                WHERE sub.parent_dept_id IS NOT NULL
+        )
+
+    </select>
 </mapper>

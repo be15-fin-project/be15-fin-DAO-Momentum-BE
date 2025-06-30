@@ -97,4 +97,14 @@ public class DepartmentQueryService {
                 .departmentNodeDTOList(rootList)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public LeafDepartmentResponse getLeafDepartments() {
+        List<LeafDepartmentDTO> dtoList = departmentMapper.getLeafDepartment();
+
+
+        return LeafDepartmentResponse.builder()
+                .leafDepartmentDTOList(dtoList)
+                .build();
+    }
 }
