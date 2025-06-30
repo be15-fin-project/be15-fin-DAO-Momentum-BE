@@ -26,7 +26,7 @@
                 AND e.dept_id = #{deptId}
             </if>
             <if test="empNo != null">
-                AND k.emp_No = #{empNo}
+                AND e.emp_no = #{empNo}
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}
@@ -50,7 +50,7 @@
             AND k.status_id = 2
             AND YEAR(k.created_at) = #{year}
             <if test="empNo != null">
-                AND emp_no = #{empNo}
+                AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
                 AND e.dept_id = #{deptId}
