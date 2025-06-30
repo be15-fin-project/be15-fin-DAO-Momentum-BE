@@ -174,6 +174,11 @@ public class SecurityConfig {
                 HttpMethod.DELETE,
                 "/contracts/{contractId}"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.GET,
+                "/admin/approval/documents"
+        ).hasAnyAuthority("MASTER");
     }
 
 }
