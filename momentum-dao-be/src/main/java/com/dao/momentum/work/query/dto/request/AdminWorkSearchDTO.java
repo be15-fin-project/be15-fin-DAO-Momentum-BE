@@ -24,6 +24,7 @@ public class AdminWorkSearchDTO {
 
     private Integer typeId;
 //    private String typeName;
+    private Integer childTypeId;
 
     private Integer vacationTypeId;
 
@@ -53,12 +54,12 @@ public class AdminWorkSearchDTO {
                 .empName(request.getEmpName())
                 .deptId(request.getDeptId())
                 .positionId(request.getPositionId())
-//                .deptName(request.getDeptName())
                 .rangeStartDate(request.getRangeStartDate())
                 .rangeEndDate(rangeEndDate == null ?
                         null : rangeEndDate.plusDays(1))
                 .typeId(request.getTypeId())
-//                .typeName(request.getTypeName())
+                .childTypeId(request.getChildTypeId())
+                .vacationTypeId(request.getVacationTypeId())
                 .order(request.getOrder())
                 .page(page == null ? 1 : page)
                 .size(size == null ? 10 : size)

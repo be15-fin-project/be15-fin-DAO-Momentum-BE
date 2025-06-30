@@ -23,6 +23,7 @@ public class AdminWorkSearchRequest {
 
     private Integer typeId;
 //    private String typeName;
+    private Integer childTypeId;
 
     private Integer vacationTypeId;
 

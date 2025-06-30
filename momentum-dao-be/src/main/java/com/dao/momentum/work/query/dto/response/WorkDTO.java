@@ -38,6 +38,8 @@ public class WorkDTO {
     @Schema(description = "근무 유형 이름", example = "VACATION")
     private String typeName;
 
+    private String childTypeName;
+
     @Schema(description = "휴가 유형 ID", example = "1")
     private Integer vacationTypeId;
 
