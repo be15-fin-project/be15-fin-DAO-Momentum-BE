@@ -25,7 +25,6 @@ public class AdminApproveQueryController {
 
     /* 전체 결재 목록 조회하기 */
     @GetMapping("/approval/documents")
-    @PreAuthorize("hasAuthority('MASTER')")
     @Operation(summary = "전체 결재 내역 조회", description = "마스터 관리자가 전체 결재 내역을 조회합니다.")
     public ResponseEntity<ApiResponse<ApproveResponse>> getApproveList(
             @Validated ApproveListRequest approveListRequest,

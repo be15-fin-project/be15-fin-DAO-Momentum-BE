@@ -28,7 +28,7 @@ public class AdminApproveQueryServiceImpl implements AdminApproveQueryService {
             ApproveListRequest approveListRequest, PageRequest pageRequest
     ) {
 
-        List<String> validTabs = List.of("ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
+        List<String> validTabs = List.of("ALL", "ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
 
         if (!validTabs.contains(approveListRequest.getTab())) {
             throw new NotExistTabException(ErrorCode.NOT_EXIST_TAB);
