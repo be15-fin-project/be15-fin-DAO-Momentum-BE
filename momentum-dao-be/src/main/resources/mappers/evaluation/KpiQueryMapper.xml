@@ -78,6 +78,9 @@
             <if test="startDate != null and endDate != null">
                 AND k.created_at BETWEEN #{startDate} AND #{endDate}
             </if>
+            <if test="isDeleted != null">
+                AND k.is_deleted = #{isDeleted}
+            </if>
         </where>
     </select>
 
@@ -99,6 +102,10 @@
             k.progress_75,
             k.progress_100,
             s.status_type AS statusType,
+            k.reason,
+            k.c_reason,
+            k.c_response,
+            k.is_deleted As isDeleted,
             DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
             DATE_FORMAT(k.deadline, '%Y-%m-%d') AS deadline
         FROM kpi k
@@ -107,7 +114,6 @@
         LEFT JOIN position p ON e.position_id = p.position_id
         JOIN status s ON k.status_id = s.status_id
         WHERE k.kpi_id = #{kpiId}
-            AND k.is_deleted = 'N'
     </select>
 
     <!-- KPI 사원별 목록 -->

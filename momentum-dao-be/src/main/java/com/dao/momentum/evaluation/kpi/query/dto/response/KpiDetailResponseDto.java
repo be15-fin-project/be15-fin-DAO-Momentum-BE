@@ -1,6 +1,8 @@
 package com.dao.momentum.evaluation.kpi.query.dto.response;
 
+import com.dao.momentum.common.dto.UseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -55,6 +57,18 @@ public class KpiDetailResponseDto {
             example = "PENDING",
             allowableValues = {"PENDING", "ACCEPTED", "REJECTED", "CANCELLED", "DELETED"})
     private String statusType;
+
+    @Schema(description = "처리 사유", example = "합당한 KPI 확인했습니다.")
+    private String reason;
+
+    @Schema(description = "취소 사유", example = "해당 KPI의 진행은 무리입니다")
+    private String cancelReason;
+
+    @Schema(description = "취소 처리 사유", example = "해당 KPI가 무리인 것을 확인했습니다")
+    private String cancelResponse;
+
+    @Schema(description = "삭제 여부 (Y, N)", example = "Y")
+    private UseStatus isDeleted;
 
     @Schema(description = "KPI 작성일", example = "2025-06-01")
     private String createdAt;
