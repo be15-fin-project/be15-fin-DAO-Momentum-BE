@@ -26,24 +26,26 @@
         WHERE 1=1
 
         <!-- 탭 조건 -->
-        <if test="req.tab == 'ATTENDANCE'">
-            AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
-            <!-- 근태 관련된 상세 필터 -->
-            <if test="req.approveType != null and req.approveType != ''">
-                AND a.approve_type = #{req.approveType}
+        <if test="req.tab != 'ALL'">
+            <if test="req.tab == 'ATTENDANCE'">
+                AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
+                <!-- 근태 관련된 상세 필터 -->
+                <if test="req.approveType != null and req.approveType != ''">
+                    AND a.approve_type = #{req.approveType}
+                </if>
             </if>
-        </if>
-        <if test="req.tab == 'PROPOSAL'">
-            AND a.approve_type = 'PROPOSAL'
-        </if>
-        <if test="req.tab == 'RECEIPT'">
-            AND a.approve_type = 'RECEIPT'
-            <if test="req.receiptType != null and req.receiptType != ''">
-                AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+            <if test="req.tab == 'PROPOSAL'">
+                AND a.approve_type = 'PROPOSAL'
             </if>
-        </if>
-        <if test="req.tab == 'CANCEL'">
-            AND a.approve_type = 'CANCEL'
+            <if test="req.tab == 'RECEIPT'">
+                AND a.approve_type = 'RECEIPT'
+                <if test="req.receiptType != null and req.receiptType != ''">
+                    AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+                </if>
+            </if>
+            <if test="req.tab == 'CANCEL'">
+                AND a.approve_type = 'CANCEL'
+            </if>
         </if>
 
         <!-- 상태  -->
