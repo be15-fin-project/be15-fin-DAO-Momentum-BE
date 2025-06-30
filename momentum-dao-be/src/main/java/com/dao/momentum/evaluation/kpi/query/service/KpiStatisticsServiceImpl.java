@@ -99,6 +99,35 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         return getTimeseriesStatistics(resolvedDto);
     }
 
+    // 자신의 단일 통계 조회
+    @Override
+    public KpiStatisticsResponseDto getStatisticsWithControl(KpiStatisticsRequestDto dto, Long empId) {
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
+
+        KpiStatisticsRequestDto resolvedDto = KpiStatisticsRequestDto.builder()
+                .year(dto.getYear())
+                .month(dto.getMonth())
+                .deptId(dto.getDeptId())
+                .empNo(empNo)
+                .build();
+
+        return getStatistics(resolvedDto);
+    }
+
+    // 자신의 시계열 통계 조회
+    @Override
+    public KpiTimeseriesResponseDto getTimeseriesWithControl(KpiTimeseriesRequestDto dto, Long empId) {
+        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
+
+        KpiTimeseriesRequestDto resolvedDto = KpiTimeseriesRequestDto.builder()
+                .year(year)
+                .empNo(empNo)
+                .build();
+
+        return getTimeseriesStatistics(resolvedDto);
+    }
+
     // 역할 확인 (권한별 공개 여부 분기용)
     private boolean hasPrivilegedRole() {
         return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
