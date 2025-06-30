@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.employee.command.application.dto.request;
 
-import com.dao.momentum.organization.employee.query.dto.response.RecordType;
+import com.dao.momentum.organization.employee.command.domain.aggregate.RecordType;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,10 +18,12 @@ public class EmployeeRecordsUpdateRequest {
     @Getter
     @Builder
     public static class EmployeeRecordsItemRequest {
+        @NotNull
         private RecordType type;
 
         private String organization;
 
+        @NotNull
         private LocalDate startDate;
 
         private LocalDate endDate;

@@ -97,4 +97,45 @@
         </if>
         ;
     </select>
+
+    <select id = "getWorkDetails" resultType = "com.dao.momentum.work.query.dto.response.WorkDetailsDTO">
+        SELECT
+            break_time,
+            start_pushed_at,
+            end_pushed_at,
+            is_normal_work
+        FROM work
+        WHERE work_id = #{workId}
+    </select>
+
+    <select id="getMyTodaysAttendance" resultType="com.dao.momentum.work.query.dto.response.AttendanceDTO">
+        SELECT
+            'Y' AS isAttended,
+            work.work_id,
+            work.emp_id
+        FROM work AS work
+        JOIN work_type AS wt ON work.type_id = wt.type_id
+        WHERE work.emp_id = #{empId}
+        AND work.start_at &gt;= #{today}
+        AND work.start_at &lt; #{tomorrow}
+        AND wt.type_name = 'WORK'
+
+        UNION ALL
+
+        SELECT
+            'N' AS isAttended,
+            null AS workId,
+            null AS empId
+        FROM DUAL
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM work
+            JOIN work_type AS wt ON work.type_id = wt.type_id
+            WHERE emp_id = #{empId}
+            AND work.start_at &gt;= #{today}
+            AND work.start_at &lt; #{tomorrow}
+            AND wt.type_name = 'WORK'
+        )
+        LIMIT 1
+    </select>
 </mapper>

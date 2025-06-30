@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "remote_work")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class RemoteWork {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

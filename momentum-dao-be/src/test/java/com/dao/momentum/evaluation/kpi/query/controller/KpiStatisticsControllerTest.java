@@ -6,6 +6,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseD
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.service.KpiStatisticsService;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class KpiStatisticsControllerTest {
 
     @MockitoBean
     private KpiStatisticsService kpiStatisticsService;
+
+    @MockitoBean
+    private EmployeeRepository employeeRepository;
 
     @Autowired
     private ObjectMapper objectMapper;

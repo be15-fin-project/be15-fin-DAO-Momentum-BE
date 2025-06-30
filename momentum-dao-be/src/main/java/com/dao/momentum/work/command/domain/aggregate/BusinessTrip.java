@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "business_trip")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class BusinessTrip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

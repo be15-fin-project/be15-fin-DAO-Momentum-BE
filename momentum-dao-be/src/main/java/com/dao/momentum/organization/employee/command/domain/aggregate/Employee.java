@@ -1,6 +1,7 @@
 package com.dao.momentum.organization.employee.command.domain.aggregate;
 
 import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeInfoUpdateRequest;
+import com.dao.momentum.organization.employee.command.application.dto.request.MyInfoUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -91,6 +92,27 @@ public class Employee {
     public void updateVacations(int remainingDayoffHours, int remainingRefreshDays) {
         this.remainingDayoffHours = remainingDayoffHours;
         this.remainingRefreshDays = remainingRefreshDays;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void fromUpdateMyInfo(MyInfoUpdateRequest request) {
+        String name = request.getName();
+        Gender gender = request.getGender();
+        String address = request.getAddress();
+        String contact = request.getContact();
+
+        if (!this.name.equals(name)) {
+            this.name = name;
+        }
+        if (this.gender != gender) {
+            this.gender = gender;
+        }
+        if (!this.address.equals(address)) {
+            this.address = address;
+        }
+        if (!this.contact.equals(contact)) {
+            this.contact = contact;
+        }
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -76,7 +76,7 @@ class KpiStatisticsServiceImplTest {
     void getTimeseriesStatistics_success() {
         KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
                 .year(2025)
-                .empId(1001L)
+                .empNo("20250001")
                 .build();
 
         List<KpiTimeseriesMonthlyDto> mockList = List.of(
@@ -99,7 +99,7 @@ class KpiStatisticsServiceImplTest {
     void getTimeseriesStatistics_null_throwsException() {
         KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
                 .year(2025)
-                .empId(1001L)
+                .empNo("20250001")
                 .build();
 
         when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(null);

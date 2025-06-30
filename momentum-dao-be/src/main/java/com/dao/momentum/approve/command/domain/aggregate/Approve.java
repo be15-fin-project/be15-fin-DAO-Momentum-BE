@@ -60,5 +60,13 @@ public class Approve {
         this.cancelAt = cancelAt;
     }
 
+    public void updateApproveStatus(int statusId) {
+        this.statusId = statusId;
+        this.completeAt = LocalDateTime.now();
+    }
+
+    public void insertCancelDate() {
+        this.cancelAt = LocalDateTime.now();
+    }
 
 }

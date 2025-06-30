@@ -24,7 +24,6 @@ public enum ErrorCode {
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
     PASSWORD_NOT_CORRECT("10014", "유효하지 않은 비밀번호 변경입니다.", HttpStatus.BAD_REQUEST),
     EMAIL_SENDING_FAILED("10015", "이메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PARENT_APPROVE_ID_REQUIRED("30013", "취소 결재 요청 시 상위 결재 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -33,6 +32,8 @@ public enum ErrorCode {
     INVALID_DEPT_HEAD("11004", "유효하지 않은 부서장입니다.", HttpStatus.BAD_REQUEST),
     DEPARTMENT_NOT_EMPTY("11005","해당 부서에 사원이 남아있습니다.",HttpStatus.BAD_REQUEST),
     DEPARTMENT_HAS_CHILD("11006","하위 부서가 존재합니다.",HttpStatus.BAD_REQUEST),
+    HOLIDAY_ALREADY_EXISTS("11007", "해당 날짜에 휴일이 이미 존재합니다.", HttpStatus.CONFLICT),
+    HOLIDAY_NOT_FOUND("11008", "해당 휴일이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
 
     // 계약서 오류 (12001 - 12999)
     INVALID_SALARY_AGREEMENT("12001", "연봉계약서에는 연봉이 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
@@ -50,6 +51,9 @@ public enum ErrorCode {
     INVALID_COLUMN_COUNT("13006", "[%d행] 컬럼 수(%d)가 헤더(%d)와 다릅니다.", HttpStatus.BAD_REQUEST),
     REQUIRED_VALUE_NOT_FOUND("13007", "[%d행] '%s' 필드는 필수 입력입니다.", HttpStatus.BAD_REQUEST),
     INVALID_STATUS("13008", "존재하지 않는 재직 상태입니다." , HttpStatus.BAD_REQUEST),
+
+    // 권한 오류 (14001 - 14999)
+    USER_ROLE_NOT_FOUND("14001", "요청된 사용자 권한이 없습니다.", HttpStatus.BAD_REQUEST),
 
     // 출퇴근 오류
     WORKTYPE_NOT_FOUND("20001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
@@ -75,6 +79,16 @@ public enum ErrorCode {
     NOT_EXIST_CANCEL("30010", "존재하지 않는 취소 결재 상세 내역입니다.", HttpStatus.BAD_REQUEST),
     FAILED_OCR_CALL("30011", "OCR API 요청에 실패했습니다.", HttpStatus.BAD_REQUEST),
     RECEIPT_IMAGE_REQUIRED("30012", "영수증 결재에는 반드시 이미지 파일이 필요합니다.", HttpStatus.BAD_REQUEST),
+    PARENT_APPROVE_ID_REQUIRED("30013", "취소 결재 요청 시 상위 결재 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_APPROVE_LINE("30014", "존재하지 않는 결재선입니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_APPROVE_LINE_LIST("30015", "존재하지 않는 결재선 목록 입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ACCESS_DENIED("30016", "접근할 수 없는 결재입니다.", HttpStatus.FORBIDDEN),
+    MISSING_APPROVAL_REASON("30017", "반려 시 결재 사유는 필수로 입력해야 합니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_LINE_ALREADY_PROCESSED("30018", "이미 승인/반려 된 결재선입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ALREADY_PROCESSED("30019", "이미 승인/반려 된 결재입니다.", HttpStatus.BAD_REQUEST),
+    APPROVAL_ALREADY_CANCELED("30020", "이미 취소된 결재는 다시 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    PREVIOUS_APPROVAL_NOT_COMPLETED("30021", "이전 단계 결재가 완료 되지 않아 결재를 진행할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_REF("30022", "존재하지 않는 참조 내역입니다.", HttpStatus.BAD_REQUEST),
 
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
@@ -100,6 +114,7 @@ public enum ErrorCode {
     EVAL_INVALID_NOT_EXIST("40018", "요인별 점수가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_RESULT_REQUEST("40019", "평가 결과 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     EVALUATION_NOT_FOUND("40020", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_PROMPT_NOT_FOUND("40020", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),

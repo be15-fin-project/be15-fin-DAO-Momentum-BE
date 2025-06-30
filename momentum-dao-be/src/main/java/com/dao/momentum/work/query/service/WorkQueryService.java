@@ -5,14 +5,14 @@ import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
-import com.dao.momentum.work.query.dto.response.WorkDTO;
-import com.dao.momentum.work.query.dto.response.WorkListResponse;
+import com.dao.momentum.work.query.dto.response.*;
 import com.dao.momentum.work.query.mapper.WorkMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -58,4 +58,26 @@ public class WorkQueryService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public WorkDetailsResponse getWorkDetails(long workId) {
+        WorkDetailsDTO workDetails = workMapper.getWorkDetails(workId);
+
+        return WorkDetailsResponse.builder()
+                .workDetails(workDetails)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceResponse getMyTodaysAttendance(UserDetails userDetails, LocalDate today) {
+        long empId = Long.parseLong(userDetails.getUsername());
+        LocalDate tomorrow = today.plusDays(1);
+
+        AttendanceDTO attendance = workMapper.getMyTodaysAttendance(empId, today, tomorrow);
+
+        return AttendanceResponse.builder()
+                .isAttended(attendance.getIsAttended())
+                .empId(empId)
+                .workId(attendance.getWorkId())
+                .build();
+    }
 }

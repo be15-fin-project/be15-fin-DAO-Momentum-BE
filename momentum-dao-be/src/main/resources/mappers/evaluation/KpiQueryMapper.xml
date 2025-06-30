@@ -124,6 +124,9 @@
         LEFT JOIN position p ON e.position_id = p.position_id
         JOIN status s ON k.status_id = s.status_id
         WHERE k.is_deleted = 'N'
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
             <if test="deptId != null">
                 AND e.dept_id = #{deptId}
             </if>
@@ -145,6 +148,9 @@
         FROM kpi k
         JOIN employee e ON k.emp_id = e.emp_id
         WHERE k.is_deleted = 'N'
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
             <if test="deptId != null">
                 AND e.dept_id = #{deptId}
             </if>

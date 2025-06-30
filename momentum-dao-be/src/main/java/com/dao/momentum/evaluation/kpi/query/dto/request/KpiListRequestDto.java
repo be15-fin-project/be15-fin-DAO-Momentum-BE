@@ -42,4 +42,19 @@ public class KpiListRequestDto {
     public int getOffset() {
         return (page - 1) * size;
     }
+
+    @Override
+    public String toString() {
+        return "KpiListRequestDto{" +
+                "empNo='" + empNo + '\'' +
+                ", deptId=" + deptId +
+                ", positionId=" + positionId +
+                ", statusId=" + statusId +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                ", page=" + page +
+                ", size=" + size +
+                '}';
+    }
+
 }

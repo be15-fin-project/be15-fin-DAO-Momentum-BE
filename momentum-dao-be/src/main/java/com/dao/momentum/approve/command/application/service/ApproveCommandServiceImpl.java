@@ -31,6 +31,9 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     private final ApproveRefRepository approveRefRepository;
     private final FileRepository fileRepository;
 
+    /*
+    * 결재 문서를 작성하는 메소드
+    * */
     @Transactional
     public void createApproval(ApproveRequest approveRequest, Long empId) {
         // ApproveRequest 에 들어 있는 값 가져오기
@@ -97,9 +100,28 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
             createApproveRef(approveId, approveRefRequests);
         }
 
+        notifyFirstApproveLine(approveId);
+
     }
 
-    // 결재선 생성하기 (결재선, 결재자 목록)
+    /*
+     * 참조인이 결재 내역을 확인하는 메소드
+     * */
+    @Transactional
+    public void viewAsReference(Long approveId, Long empId) {
+        // 1. 결재 아이디와 참조 사원 Id로 결재 참조 내역 불러오기
+       ApproveRef approveRef = approveRefRepository.getApproveRefByApproveIdAndEmpId(approveId, empId)
+               .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_REF));
+
+       log.info("해당 참조의 결재 아이디 : {},  해당 참조의 사원 아이디 : {}", approveId, empId);
+
+        // 2. 참조 테이블 참조 상태 변경하기
+        approveRef.updateRefStatus();
+    }
+
+    /*
+     * 결재선 생성하기 (결재선, 결재자 목록)
+     * */
     private void createApproveLine(Long approveId, List<ApproveLineRequest> approveLineRequests) {
         // 결재선은 여러 개 존재하기 때문에 반복문을 이용해 저장
         for (ApproveLineRequest lineRequest : approveLineRequests) {
@@ -126,7 +148,9 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         }
     }
 
-    // 참조인 생성하기
+    /*
+    * 참조인 생성하기
+    * */
     private void createApproveRef(Long approveId, List<ApproveRefRequest> approveRefRequests) {
         // 참조인은 여러명 이기 때문에 반복문을 이용해 저장
         for (ApproveRefRequest refRequest : approveRefRequests) {
@@ -138,6 +162,22 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
 
             approveRefRepository.save(approveRef);
         }
+    }
+
+    /*
+     * 첫번째 결재선(결재선 번호가 1) 사람에게 알림 보내기
+     * */
+    private void notifyFirstApproveLine(Long approveId) {
+        approveLineRepository.findFirstLine(approveId)
+                .ifPresent(firstLine -> {
+
+                    List<ApproveLineList> assignees =
+                            approveLineListRepository.findByApproveLineId(firstLine.getId());
+
+                    assignees.forEach(a -> {
+                        // 알림 전송하기 (다음 결재선 사람들에게 알림 전송하기)
+                    });
+                });
     }
 
 }

@@ -1,9 +1,11 @@
 package com.dao.momentum.approve.query.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 
 @Getter
+@Schema(description = "페이지 request")
 public class PageRequest {
 
     @Min(value = 1)

@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KpiQueryServiceImpl implements KpiQueryService {
@@ -25,6 +27,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiListResultDto getKpiList(KpiListRequestDto requestDto) {
+        log.info("KPI 목록 요청: {}", requestDto);
         long total = kpiQueryMapper.getKpiListCount(requestDto);
         List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
 
@@ -53,6 +56,9 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiEmployeeSummaryResultDto getEmployeeKpiSummaries(KpiEmployeeSummaryRequestDto requestDto) {
+
+        log.info("사원별 KPI 조회 요청 필터값: empNo={}, deptId={}, year={}, month={}, page={}, size={}",
+                requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getYear(), requestDto.getMonth(), requestDto.getPage(), requestDto.getSize());
         long total = kpiQueryMapper.countEmployeeKpiSummary(requestDto);
         List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);
 
@@ -90,8 +96,8 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .statusId(requestDto.getStatusId())
                 .startDate(requestDto.getStartDate())
                 .endDate(requestDto.getEndDate())
-                .page(requestDto.getPage())
-                .size(requestDto.getSize())
+                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
+                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
                 .build();
 
         return getKpiList(resolved);
@@ -102,5 +108,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
     }
+
+
 
 }

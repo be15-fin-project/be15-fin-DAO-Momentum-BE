@@ -13,7 +13,7 @@ public class KpiRequestListRequestDto {
     @Schema(description = "작성자 사번", example = "20240001")
     private String empNo;
 
-    @Schema(description = "요청자 사원 ID (토큰에서 추출됨)", example = "20250001")
+    @Schema(description = "요청자 사원 ID", example = "20250001")
     private Long requesterEmpId;
 
     @Schema(description = "KPI 상태 ID", example = "2", allowableValues = {"1", "2", "3", "4", "5"})
