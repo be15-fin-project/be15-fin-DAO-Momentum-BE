@@ -6,7 +6,6 @@ import lombok.*;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @Schema(description = "KPI 시계열 조회 요청 DTO")
 public class KpiTimeseriesRequestDto {
 

@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +51,8 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
                 .build();
 
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
+        log.info("KPI 통계 요청 DTO: year={}, empNo={}, deptId={}, positionId={}",
+                requestDto.getYear(), requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getPositionId());
 
         if (stats == null) {
             throw new KpiException(ErrorCode.STATISTICS_NOT_FOUND);

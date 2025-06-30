@@ -6,7 +6,6 @@ import lombok.*;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class KpiStatisticsRequestDto {
 
     @Schema(description = "조회 연도", example = "2025")
