@@ -96,6 +96,7 @@ public class SecurityConfig {
         auths.requestMatchers(
                 "/employees/login",
                 "/employees",
+                "/employees/refresh",
                 "/employees/reset-password",
                 "/employees/reset-password/request",
                 "/swagger-ui/**",
