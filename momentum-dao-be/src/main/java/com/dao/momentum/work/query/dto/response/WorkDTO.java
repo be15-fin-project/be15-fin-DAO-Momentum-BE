@@ -22,6 +22,16 @@ public class WorkDTO {
     @Schema(description = "사원 이름", example = "홍길동")
     private String empName;
 
+    private Integer deptId;
+
+    private String deptName;
+
+    private int positionId;
+
+    private String positionName;
+
+    private int workTime;
+
     @Schema(description = "근무 유형 ID", example = "3")
     private int typeId;
 
