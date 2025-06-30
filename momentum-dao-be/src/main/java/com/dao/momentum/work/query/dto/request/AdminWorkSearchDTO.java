@@ -12,13 +12,18 @@ public class AdminWorkSearchDTO {
 
     private String empName;
 
-    private String deptName;
+    private Integer deptId;
+
+//    private String deptName;
+
+    private Integer positionId;
 
     private LocalDate rangeStartDate;
 
     private LocalDate rangeEndDate;
 
-    private String typeName;
+    private Integer typeId;
+//    private String typeName;
 
     private Integer vacationTypeId;
 
@@ -46,11 +51,14 @@ public class AdminWorkSearchDTO {
         return AdminWorkSearchDTO.builder()
                 .empNo(request.getEmpNo())
                 .empName(request.getEmpName())
-                .deptName(request.getDeptName())
+                .deptId(request.getDeptId())
+                .positionId(request.getPositionId())
+//                .deptName(request.getDeptName())
                 .rangeStartDate(request.getRangeStartDate())
                 .rangeEndDate(rangeEndDate == null ?
                         null : rangeEndDate.plusDays(1))
-                .typeName(request.getTypeName())
+                .typeId(request.getTypeId())
+//                .typeName(request.getTypeName())
                 .order(request.getOrder())
                 .page(page == null ? 1 : page)
                 .size(size == null ? 10 : size)

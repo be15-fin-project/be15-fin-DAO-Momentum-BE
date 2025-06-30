@@ -36,6 +36,11 @@
             work.emp_id,
             emp.emp_no,
             emp.name AS empName,
+            dept.dept_id,
+            dept.name AS deptName,
+            pos.position_id,
+            pos.name AS positionName,
+            TIMESTAMPDIFF(MINUTE, work.start_at, work.end_at) - work.break_time AS workTime,
             work.type_id,
             wt.type_name,
             work.vacation_type_id,
@@ -45,6 +50,8 @@
             work.is_normal_work
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
+        JOIN position AS pos ON emp.position_id = pos.position_id
         JOIN work_type AS wt ON work.type_id = wt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
@@ -60,8 +67,14 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null and request.typeName != ''">
-            AND wt.type_name = #{request.typeName}
+        <if test="request.typeId != null">
+            AND work.type_id = #{request.typeId}
+        </if>
+        <if test="request.deptId != null">
+            AND dept.dept_id = #{request.deptId}
+        </if>
+        <if test="request.positionId != null">
+            AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.order == null or request.order.name() != 'DESC'">
             ORDER BY work.start_at ASC
@@ -77,6 +90,8 @@
         COUNT(work.work_id)
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
+        JOIN position AS pos ON emp.position_id = pos.position_id
         JOIN work_type AS wt ON work.type_id = wt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
@@ -92,8 +107,14 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null and request.typeName != ''">
-            AND wt.type_name = #{request.typeName}
+        <if test="request.typeId != null">
+            AND work.type_id = #{request.typeId}
+        </if>
+        <if test="request.deptId != null">
+            AND dept.dept_id = #{request.deptId}
+        </if>
+        <if test="request.positionId != null">
+            AND pos.position_id = #{request.positionId}
         </if>
         ;
     </select>
@@ -137,5 +158,31 @@
             AND wt.type_name = 'WORK'
         )
         LIMIT 1
+    </select>
+
+    <select id="getParentWorkTypes" resultType="com.dao.momentum.work.query.dto.response.WorkTypeDTO">
+        SELECT
+            type_id,
+            type_name,
+            parent_type_id
+        FROM work_type
+        WHERE parent_type_id IS NULL
+    </select>
+
+    <select id="getChildWorkTypes" resultType="com.dao.momentum.work.query.dto.response.WorkTypeDTO">
+        SELECT
+            cwt.type_id,
+            cwt.type_name,
+            cwt.parent_type_id
+        FROM work_type AS cwt
+        JOIN work_type AS pwt ON pwt.type_id = cwt.parent_type_id
+    </select>
+
+    <select id="getVacationTypes" resultType="com.dao.momentum.work.query.dto.response.VacationTypeDTO">
+        SELECT
+            vacation_type_id,
+            vacation_type,
+            description
+        FROM vacation_type
     </select>
 </mapper>
