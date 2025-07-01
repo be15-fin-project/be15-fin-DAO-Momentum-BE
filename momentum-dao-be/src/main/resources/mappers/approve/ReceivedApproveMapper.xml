@@ -27,24 +27,26 @@
         WHERE ali.emp_id = #{empId}
 
         <!-- 탭 조건 -->
-        <if test="req.tab == 'ATTENDANCE'">
-            AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
-            <!-- 근태 관련된 상세 필터 -->
-            <if test="req.approveType != null and req.approveType != ''">
-                AND a.approve_type = #{req.approveType}
+        <if test="req.tab != 'ALL'">
+            <if test="req.tab == 'ATTENDANCE'">
+                AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
+                <!-- 근태 관련된 상세 필터 -->
+                <if test="req.approveType != null and req.approveType != ''">
+                    AND a.approve_type = #{req.approveType}
+                </if>
             </if>
-        </if>
-        <if test="req.tab == 'PROPOSAL'">
-            AND a.approve_type = 'PROPOSAL'
-        </if>
-        <if test="req.tab == 'RECEIPT'">
-            AND a.approve_type = 'RECEIPT'
-            <if test="req.receiptType != null and req.receiptType != ''">
-                AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+            <if test="req.tab == 'PROPOSAL'">
+                AND a.approve_type = 'PROPOSAL'
             </if>
-        </if>
-        <if test="req.tab == 'CANCEL'">
-            AND a.approve_type = 'CANCEL'
+            <if test="req.tab == 'RECEIPT'">
+                AND a.approve_type = 'RECEIPT'
+                <if test="req.receiptType != null and req.receiptType != ''">
+                    AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+                </if>
+            </if>
+            <if test="req.tab == 'CANCEL'">
+                AND a.approve_type = 'CANCEL'
+            </if>
         </if>
 
         <!-- 상태  -->
@@ -74,8 +76,21 @@
         </if>
 
         <!-- 부서 -->
-        <if test="req.departmentName != null and req.departmentName != ''">
-            AND d.name LIKE CONCAT('%', #{req.departmentName}, '%')
+        <if test="req.deptId != null">
+            AND e.dept_id IN (
+                WITH RECURSIVE dept_tree AS (
+                    SELECT dept_id
+                    FROM department
+                    WHERE dept_id = #{req.deptId}
+                    AND is_deleted = 'N'
+                        UNION ALL
+                    SELECT d.dept_id
+                    FROM department d
+                    INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                    WHERE d.is_deleted = 'N'
+                )
+            SELECT dept_id FROM dept_tree
+            )
         </if>
 
         <!-- 완료 날짜를 기준으로 정렬 -->
@@ -101,23 +116,27 @@
         JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id
 
         WHERE ali.emp_id = #{empId}
-        <if test="req.tab == 'ATTENDANCE'">
-            AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
-            <if test="req.approveType != null and req.approveType != ''">
-                AND a.approve_type = #{req.approveType}
+
+        <if test="req.tab != 'ALL'">
+            <if test="req.tab == 'ATTENDANCE'">
+                AND a.approve_type IN ('WORKCORRECTION', 'OVERTIME', 'REMOTEWORK', 'BUSINESSTRIP', 'VACATION')
+                <!-- 근태 관련된 상세 필터 -->
+                <if test="req.approveType != null and req.approveType != ''">
+                    AND a.approve_type = #{req.approveType}
+                </if>
             </if>
-        </if>
-        <if test="req.tab == 'PROPOSAL'">
-            AND a.approve_type = 'PROPOSAL'
-        </if>
-        <if test="req.tab == 'RECEIPT'">
-            AND a.approve_type = 'RECEIPT'
-            <if test="req.receiptType != null and req.receiptType != ''">
-                AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+            <if test="req.tab == 'PROPOSAL'">
+                AND a.approve_type = 'PROPOSAL'
             </if>
-        </if>
-        <if test="req.tab == 'CANCEL'">
-            AND a.approve_type = 'CANCEL'
+            <if test="req.tab == 'RECEIPT'">
+                AND a.approve_type = 'RECEIPT'
+                <if test="req.receiptType != null and req.receiptType != ''">
+                    AND (SELECT ar.receipt_type FROM approve_receipt ar WHERE ar.approve_id = a.approve_id) = #{req.receiptType}
+                </if>
+            </if>
+            <if test="req.tab == 'CANCEL'">
+                AND a.approve_type = 'CANCEL'
+            </if>
         </if>
 
         <if test="req.status != null">
@@ -142,8 +161,21 @@
             AND a.create_at &lt; #{req.endDate}
         </if>
 
-        <if test="req.departmentName != null and req.departmentName != ''">
-            AND d.name LIKE CONCAT('%', #{req.departmentName}, '%')
+        <if test="req.deptId != null">
+            AND e.dept_id IN (
+                WITH RECURSIVE dept_tree AS (
+                    SELECT dept_id
+                    FROM department
+                    WHERE dept_id = #{req.deptId}
+                    AND is_deleted = 'N'
+                        UNION ALL
+                    SELECT d.dept_id
+                    FROM department d
+                    INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                    WHERE d.is_deleted = 'N'
+                )
+            SELECT dept_id FROM dept_tree
+            )
         </if>
     </select>
 
