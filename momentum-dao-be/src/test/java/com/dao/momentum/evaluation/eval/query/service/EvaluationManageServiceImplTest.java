@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListReq
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -167,4 +168,27 @@ class EvaluationManageServiceImplTest {
         assertThat(result).isEmpty();
         verify(evaluationManageMapper).findEvaluationForms(request);
     }
+
+    @Test
+    @DisplayName("평가 회차 번호 및 ID 목록 조회 - 성공")
+    void getSimpleRoundList_success() {
+        // given
+        EvaluationRoundSimpleDto dto = EvaluationRoundSimpleDto.builder()
+                .roundId(1L)
+                .roundNo("2025-1차")
+                .build();
+
+        given(evaluationManageMapper.findSimpleRounds()).willReturn(List.of(dto));
+
+        // when
+        List<EvaluationRoundSimpleDto> result = evaluationManageService.getSimpleRoundList();
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getRoundId()).isEqualTo(1L);
+        assertThat(result.get(0).getRoundNo()).isEqualTo("2025-1차");
+
+        verify(evaluationManageMapper).findSimpleRounds();
+    }
+
 }

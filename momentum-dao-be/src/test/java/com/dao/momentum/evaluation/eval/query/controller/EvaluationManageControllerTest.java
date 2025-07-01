@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListReq
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -112,4 +113,28 @@ class EvaluationManageControllerTest {
                 .andExpect(jsonPath("$.data[0].typeName").value("ORG"))
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("평가 회차 번호 및 ID 목록 조회 성공")
+    @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
+    void getSimpleRoundList_success() throws Exception {
+        // given
+        EvaluationRoundSimpleDto dto = EvaluationRoundSimpleDto.builder()
+                .roundId(1L)
+                .roundNo("2025-1차")
+                .build();
+
+        Mockito.when(evaluationManageService.getSimpleRoundList())
+                .thenReturn(List.of(dto));
+
+        // when & then
+        mockMvc.perform(get("/evaluations/roundNo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].roundId").value(1))
+                .andExpect(jsonPath("$.data[0].roundNo").value("2025-1차"))
+                .andDo(print());
+    }
+
 }
