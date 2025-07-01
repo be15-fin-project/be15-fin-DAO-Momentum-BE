@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListReq
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,11 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
     @Transactional(readOnly = true)
     public List<EvaluationFormResponseDto> getEvaluationForms(EvaluationFormListRequestDto request) {
         return evaluationManageMapper.findEvaluationForms(request);
+    }
+
+    @Override
+    public List<EvaluationRoundSimpleDto> getSimpleRoundList() {
+        return evaluationManageMapper.findSimpleRounds();
     }
 
     // 페이지네이션 계산

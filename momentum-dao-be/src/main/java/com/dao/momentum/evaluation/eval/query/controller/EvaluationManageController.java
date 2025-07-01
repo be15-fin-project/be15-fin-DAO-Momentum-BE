@@ -5,6 +5,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequ
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -36,4 +37,12 @@ public class EvaluationManageController {
         List<EvaluationFormResponseDto> result = evaluationManageService.getEvaluationForms(request);
         return ApiResponse.success(result);
     }
+
+    @GetMapping("/roundNo")
+    @Operation(summary = "평가 회차 번호 및 ID 목록 조회", description = "필터링용으로 평가 회차 번호와 ID만 간단히 조회합니다.")
+    public ApiResponse<List<EvaluationRoundSimpleDto>> getSimpleRoundList() {
+        List<EvaluationRoundSimpleDto> result = evaluationManageService.getSimpleRoundList();
+        return ApiResponse.success(result);
+    }
+
 }

@@ -21,6 +21,9 @@ public class KpiEmployeeSummaryRequestDto {
     @Schema(description = "부서 ID", example = "3")
     private Integer deptId;
 
+    @Schema(description = "직위 ID", example = "5")
+    private Integer positionId;
+
     @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     private Integer page = 1;

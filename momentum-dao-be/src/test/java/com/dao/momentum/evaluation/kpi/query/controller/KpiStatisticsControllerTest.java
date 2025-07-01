@@ -20,12 +20,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @WebMvcTest(KpiStatisticsController.class)
 class KpiStatisticsControllerTest {
@@ -135,7 +134,7 @@ class KpiStatisticsControllerTest {
                 .averageProgress(92.0)
                 .build();
 
-        Mockito.when(kpiStatisticsService.getStatisticsWithAccessControl(any(KpiStatisticsRequestDto.class), eq(50L)))
+        Mockito.when(kpiStatisticsService.getStatisticsWithControl(any(KpiStatisticsRequestDto.class), eq(50L)))
                 .thenReturn(responseDto);
 
         mockMvc.perform(get("/kpi/my-statistics")
@@ -165,7 +164,7 @@ class KpiStatisticsControllerTest {
                 .monthlyStats(List.of(monthDto))
                 .build();
 
-        Mockito.when(kpiStatisticsService.getTimeseriesWithAccessControl(any(KpiTimeseriesRequestDto.class), eq(50L)))
+        Mockito.when(kpiStatisticsService.getTimeseriesWithControl(any(KpiTimeseriesRequestDto.class), eq(50L)))
                 .thenReturn(mockResponse);
 
         mockMvc.perform(get("/kpi/my-timeseries")
@@ -180,5 +179,4 @@ class KpiStatisticsControllerTest {
                 .andExpect(jsonPath("$.data.monthlyStats[0].averageProgress").value(70.0))
                 .andDo(print());
     }
-
 }

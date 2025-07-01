@@ -48,6 +48,8 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         KpiTimeseriesRequestDto updatedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(requestDto.getEmpNo())
+                .deptId(requestDto.getDeptId())
+                .positionId(requestDto.getPositionId())
                 .build();
 
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
@@ -73,6 +75,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
                 .year(dto.getYear())
                 .month(dto.getMonth())
                 .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .empNo(empNo)
                 .build();
 
@@ -90,10 +93,14 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
                 ? KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(dto.getEmpNo())
+                .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .build()
                 : KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
+                .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .build();
 
         return getTimeseriesStatistics(resolvedDto);
@@ -108,6 +115,7 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
                 .year(dto.getYear())
                 .month(dto.getMonth())
                 .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .empNo(empNo)
                 .build();
 
@@ -123,6 +131,8 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         KpiTimeseriesRequestDto resolvedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
+                .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .build();
 
         return getTimeseriesStatistics(resolvedDto);

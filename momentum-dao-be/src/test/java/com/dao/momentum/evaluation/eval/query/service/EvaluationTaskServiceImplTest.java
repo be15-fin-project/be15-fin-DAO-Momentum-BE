@@ -4,18 +4,18 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationTaskMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -31,31 +31,40 @@ class EvaluationTaskServiceImplTest {
     }
 
     @Test
-    @DisplayName("평가 제출 목록 조회 - 성공")
+    @DisplayName("평가 제출 목록 조회 - 성공 (최신 라운드 자동 설정)")
     void getTasks_useLatestRound_success() {
         // given
         long empId = 53L;
         EvaluationTaskRequestDto req = new EvaluationTaskRequestDto();
-        // formId, page, size 기본값: 0,1,20
         ReflectionTestUtils.setField(req, "page", 1);
         ReflectionTestUtils.setField(req, "size", 5);
+        ReflectionTestUtils.setField(req, "roundNo", 0); // 최신 라운드 사용 조건
 
-        // 최신 라운드 번호 모의
-        given(mapper.findLatestRoundNo()).willReturn(7);
+        int latestRoundNo = 7;
 
-        // findTasks/countTasks 모의
+        given(mapper.findLatestRoundNo()).willReturn(latestRoundNo);
+
+        EvaluatorRoleDto evaluator = EvaluatorRoleDto.builder()
+                .isTeamLeader(false)
+                .isDeptHead(false)
+                .build();
+        given(mapper.findEvaluatorRole(empId)).willReturn(evaluator);
+
         EvaluationTaskResponseDto dto = EvaluationTaskResponseDto.builder()
-                .roundNo(7)
+                .roundNo(latestRoundNo)
                 .typeName("SELF")
                 .formId(3)
                 .deptId(10)
-                .targetEmpNo(null)
+                .targetEmpNo("20250001")
                 .targetName("홍길동")
                 .submitted(true)
-                .startAt(LocalDate.of(2025,6,1))
+                .startAt(LocalDate.of(2025, 6, 1))
                 .build();
-        given(mapper.findTasks(eq(req), eq(empId), eq(7))).willReturn(List.of(dto));
-        given(mapper.countTasks(eq(req), eq(empId), eq(7))).willReturn(1);
+
+        given(mapper.findTasks(eq(req), eq(empId), eq(latestRoundNo), eq(evaluator)))
+                .willReturn(List.of(dto));
+        given(mapper.countTasks(eq(req), eq(empId), eq(latestRoundNo), eq(evaluator)))
+                .willReturn(1);
 
         // when
         EvaluationTaskListResultDto result = service.getTasks(empId, req);
@@ -67,17 +76,16 @@ class EvaluationTaskServiceImplTest {
                 .extracting(EvaluationTaskResponseDto::getRoundNo,
                         EvaluationTaskResponseDto::getTypeName,
                         EvaluationTaskResponseDto::isSubmitted)
-                .containsExactly(7, "SELF", true);
+                .containsExactly(latestRoundNo, "SELF", true);
 
         Pagination p = result.getPagination();
         assertThat(p.getCurrentPage()).isEqualTo(1);
         assertThat(p.getTotalItems()).isEqualTo(1);
         assertThat(p.getTotalPage()).isEqualTo(1);
 
-        // verify 최신 라운드 조회 및 매퍼 호출
         verify(mapper).findLatestRoundNo();
-        verify(mapper).findTasks(req, empId, 7);
-        verify(mapper).countTasks(req, empId, 7);
+        verify(mapper).findEvaluatorRole(empId);
+        verify(mapper).findTasks(req, empId, latestRoundNo, evaluator);
+        verify(mapper).countTasks(req, empId, latestRoundNo, evaluator);
     }
-
 }
