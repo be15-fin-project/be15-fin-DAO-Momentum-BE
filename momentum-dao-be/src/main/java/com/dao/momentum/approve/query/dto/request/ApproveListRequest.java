@@ -18,7 +18,7 @@ public class ApproveListRequest {
     private final String tab;
 
     @Schema(description = "결재 문서 종류")
-    private final ApproveType approveType;
+    private final String approveType;
 
     @Schema(description = "영수증 종류")
     private final String receiptType;
