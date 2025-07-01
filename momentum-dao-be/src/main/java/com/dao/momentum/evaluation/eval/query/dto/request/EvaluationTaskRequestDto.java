@@ -21,12 +21,12 @@ public class EvaluationTaskRequestDto {
     private int page = 1;
 
     @Schema(description = "페이지당 항목 수", example = "10")
-    private int size = 20;
+    private int size = 10;
 
     /**
      * MyBatis OFFSET 계산
      */
     public int getOffset() {
-        return (Math.max(page, 1) - 1) * size;
+        return (page - 1) * size;
     }
 }

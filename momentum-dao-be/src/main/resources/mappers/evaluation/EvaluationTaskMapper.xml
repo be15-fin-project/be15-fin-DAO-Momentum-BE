@@ -389,6 +389,7 @@
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
 
         ORDER BY roundNo DESC, formId ASC, submitted ASC
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
 

@@ -84,6 +84,8 @@ class EvaluationTaskControllerTest {
 
         // when & then
         mockMvc.perform(get("/evaluation/tasks")
+                        .param("formId", "0")     // 기본값 명시
+                        .param("roundNo", "0")    // 기본값 명시
                         .param("page", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk())
@@ -92,8 +94,7 @@ class EvaluationTaskControllerTest {
                 .andExpect(jsonPath("$.data.tasks[0].typeName").value("SELF"))
                 .andExpect(jsonPath("$.data.tasks[1].typeName").value("ORG"))
                 .andExpect(jsonPath("$.data.tasks[2].targetName").value("김철수"))
-                .andExpect(jsonPath("$.data.pagination.totalItems").value(3))
-                .andReturn();
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(3));
     }
 
     @Test
@@ -132,7 +133,6 @@ class EvaluationTaskControllerTest {
                 .andExpect(jsonPath("$.data.tasks", hasSize(1)))
                 .andExpect(jsonPath("$.data.tasks[0].typeName").value("UPWARD_REVIEW"))
                 .andExpect(jsonPath("$.data.tasks[0].targetName").value("이영희"))
-                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
-                .andReturn();
+                .andExpect(jsonPath("$.data.pagination.totalItems").value(1));
     }
 }
