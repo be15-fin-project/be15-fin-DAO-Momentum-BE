@@ -37,4 +37,19 @@ public class WorkCorrectionFormStrategy implements FormDetailStrategy {
         workCorrectionRepository.save(workCorrection);
     }
 
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        WorkCorrection correction = workCorrectionRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("근무 수정 결재 정보가 없습니다."));
+
+        return String.format(
+                "[근무 수정] %s님이 기존 출퇴근 시간(%s ~ %s)을 %s ~ %s로 수정 요청했습니다. 사유: %s",
+                senderName,
+                correction.getBeforeStartAt(),
+                correction.getBeforeEndAt(),
+                correction.getAfterStartAt(),
+                correction.getAfterEndAt(),
+                correction.getReason()
+        );
+    }
 }

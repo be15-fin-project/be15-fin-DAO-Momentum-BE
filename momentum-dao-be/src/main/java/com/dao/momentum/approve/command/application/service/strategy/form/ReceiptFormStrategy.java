@@ -36,4 +36,17 @@ public class ReceiptFormStrategy implements FormDetailStrategy {
         approveReceiptRepository.save(approveReceipt);
     }
 
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        ApproveReceipt receipt = approveReceiptRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("영수증 결재 정보가 없습니다."));
+
+        return String.format(
+                "[영수증] %s님이 %s에서 사용한 %d원 결재를 요청했습니다. 사용일시: %s",
+                senderName,
+                receipt.getStoreName(),
+                receipt.getAmount(),
+                receipt.getUsedAt()
+        );
+    }
 }

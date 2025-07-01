@@ -32,4 +32,11 @@ public class ProposalFormStrategy implements FormDetailStrategy {
         approveProposalRepository.save(approveProposal);
     }
 
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        ApproveProposal proposal = approveProposalRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("품의 결재 정보가 없습니다."));
+
+        return String.format("[품의 결재] %s님이 품의 결재를 요청했습니다.", senderName);
+    }
 }

@@ -2,6 +2,7 @@ package com.dao.momentum.organization.employee.command.domain.repository;
 
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,5 +31,6 @@ public interface EmployeeRepository {
 
     boolean existsByDeptIdAndStatusIsNot(Integer deptId,Status status);
 
+    @Query("SELECT e.empNo FROM Employee e WHERE e.empId = :empId")
     String findEmpNoByEmpId(Long empId);
 }

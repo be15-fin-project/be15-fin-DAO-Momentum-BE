@@ -33,4 +33,18 @@ public class OvertimeFormStrategy implements FormDetailStrategy {
         // 저장하기
         overtimeRepository.save(overtime);
     }
+
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        Overtime overtime = overtimeRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("연장근무 결재 정보가 없습니다."));
+
+        return String.format(
+                "[연장근무] %s님이 %s ~ %s 동안 연장근무를 신청했습니다. 사유: %s",
+                senderName,
+                overtime.getStartAt(),
+                overtime.getEndAt(),
+                overtime.getReason()
+        );
+    }
 }

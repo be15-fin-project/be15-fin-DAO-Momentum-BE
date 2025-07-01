@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentDetailResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentTreeResponse;
 import com.dao.momentum.organization.department.query.dto.response.DepartmentsInfoResponse;
+import com.dao.momentum.organization.department.query.dto.response.LeafDepartmentResponse;
 import com.dao.momentum.organization.department.query.service.DepartmentQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,14 @@ public class DepartmentQueryController {
     @GetMapping("/tree-with-employees")
     public ResponseEntity<ApiResponse<DepartmentTreeResponse>> getDepartmentTreeWithEmployees(){
         DepartmentTreeResponse response = departmentQueryService.getDepartmentTreeWithEmployees();
+
+        return ResponseEntity.ok().body(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "최하위 부서 목록 조회", description = "통계 자료를 위해 최하위 부서 목록을 조회한다.")
+    @GetMapping("/leaf")
+    public ResponseEntity<ApiResponse<LeafDepartmentResponse>> getLeafDepartments(){
+        LeafDepartmentResponse response = departmentQueryService.getLeafDepartments();
 
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }

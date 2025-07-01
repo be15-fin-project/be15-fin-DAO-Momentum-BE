@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryReque
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiQueryMapper;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class KpiQueryServiceImpl implements KpiQueryService {
 
     private final KpiQueryMapper kpiQueryMapper;
+    private final EmployeeRepository employeeRepository;
 
     // KPI 전체 조회
     @Override
@@ -84,8 +86,9 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     // 권한 반영
     @Override
-    public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long requesterEmpId, String empNo) {
+    public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long empId) {
         boolean isPrivileged = hasPrivilegedRole();
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiListRequestDto resolved = isPrivileged
                 ? requestDto
@@ -96,6 +99,26 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .statusId(requestDto.getStatusId())
                 .startDate(requestDto.getStartDate())
                 .endDate(requestDto.getEndDate())
+                .isDeleted(requestDto.getIsDeleted())
+                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
+                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
+                .build();
+
+        return getKpiList(resolved);
+    }
+    // 권한 반영
+    @Override
+    public KpiListResultDto getKpiListWithControl(KpiListRequestDto requestDto, Long empId) {
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
+
+        KpiListRequestDto resolved = KpiListRequestDto.builder()
+                .empNo(empNo)
+                .deptId(requestDto.getDeptId())
+                .positionId(requestDto.getPositionId())
+                .statusId(requestDto.getStatusId())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .isDeleted(requestDto.getIsDeleted())
                 .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
                 .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
                 .build();

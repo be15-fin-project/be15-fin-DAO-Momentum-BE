@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.kpi.query.dto.response;
 
+import com.dao.momentum.common.dto.UseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -41,4 +42,7 @@ public class KpiRequestListResponseDto {
 
     @Schema(description = "마감일", example = "2025-06-30")
     private String deadline;
+
+    @Schema(description = "삭제 여부 (Y, N)", example = "Y")
+    private UseStatus isDeleted;
 }
