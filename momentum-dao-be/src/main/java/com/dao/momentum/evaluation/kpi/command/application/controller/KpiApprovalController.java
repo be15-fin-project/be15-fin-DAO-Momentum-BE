@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/kpis")
+@RequestMapping("/kpi")
 @RequiredArgsConstructor
 @Tag(name = "KPI", description = "KPI 제출 및 취소에 대한 승인/반려 처리 API")
 public class KpiApprovalController {

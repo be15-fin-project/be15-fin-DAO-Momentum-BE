@@ -28,7 +28,14 @@
             AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.userRole != null">
-            AND ur.user_role_name = #{request.userRole}
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    AND ur.user_role_name IS NULL
+                </when>
+                <otherwise>
+                    AND ur.user_role_name = #{request.userRole}
+                </otherwise>
+            </choose>
         </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}
@@ -45,7 +52,7 @@
                 ORDER BY emp.join_date
             </when>
             <otherwise>
-                ORDER BY emp.emp_id
+                ORDER BY emp.emp_no
             </otherwise>
         </choose>
         <if test="request.order != null and request.order.name() == 'DESC'">
@@ -70,7 +77,14 @@
             AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.userRole != null">
-            AND ur.user_role_name = #{request.userRole}
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    AND ur.user_role_name IS NULL
+                </when>
+                <otherwise>
+                    AND ur.user_role_name = #{request.userRole}
+                </otherwise>
+            </choose>
         </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}

@@ -8,8 +8,20 @@
     <!-- 사원간 평가 엑셀 다운로드 쿼리 -->
     <select id="selectPeerEvaluationsForExcel"
             resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             r.round_no       AS roundNo,
+            ef.description    AS formName,
             t.emp_no         AS targetEmpNo,
             t.name           AS targetName,
             d.name           AS departmentName,
@@ -21,6 +33,8 @@
         FROM eval_response er
         JOIN employee t ON er.target_id = t.emp_id
         JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form et ON ef.form_id = er.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p   ON t.position_id = p.position_id
         JOIN eval_round r ON er.round_id = r.round_id
@@ -35,7 +49,7 @@
                 AND e.emp_no = #{evaluatorEmpNo}
             </if>
             <if test="deptId != null">
-                AND t.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND t.position_id = #{positionId}
@@ -47,8 +61,20 @@
 
     <select id="selectOrgEvaluationsForExcel"
             resultType="com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             r.round_no       AS roundNo,
+            f.description    AS formName,
             e.emp_no         AS evalEmpNo,
             e.name           AS evalName,
             d.name           AS departmentName,
@@ -72,7 +98,7 @@
                 AND e.emp_no = #{evalEmpNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}
@@ -84,8 +110,20 @@
 
     <select id="selectSelfEvaluationsForExcel"
             resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             r.round_no       AS roundNo,
+            f.description    AS formName,
             e.emp_no         AS empNo,
             e.name           AS name,
             d.name           AS departmentName,
@@ -109,7 +147,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}

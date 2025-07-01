@@ -10,6 +10,9 @@ public record OrgEvaluationExcelDto(
     @Schema(description = "회차 번호", example = "2025-02")
     String roundNo,
 
+    @Schema(description = "평가 양식명", example = "조직 몰입도")
+    String formName,
+
     @Schema(description = "평가자 사번", example = "EMP2103")
     String evalEmpNo,
 

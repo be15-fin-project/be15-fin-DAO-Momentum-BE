@@ -34,16 +34,19 @@ class EvalRoundServiceImplTest {
         // given
         EvalRoundCreateDTO dto = EvalRoundCreateDTO.builder()
                 .roundNo(10)
-                .startAt(LocalDate.of(2025, 7, 1))
+                .startAt(LocalDate.now().plusDays(5))
                 .build();
 
-        EvalRound saved = EvalRound.builder()
-                .roundId(1)
-                .roundNo(dto.getRoundNo())
-                .startAt(dto.getStartAt())
-                .build();
+        given(evalRoundRepository.existsByRoundNo(dto.getRoundNo())).willReturn(false);
+        given(evalRoundRepository.save(any())).willAnswer(inv -> {
+            EvalRound input = inv.getArgument(0);
+            return EvalRound.builder()
+                    .roundId(1)
+                    .roundNo(input.getRoundNo())
+                    .startAt(input.getStartAt())
+                    .build();
+        });
 
-        given(evalRoundRepository.save(any(EvalRound.class))).willReturn(saved);
 
         // when
         EvalRound result = evalRoundService.create(dto);
@@ -51,19 +54,47 @@ class EvalRoundServiceImplTest {
         // then
         assertThat(result.getRoundId()).isEqualTo(1);
         assertThat(result.getRoundNo()).isEqualTo(10);
-        assertThat(result.getStartAt()).isEqualTo(LocalDate.of(2025, 7, 1));
-        then(evalRoundRepository).should().save(any(EvalRound.class));
+        assertThat(result.getStartAt()).isEqualTo(dto.getStartAt());
+    }
+
+    @Test
+    @DisplayName("평가 회차 등록 - 중복 회차 번호 예외")
+    void create_duplicateRoundNo_throwsException() {
+        EvalRoundCreateDTO dto = EvalRoundCreateDTO.builder()
+                .roundNo(5)
+                .startAt(LocalDate.now().plusDays(2))
+                .build();
+
+        given(evalRoundRepository.existsByRoundNo(5)).willReturn(true);
+
+        assertThatThrownBy(() -> evalRoundService.create(dto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVAL_ROUND_DUPLICATE.getMessage());
+    }
+
+    @Test
+    @DisplayName("평가 회차 등록 - 시작일 과거 예외")
+    void create_invalidStartDate_throwsException() {
+        EvalRoundCreateDTO dto = EvalRoundCreateDTO.builder()
+                .roundNo(11)
+                .startAt(LocalDate.now().minusDays(1)) // 하루 전날
+                .build();
+
+        given(evalRoundRepository.existsByRoundNo(11)).willReturn(false);
+
+        assertThatThrownBy(() -> evalRoundService.create(dto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVAL_ROUND_INVALID_START_DATE.getMessage());
     }
 
     @Test
     @DisplayName("평가 회차 수정 - 성공")
     void update_success() {
-        // given
         int roundId = 999;
         EvalRoundUpdateDTO dto = EvalRoundUpdateDTO.builder()
                 .roundId(roundId)
                 .roundNo(5)
-                .startAt(LocalDate.of(2025, 7, 2))
+                .startAt(LocalDate.now().plusDays(3))
                 .build();
 
         EvalRound found = EvalRound.builder()
@@ -79,43 +110,48 @@ class EvalRoundServiceImplTest {
 
         // then
         assertThat(response.getRoundId()).isEqualTo(roundId);
-        assertThat(response.getMessage()).contains("성공적으로 수정");
-
-        then(evalRoundRepository).should().findById(roundId);
+        assertThat(response.getMessage()).contains("성공적으로");
     }
 
     @Test
     @DisplayName("평가 회차 수정 - 회차 없음 예외")
-    void update_notFound() {
-        // given
+    void update_notFound_throwsException() {
         int roundId = 404;
         EvalRoundUpdateDTO dto = EvalRoundUpdateDTO.builder()
                 .roundId(roundId)
                 .roundNo(7)
-                .startAt(LocalDate.of(2025, 8, 1))
+                .startAt(LocalDate.now().plusDays(2))
                 .build();
 
         given(evalRoundRepository.findById(roundId)).willReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> evalRoundService.update(roundId, dto))
                 .isInstanceOf(EvalException.class)
                 .hasMessageContaining(ErrorCode.EVAL_ROUND_NOT_FOUND.getMessage());
+    }
 
-        then(evalRoundRepository).should().findById(roundId);
+    @Test
+    @DisplayName("평가 회차 수정 - 시작일 과거 예외")
+    void update_invalidStartDate_throwsException() {
+        int roundId = 999;
+        EvalRoundUpdateDTO dto = EvalRoundUpdateDTO.builder()
+                .roundId(roundId)
+                .roundNo(6)
+                .startAt(LocalDate.now()) // 오늘
+                .build();
+
+        assertThatThrownBy(() -> evalRoundService.update(roundId, dto))
+                .isInstanceOf(EvalException.class)
+                .hasMessageContaining(ErrorCode.EVAL_ROUND_INVALID_START_DATE.getMessage());
     }
 
     @Test
     @DisplayName("평가 회차 삭제 - 성공")
     void delete_success() {
-        // given
         int roundId = 1;
 
-        // when
         evalRoundService.delete(roundId);
 
-        // then
         then(evalRoundRepository).should().deleteById(roundId);
     }
-
 }

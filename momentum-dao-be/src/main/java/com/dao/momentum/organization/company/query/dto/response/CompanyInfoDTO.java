@@ -28,4 +28,10 @@ public class CompanyInfoDTO {
     private LocalDate establishDate;
 
     private LocalTime workStartTime;
+
+    private Integer employeeCount;
+
+    private Integer foundedYears;
+
+    private Integer deptCount;
 }

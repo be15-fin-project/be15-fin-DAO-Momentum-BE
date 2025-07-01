@@ -10,7 +10,7 @@ import java.util.List;
 public class OrgEvaluationExcelGenerator {
 
     private static final String[] HEADERS = {
-        "회차번호", "평가자 사번", "평가자 이름", "부서", "직위", "점수", "제출일시"
+        "회차번호", "평가 종류", "평가자 사번", "평가자 이름", "부서", "직위", "점수", "제출일시"
     };
 
     public static byte[] generate(List<OrgEvaluationExcelDto> dataList) {
@@ -37,12 +37,13 @@ public class OrgEvaluationExcelGenerator {
                 Row row = sheet.createRow(rowIdx++);
 
                 row.createCell(0).setCellValue(dto.roundNo());
-                row.createCell(1).setCellValue(dto.evalEmpNo());
-                row.createCell(2).setCellValue(dto.evalName());
-                row.createCell(3).setCellValue(dto.departmentName());
-                row.createCell(4).setCellValue(dto.positionName());
-                row.createCell(5).setCellValue(dto.score() != null ? dto.score() : 0);
-                row.createCell(6).setCellValue(dto.submittedAt() != null ? dto.submittedAt() : "-");
+                row.createCell(1).setCellValue(dto.formName());
+                row.createCell(2).setCellValue(dto.evalEmpNo());
+                row.createCell(3).setCellValue(dto.evalName());
+                row.createCell(4).setCellValue(dto.departmentName());
+                row.createCell(5).setCellValue(dto.positionName());
+                row.createCell(6).setCellValue(dto.score() != null ? dto.score() : 0);
+                row.createCell(7).setCellValue(dto.submittedAt() != null ? dto.submittedAt() : "-");
             }
 
             // 3. 열 너비 자동 조정

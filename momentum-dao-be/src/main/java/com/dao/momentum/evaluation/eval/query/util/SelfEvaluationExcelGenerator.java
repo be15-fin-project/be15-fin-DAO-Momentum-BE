@@ -10,7 +10,7 @@ import java.util.List;
 public class SelfEvaluationExcelGenerator {
 
     private static final String[] HEADERS = {
-        "회차번호", "사번", "이름", "부서", "직위", "점수", "제출일시"
+        "회차번호", "평가 종류", "사번", "이름", "부서", "직위", "점수", "제출일시"
     };
 
     public static byte[] generate(List<SelfEvaluationExcelDto> dataList) {
@@ -36,12 +36,13 @@ public class SelfEvaluationExcelGenerator {
             for (SelfEvaluationExcelDto dto : dataList) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(dto.roundNo());
-                row.createCell(1).setCellValue(dto.empNo());
-                row.createCell(2).setCellValue(dto.name());
-                row.createCell(3).setCellValue(dto.departmentName());
-                row.createCell(4).setCellValue(dto.positionName());
-                row.createCell(5).setCellValue(dto.score() != null ? dto.score() : 0);
-                row.createCell(6).setCellValue(dto.submittedAt() != null ? dto.submittedAt() : "-");
+                row.createCell(1).setCellValue(dto.formName());
+                row.createCell(2).setCellValue(dto.empNo());
+                row.createCell(3).setCellValue(dto.name());
+                row.createCell(4).setCellValue(dto.departmentName());
+                row.createCell(5).setCellValue(dto.positionName());
+                row.createCell(6).setCellValue(dto.score() != null ? dto.score() : 0);
+                row.createCell(7).setCellValue(dto.submittedAt() != null ? dto.submittedAt() : "-");
             }
 
             for (int i = 0; i < HEADERS.length; i++) {
