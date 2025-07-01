@@ -6,6 +6,17 @@
 
     <!-- 사원 간 평가 목록 조회 -->
     <select id="findPeerEvaluations" resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             er.result_id AS resultId,
             e1.emp_no AS evalNo,
@@ -16,7 +27,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt
         FROM eval_response er
         JOIN employee e1 ON er.eval_id = e1.emp_id
         JOIN employee e2 ON er.target_id = e2.emp_id
@@ -28,6 +39,8 @@
             <if test="targetNo != null">AND e2.emp_no = #{targetNo}</if>
             <if test="formId != null">AND er.form_id = #{formId}</if>
             <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+            <if test="deptId != null">AND e1.dept_id IN (SELECT dept_id FROM dept_tree)</if>
+            <if test="positionId != null">AND e1.position_id = #{positionId}</if>
         ORDER BY er.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
@@ -35,6 +48,17 @@
     <select id="countPeerEvaluations"
             parameterType="com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto"
             resultType="long">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM eval_response er
         JOIN employee e1 ON er.eval_id = e1.emp_id
@@ -47,6 +71,8 @@
             <if test="targetNo != null">AND e2.emp_no = #{targetNo}</if>
             <if test="formId != null">AND er.form_id = #{formId}</if>
             <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+            <if test="deptId != null">AND e1.dept_id IN (SELECT dept_id FROM dept_tree)</if>
+            <if test="positionId != null">AND e1.position_id = #{positionId}</if>
     </select>
 
     <!-- 사원 간 평가 상세 조회 -->
@@ -61,7 +87,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt
         FROM eval_response er
         JOIN employee e1 ON er.eval_id = e1.emp_id
         JOIN employee e2 ON er.target_id = e2.emp_id
