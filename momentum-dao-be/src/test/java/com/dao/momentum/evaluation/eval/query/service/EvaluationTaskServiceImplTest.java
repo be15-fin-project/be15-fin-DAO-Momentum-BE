@@ -42,6 +42,7 @@ class EvaluationTaskServiceImplTest {
 
         int latestRoundNo = 7;
 
+        // mapper stubbing
         given(mapper.findLatestRoundNo()).willReturn(latestRoundNo);
 
         EvaluatorRoleDto evaluator = EvaluatorRoleDto.builder()
@@ -49,6 +50,10 @@ class EvaluationTaskServiceImplTest {
                 .isDeptHead(false)
                 .build();
         given(mapper.findEvaluatorRole(empId)).willReturn(evaluator);
+
+        // 계산된 offset = (page-1)*size = 0
+        int size = 5;
+        int offset = 0;
 
         EvaluationTaskResponseDto dto = EvaluationTaskResponseDto.builder()
                 .roundNo(latestRoundNo)
@@ -61,7 +66,7 @@ class EvaluationTaskServiceImplTest {
                 .startAt(LocalDate.of(2025, 6, 1))
                 .build();
 
-        given(mapper.findTasks(eq(req), eq(empId), eq(latestRoundNo), eq(evaluator)))
+        given(mapper.findTasks(eq(req), eq(empId), eq(latestRoundNo), eq(evaluator), eq(size), eq(offset)))
                 .willReturn(List.of(dto));
         given(mapper.countTasks(eq(req), eq(empId), eq(latestRoundNo), eq(evaluator)))
                 .willReturn(1);
@@ -83,9 +88,12 @@ class EvaluationTaskServiceImplTest {
         assertThat(p.getTotalItems()).isEqualTo(1);
         assertThat(p.getTotalPage()).isEqualTo(1);
 
+        // verify 호출 인자
         verify(mapper).findLatestRoundNo();
         verify(mapper).findEvaluatorRole(empId);
-        verify(mapper).findTasks(req, empId, latestRoundNo, evaluator);
+        verify(mapper).findTasks(req, empId, latestRoundNo, evaluator, size, offset);
         verify(mapper).countTasks(req, empId, latestRoundNo, evaluator);
+
+        verifyNoMoreInteractions(mapper);
     }
 }

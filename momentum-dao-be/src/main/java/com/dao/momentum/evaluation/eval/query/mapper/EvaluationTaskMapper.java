@@ -18,7 +18,9 @@ public interface EvaluationTaskMapper {
     List<EvaluationTaskResponseDto> findTasks(@Param("req") EvaluationTaskRequestDto req,
                                               @Param("empId") Long empId,
                                               @Param("roundNo") int roundNo,
-                                              @Param("evaluator") EvaluatorRoleDto evaluator);
+                                              @Param("evaluator") EvaluatorRoleDto evaluator,
+                                              @Param("size") int size,
+                                              @Param("offset") int offset);
 
 
     // 전체 태스크 건수 조회 (페이징)

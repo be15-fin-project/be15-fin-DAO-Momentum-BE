@@ -54,7 +54,7 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
         ));
 
         // 3) 평가 태스크 목록 조회 (SELF, ORG, PEER 통합)
-        List<EvaluationTaskResponseDto> tasks = mapper.findTasks(req, empId, roundNo, evaluator);
+        List<EvaluationTaskResponseDto> tasks = mapper.findTasks(req, empId, roundNo, evaluator, size, offset);
         System.out.println("[EvaluationTaskService] findTasks 결과 개수=" + tasks.size());
 
         // 4) 전체 건수 조회 (페이징 용)
