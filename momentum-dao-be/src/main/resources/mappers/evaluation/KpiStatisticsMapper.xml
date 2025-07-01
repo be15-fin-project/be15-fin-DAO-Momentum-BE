@@ -8,7 +8,17 @@
     <select id="getMonthlyStatistics"
             parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiStatisticsRequestDto"
             resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseDto">
-
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             COUNT(*) AS totalKpiCount,
             SUM(CASE WHEN k.kpi_progress = 100 THEN 1 ELSE 0 END) AS completedKpiCount,
@@ -23,7 +33,7 @@
                 AND MONTH(k.created_at) = #{month}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="empNo != null">
                 AND e.emp_no = #{empNo}
@@ -38,7 +48,17 @@
     <!-- KPI 시계열 통계 조회 -->
     <select id="getTimeseriesStatistics"
             resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto">
-
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             MONTH(k.created_at) AS month,
             COUNT(*) AS totalKpiCount,
@@ -53,7 +73,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}

@@ -182,7 +182,7 @@ public class AuthService {
         emailService.sendPasswordResetEmail(employee,passwordResetToken);
 
         return PasswordResetResponse.builder()
-                .message("비밀번호 재설정 메일이 전송되었습니다. 이메일을 확인해주세요.")
+                .message("비밀번호 재설정 메일이 전송되었습니다.")
                 .build();
     }
 

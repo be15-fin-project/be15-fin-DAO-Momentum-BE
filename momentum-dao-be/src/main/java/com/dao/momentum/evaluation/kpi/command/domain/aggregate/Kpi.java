@@ -61,6 +61,9 @@ public class Kpi {
     @Column(name = "c_reason", length = 255)
     private String cancelReason;
 
+    @Column(name = "c_response", length = 255)
+    private String cancelResponse;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted", nullable = false, columnDefinition = "ENUM('Y','N') DEFAULT 'N'")
     private UseStatus isDeleted;
@@ -89,9 +92,9 @@ public class Kpi {
         this.cancelReason = reason;
     }
 
-    public void approve() {
+    public void approve(String reason) {
         this.statusId = Status.ACCEPTED.getId();
-        this.reason = null;
+        this.reason = reason;
     }
 
     public void reject(String reason) {
@@ -99,15 +102,15 @@ public class Kpi {
         this.reason = reason;
     }
 
-    public void approveCancel() {
+    public void approveCancel(String reason) {
         this.statusId = Status.ACCEPTED.getId();  // 취소 승인 → 상태도 삭제
-        this.cancelReason = null;
+        this.cancelResponse = reason;
         this.isDeleted = UseStatus.Y;
     }
 
     public void rejectCancel(String reason) {
-        this.statusId = Status.REJECTED.getId(); // 취소 반려 → 반려 상태로 복구
-        this.cancelReason = reason;
+        this.statusId = Status.ACCEPTED.getId(); // 취소 반려 → 반려 상태로 복구
+        this.cancelResponse = reason;
         this.isDeleted = UseStatus.N;
     }
 
