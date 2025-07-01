@@ -14,8 +14,6 @@ public class AdminWorkSearchDTO {
 
     private Integer deptId;
 
-//    private String deptName;
-
     private Integer positionId;
 
     private LocalDate rangeStartDate;
@@ -23,7 +21,7 @@ public class AdminWorkSearchDTO {
     private LocalDate rangeEndDate;
 
     private Integer typeId;
-//    private String typeName;
+
     private Integer childTypeId;
 
     private Integer vacationTypeId;

@@ -12,11 +12,7 @@ import java.time.LocalDate;
 public class EmployeeSearchRequest {
     private Integer deptId;
 
-//    private String deptName;
-
     private Integer positionId;
-
-//    private String positionName;
 
     private UserRoleName userRole;
 
