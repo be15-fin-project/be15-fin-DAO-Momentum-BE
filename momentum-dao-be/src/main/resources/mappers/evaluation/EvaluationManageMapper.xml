@@ -69,4 +69,14 @@
             </if>
         ORDER BY ef.form_id ASC
     </select>
+
+    <!-- 평가 회차 번호 조회 -->
+    <select id="findSimpleRounds" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto">
+        SELECT
+            round_id AS roundId,
+            round_no AS roundNo
+        FROM eval_round
+        ORDER BY round_no DESC
+    </select>
+
 </mapper>
