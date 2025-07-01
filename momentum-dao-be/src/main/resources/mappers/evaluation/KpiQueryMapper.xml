@@ -174,6 +174,9 @@
             <if test="deptId != null">
                 AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
             <if test="year != null">
                 AND YEAR(k.created_at) = #{year}
             </if>
@@ -208,6 +211,9 @@
             </if>
             <if test="deptId != null">
                 AND e.dept_id IN (SELECT dept_id FROM dept_tree)
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
             </if>
             <if test="year != null">
                 AND YEAR(k.created_at) = #{year}
