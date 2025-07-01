@@ -34,4 +34,17 @@ public class RemoteWorkFormStrategy implements FormDetailStrategy {
         remoteWorkRepository.save(remoteWork);
     }
 
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        RemoteWork remoteWork = remoteWorkRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("재택근무 결재 정보가 없습니다."));
+
+        return String.format(
+                "[재택근무] %s님이 %s ~ %s 재택근무를 신청했습니다. 사유: %s",
+                senderName,
+                remoteWork.getStartDate(),
+                remoteWork.getEndDate(),
+                remoteWork.getReason()
+        );
+    }
 }
