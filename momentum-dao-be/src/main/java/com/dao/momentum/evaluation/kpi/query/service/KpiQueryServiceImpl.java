@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryReque
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiQueryMapper;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,17 +15,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KpiQueryServiceImpl implements KpiQueryService {
 
     private final KpiQueryMapper kpiQueryMapper;
+    private final EmployeeRepository employeeRepository;
 
     // KPI 전체 조회
     @Override
     @Transactional(readOnly = true)
     public KpiListResultDto getKpiList(KpiListRequestDto requestDto) {
+        log.info("KPI 목록 요청: {}", requestDto);
         long total = kpiQueryMapper.getKpiListCount(requestDto);
         List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
 
@@ -53,6 +58,9 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiEmployeeSummaryResultDto getEmployeeKpiSummaries(KpiEmployeeSummaryRequestDto requestDto) {
+
+        log.info("사원별 KPI 조회 요청 필터값: empNo={}, deptId={}, year={}, month={}, page={}, size={}",
+                requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getYear(), requestDto.getMonth(), requestDto.getPage(), requestDto.getSize());
         long total = kpiQueryMapper.countEmployeeKpiSummary(requestDto);
         List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);
 
@@ -78,8 +86,9 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
     // 권한 반영
     @Override
-    public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long requesterEmpId, String empNo) {
+    public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long empId) {
         boolean isPrivileged = hasPrivilegedRole();
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiListRequestDto resolved = isPrivileged
                 ? requestDto
@@ -90,8 +99,28 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .statusId(requestDto.getStatusId())
                 .startDate(requestDto.getStartDate())
                 .endDate(requestDto.getEndDate())
-                .page(requestDto.getPage())
-                .size(requestDto.getSize())
+                .isDeleted(requestDto.getIsDeleted())
+                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
+                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
+                .build();
+
+        return getKpiList(resolved);
+    }
+    // 권한 반영
+    @Override
+    public KpiListResultDto getKpiListWithControl(KpiListRequestDto requestDto, Long empId) {
+        String empNo = employeeRepository.findEmpNoByEmpId(empId);
+
+        KpiListRequestDto resolved = KpiListRequestDto.builder()
+                .empNo(empNo)
+                .deptId(requestDto.getDeptId())
+                .positionId(requestDto.getPositionId())
+                .statusId(requestDto.getStatusId())
+                .startDate(requestDto.getStartDate())
+                .endDate(requestDto.getEndDate())
+                .isDeleted(requestDto.getIsDeleted())
+                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
+                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
                 .build();
 
         return getKpiList(resolved);
@@ -102,5 +131,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
     }
+
+
 
 }

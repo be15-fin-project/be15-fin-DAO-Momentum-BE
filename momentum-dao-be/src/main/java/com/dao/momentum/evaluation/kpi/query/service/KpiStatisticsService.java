@@ -18,4 +18,10 @@ public interface KpiStatisticsService {
 
     // 권한 반영된 KPI 시계열 통계 조회
     KpiTimeseriesResponseDto getTimeseriesWithAccessControl(KpiTimeseriesRequestDto requestDto, Long requesterEmpId);
+
+    // 자신의 KPI 통계 조회
+    KpiStatisticsResponseDto getStatisticsWithControl(KpiStatisticsRequestDto dto, Long empId);
+
+    // 자신의 KPI 시계열 통계 조회
+    KpiTimeseriesResponseDto getTimeseriesWithControl(KpiTimeseriesRequestDto dto, Long empId);
 }

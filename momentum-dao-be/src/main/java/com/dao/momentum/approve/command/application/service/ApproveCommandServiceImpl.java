@@ -7,15 +7,21 @@ import com.dao.momentum.approve.command.domain.aggregate.*;
 import com.dao.momentum.approve.command.domain.repository.*;
 import com.dao.momentum.approve.exception.ApproveException;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.kafka.dto.NotificationMessage;
+import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
 import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +36,12 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     private final ApproveLineListRepository approveLineListRepository;
     private final ApproveRefRepository approveRefRepository;
     private final FileRepository fileRepository;
+    private final EmployeeRepository employeeRepository;
+    private final NotificationKafkaProducer notificationKafkaProducer;
 
+    /*
+    * 결재 문서를 작성하는 메소드
+    * */
     @Transactional
     public void createApproval(ApproveRequest approveRequest, Long empId) {
         // ApproveRequest 에 들어 있는 값 가져오기
@@ -97,11 +108,28 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
             createApproveRef(approveId, approveRefRequests);
         }
 
-        notifyFirstApproveLine(approveId);
+        notifyFirstApproveLine(approve);
 
     }
 
-    /* 결재선 생성하기 (결재선, 결재자 목록) */
+    /*
+     * 참조인이 결재 내역을 확인하는 메소드
+     * */
+    @Transactional
+    public void viewAsReference(Long approveId, Long empId) {
+        // 1. 결재 아이디와 참조 사원 Id로 결재 참조 내역 불러오기
+       ApproveRef approveRef = approveRefRepository.getApproveRefByApproveIdAndEmpId(approveId, empId)
+               .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_REF));
+
+       log.info("해당 참조의 결재 아이디 : {},  해당 참조의 사원 아이디 : {}", approveId, empId);
+
+        // 2. 참조 테이블 참조 상태 변경하기
+        approveRef.updateRefStatus();
+    }
+
+    /*
+     * 결재선 생성하기 (결재선, 결재자 목록)
+     * */
     private void createApproveLine(Long approveId, List<ApproveLineRequest> approveLineRequests) {
         // 결재선은 여러 개 존재하기 때문에 반복문을 이용해 저장
         for (ApproveLineRequest lineRequest : approveLineRequests) {
@@ -128,7 +156,9 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         }
     }
 
-    /* 참조인 생성하기 */
+    /*
+    * 참조인 생성하기
+    * */
     private void createApproveRef(Long approveId, List<ApproveRefRequest> approveRefRequests) {
         // 참조인은 여러명 이기 때문에 반복문을 이용해 저장
         for (ApproveRefRequest refRequest : approveRefRequests) {
@@ -143,15 +173,52 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     }
 
     /* 첫번째 결재선(결재선 번호가 1) 사람에게 알림 보내기 */
-    private void notifyFirstApproveLine(Long approveId) {
+    private void notifyFirstApproveLine(Approve approve) {
+        Long approveId = approve.getApproveId();
+        Long senderId = approve.getEmpId();
+
+        // 1. 발신자 이름 조회
+        Employee sender = employeeRepository.findByEmpId(senderId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        String senderName = sender.getName();
+
+        // 2. 결재 타입
+        ApproveType approveType = approve.getApproveType();
+
+        // 3. 전략에 따른 content 생성
+        FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approveType);
+        String content = strategy.createNotificationContent(approveId, senderName);
+
+        // 4. 첫 번째 결재선 알림 전송
         approveLineRepository.findFirstLine(approveId)
                 .ifPresent(firstLine -> {
 
                     List<ApproveLineList> assignees =
                             approveLineListRepository.findByApproveLineId(firstLine.getId());
 
-                    assignees.forEach(a -> {
-                        // 알림 전송하기 (다음 결재선 사람들에게 알림 전송하기)
+                    assignees.forEach(assignee -> {
+                        NotificationMessage message = NotificationMessage.builder()
+                                .content(content)
+                                .type("APPROVAL_REQUEST")
+                                .url("/approval/" + approveId)
+                                .receiverId(assignee.getEmpId())
+                                .senderId(senderId)
+                                .senderName(senderName)
+                                .timestamp(LocalDateTime.now())
+                                .approveId(approveId)
+                                .build();
+
+                        try {
+                            notificationKafkaProducer.sendNotification(
+                                    assignee.getEmpId().toString(),
+                                    message
+                            );
+                            log.info("결재 ID: {}, 수신자 ID: {} → 첫 결재선 알림 전송 완료",
+                                    approveId, assignee.getEmpId());
+                        } catch (Exception e) {
+                            log.error("알림 전송 실패 - 결재 ID: {}, 수신자 ID: {}, 사유: {}",
+                                    approveId, assignee.getEmpId(), e.getMessage(), e);
+                        }
                     });
                 });
     }

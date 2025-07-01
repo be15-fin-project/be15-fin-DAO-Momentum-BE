@@ -96,6 +96,7 @@ public class SecurityConfig {
         auths.requestMatchers(
                 "/employees/login",
                 "/employees",
+                "/employees/refresh",
                 "/employees/reset-password",
                 "/employees/reset-password/request",
                 "/swagger-ui/**",
@@ -155,13 +156,13 @@ public class SecurityConfig {
                 "/employees/csv", // GET, POST
                 "/employees/appoints",
                 "/employees/{empId}/hr-info"
-
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(
                 HttpMethod.GET,
                 "/works",
-                "/employees/{empId}" // "/csv"는 여기서도 매칭되지만 위에서 먼저 처리했으므로 안 잡힘
+                "/employees/{empId}", // "/csv"는 여기서도 매칭되지만 위에서 먼저 처리했으므로 안 잡힘
+                "/departments/leaf"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(
@@ -173,6 +174,11 @@ public class SecurityConfig {
                 HttpMethod.DELETE,
                 "/contracts/{contractId}"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.GET,
+                "/admin/approval/documents"
+        ).hasAnyAuthority("MASTER");
     }
 
 }

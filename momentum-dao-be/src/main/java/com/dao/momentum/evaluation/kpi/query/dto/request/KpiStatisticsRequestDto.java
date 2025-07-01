@@ -6,7 +6,6 @@ import lombok.*;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 public class KpiStatisticsRequestDto {
 
     @Schema(description = "조회 연도", example = "2025")
@@ -15,12 +14,12 @@ public class KpiStatisticsRequestDto {
     @Schema(description = "조회 월", example = "6")
     private Integer month;
 
+    @Schema(description = "사번", example = "1001")
+    private String empNo;
+
     @Schema(description = "부서 ID", example = "10")
     private Long deptId;
 
-    @Schema(description = "사원 ID", example = "1001")
-    private Long empId;
-
-    @Schema(description = "사용자 권한 (예: MASTER, HR_MANAGER, BOOKKEEPING, MANAGER)", example = "MASTER")
-    private String userRole;
+    @Schema(description = "직위 ID", example = "5")
+    private Integer positionId;
 }

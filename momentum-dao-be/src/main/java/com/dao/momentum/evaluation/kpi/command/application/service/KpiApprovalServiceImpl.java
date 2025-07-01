@@ -35,7 +35,7 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
         }
 
         if (request.getApproved()) {
-            kpi.approve(); // 상태 ACCEPTED로 변경
+            kpi.approve(request.getReason()); // 상태 ACCEPTED로 변경
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())
@@ -69,7 +69,7 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
 
         if (request.getApproved()) {
             // 취소 승인: 삭제 상태 유지하면서 상태도 'ACCEPTED' 처리
-            kpi.approveCancel(); // → isDeleted = Y, status = ACCEPTED
+            kpi.approveCancel(request.getReason()); // → isDeleted = Y, status = ACCEPTED
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())
@@ -77,7 +77,7 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
                     .build();
         } else {
             // 취소 반려: 삭제 상태 해제 및 반려 처리
-            kpi.rejectCancel(request.getReason()); // → isDeleted = N, status = ACCEPTED, c_reason = 사유
+            kpi.rejectCancel(request.getReason()); // → isDeleted = N, status = ACCEPTED, reason = 사유
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())

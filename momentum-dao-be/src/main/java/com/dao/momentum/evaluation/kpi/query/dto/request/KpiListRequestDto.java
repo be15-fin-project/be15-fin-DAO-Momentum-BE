@@ -1,6 +1,10 @@
 package com.dao.momentum.evaluation.kpi.query.dto.request;
 
+import com.dao.momentum.common.dto.UseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 
 @Getter
@@ -31,6 +35,9 @@ public class KpiListRequestDto {
     @Schema(description = "작성일 종료일자 (yyyy-MM-dd)", example = "2025-06-30")
     private String endDate;
 
+    @Schema(description = "삭제 여부 (Y, N)", example = "Y")
+    private UseStatus isDeleted;
+
     @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     private Integer page = 1;
@@ -42,4 +49,19 @@ public class KpiListRequestDto {
     public int getOffset() {
         return (page - 1) * size;
     }
+
+    @Override
+    public String toString() {
+        return "KpiListRequestDto{" +
+                "empNo='" + empNo + '\'' +
+                ", deptId=" + deptId +
+                ", positionId=" + positionId +
+                ", statusId=" + statusId +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                ", page=" + page +
+                ", size=" + size +
+                '}';
+    }
+
 }

@@ -12,6 +12,7 @@ import com.dao.momentum.approve.query.dto.response.ApproveDetailResponse;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
 import com.dao.momentum.approve.query.mapper.ApproveDetailMapper;
+import com.dao.momentum.approve.query.mapper.ApproveMapper;
 import com.dao.momentum.approve.query.mapper.ReceivedApproveMapper;
 import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.common.dto.Pagination;
@@ -32,6 +33,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     private final ReceivedApproveMapper receivedApproveMapper;
     private final DraftApproveMapper draftApproveMapper;
     private final ApproveDetailMapper approveDetailMapper;
+    private final ApproveMapper approveMapper;
 
     /* 받은 결재 목록을 조회하는 메서드 */
     @Transactional(readOnly = true)
@@ -41,7 +43,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     ) {
 
         // 존재하지 않는 결재 탭을 입력하는 경우 에러 처리
-        List<String> validTabs = List.of("ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
+        List<String> validTabs = List.of("ALL", "ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
 
         if (!validTabs.contains(approveListRequest.getTab())) {
             throw new NotExistTabException(ErrorCode.NOT_EXIST_TAB);
@@ -82,7 +84,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     ) {
 
         // 존재하지 않는 결재 탭을 입력하는 경우 에러 처리
-        List<String> validTabs = List.of("ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
+        List<String> validTabs = List.of("ALL", "ATTENDANCE", "PROPOSAL", "RECEIPT", "CANCEL");
 
         if (!validTabs.contains(draftApproveListRequest.getTab())) {
             throw new NotExistTabException(ErrorCode.NOT_EXIST_TAB);
@@ -152,6 +154,12 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
         Object formDetail = resolveFormDetail(ApproveType.CANCEL,cancelApproveId);
 
         return buildApproveDetailResponse(cancelDTO, parentDTO, approveFileDTO, lineList, refList, formDetail);
+    }
+
+
+    @Transactional(readOnly = true)
+    public EmployeeLeaderDto getEmployeeLeader(Long empId) {
+        return approveMapper.findEmployeeLeader(empId);
     }
 
     /* 일반 결재인 경우 */

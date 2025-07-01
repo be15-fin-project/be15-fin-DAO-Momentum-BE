@@ -8,6 +8,7 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiStatisticsResponseD
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesMonthlyDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiTimeseriesResponseDto;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiStatisticsMapper;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,9 +26,13 @@ class KpiStatisticsServiceImplTest {
 
     @Mock
     private KpiStatisticsMapper kpiStatisticsMapper;
+    @Mock
+    private EmployeeRepository employeeRepository;
+
 
     @InjectMocks
     private KpiStatisticsServiceImpl kpiStatisticsService;
+
 
     @Test
     @DisplayName("KPI 통계 정상 조회")
@@ -76,7 +81,7 @@ class KpiStatisticsServiceImplTest {
     void getTimeseriesStatistics_success() {
         KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
                 .year(2025)
-                .empId(1001L)
+                .empNo("20250001")
                 .build();
 
         List<KpiTimeseriesMonthlyDto> mockList = List.of(
@@ -99,7 +104,7 @@ class KpiStatisticsServiceImplTest {
     void getTimeseriesStatistics_null_throwsException() {
         KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
                 .year(2025)
-                .empId(1001L)
+                .empNo("20250001")
                 .build();
 
         when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(null);
@@ -110,4 +115,46 @@ class KpiStatisticsServiceImplTest {
 
         assertEquals(ErrorCode.STATISTICS_NOT_FOUND, ex.getErrorCode());
     }
+
+    @Test
+    @DisplayName("자신 KPI 통계 조회 - 일반 사용자")
+    void getStatisticsWithControl_user() {
+        KpiStatisticsRequestDto request = KpiStatisticsRequestDto.builder()
+                .year(2025).month(6).build();
+
+        when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
+
+        KpiStatisticsResponseDto mockResponse = KpiStatisticsResponseDto.builder()
+                .totalKpiCount(6).completedKpiCount(4).averageProgress(70.0).build();
+
+        when(kpiStatisticsMapper.getMonthlyStatistics(any())).thenReturn(mockResponse);
+
+        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithControl(request, 100L);
+
+        assertNotNull(result);
+        assertEquals(6, result.getTotalKpiCount());
+    }
+
+    @Test
+    @DisplayName("자신 KPI 시계열 통계 조회 - 일반 사용자")
+    void getTimeseriesWithControl_user() {
+        KpiTimeseriesRequestDto request = KpiTimeseriesRequestDto.builder()
+                .year(2025).build();
+
+        when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
+
+        List<KpiTimeseriesMonthlyDto> mockStats = List.of(
+                KpiTimeseriesMonthlyDto.builder().month(5).totalKpiCount(5).completedKpiCount(4).averageProgress(80.0).build()
+        );
+
+        when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(mockStats);
+
+        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithControl(request, 100L);
+
+        assertNotNull(result);
+        assertEquals(2025, result.getYear());
+        assertEquals(1, result.getMonthlyStats().size());
+    }
+
+
 }

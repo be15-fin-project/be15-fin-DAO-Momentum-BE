@@ -1,19 +1,19 @@
 package com.dao.momentum.evaluation.kpi.query.dto.request;
 
+import com.dao.momentum.common.dto.UseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
 @Schema(description = "KPI 요청 목록 조회 요청 DTO")
 public class KpiRequestListRequestDto {
 
     @Schema(description = "작성자 사번", example = "20240001")
     private String empNo;
 
-    @Schema(description = "요청자 사원 ID (토큰에서 추출됨)", example = "20250001")
+    @Schema(description = "요청자 사원 ID", example = "20250001")
     private Long requesterEmpId;
 
     @Schema(description = "KPI 상태 ID", example = "2", allowableValues = {"1", "2", "3", "4", "5"})
@@ -27,6 +27,9 @@ public class KpiRequestListRequestDto {
 
     @Schema(description = "마감일 종료일자 (yyyy-MM-dd)", example = "2025-06-30")
     private String endDate;
+
+    @Schema(description = "삭제 여부 (Y, N)", example = "Y")
+    private UseStatus isDeleted;
 
     @Builder.Default
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")

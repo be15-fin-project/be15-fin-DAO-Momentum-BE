@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +24,6 @@ public class AdminApproveQueryController {
 
     /* 전체 결재 목록 조회하기 */
     @GetMapping("/approval/documents")
-    @PreAuthorize("hasAuthority('MASTER')")
     @Operation(summary = "전체 결재 내역 조회", description = "마스터 관리자가 전체 결재 내역을 조회합니다.")
     public ResponseEntity<ApiResponse<ApproveResponse>> getApproveList(
             @Validated ApproveListRequest approveListRequest,
