@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.eval.query.service;
 import java.util.List;
 
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
 
     private final EvaluationTaskMapper mapper;
 
+
     @Override
     @Transactional(readOnly = true)
     public EvaluationTaskListResultDto getTasks(Long empId, EvaluationTaskRequestDto req) {
@@ -28,6 +30,9 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
             int latest = mapper.findLatestRoundNo();
             req.setRoundNo(latest);
         }
+
+        EvaluatorRoleDto evaluator = mapper.findEvaluatorRole(empId);
+        System.out.println("[EvaluationTaskService] evaluator 역할 정보 = " + evaluator);
 
         // [LOG] 요청 파라미터
         System.out.println(String.format(
@@ -49,11 +54,11 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
         ));
 
         // 3) 평가 태스크 목록 조회 (SELF, ORG, PEER 통합)
-        List<EvaluationTaskResponseDto> tasks = mapper.findTasks(req, empId, roundNo);
+        List<EvaluationTaskResponseDto> tasks = mapper.findTasks(req, empId, roundNo, evaluator);
         System.out.println("[EvaluationTaskService] findTasks 결과 개수=" + tasks.size());
 
         // 4) 전체 건수 조회 (페이징 용)
-        int total = mapper.countTasks(req, empId, roundNo);
+        int total = mapper.countTasks(req, empId, roundNo, evaluator);
         System.out.println("[EvaluationTaskService] countTasks 결과 total=" + total);
 
         // 5) Pagination 생성 및 결과 포장

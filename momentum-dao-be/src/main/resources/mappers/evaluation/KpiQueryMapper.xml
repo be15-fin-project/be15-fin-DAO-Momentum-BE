@@ -9,6 +9,17 @@
     <select id="getKpiList"
             parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto"
             resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiListResponseDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             k.kpi_id,
             e.emp_no,
@@ -21,7 +32,7 @@
             s.status_type AS statusName,
             DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
             DATE_FORMAT(k.deadline, '%Y-%m-%d') AS deadline,
-            k.is_deleted As isDeleted
+            k.is_deleted AS isDeleted
         FROM kpi k
         JOIN employee e ON k.emp_id = e.emp_id
         LEFT JOIN department d ON e.dept_id = d.dept_id
@@ -32,7 +43,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}
@@ -51,10 +62,23 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
+
     <!-- KPI 목록 전체 개수 조회 -->
     <select id="getKpiListCount"
             parameterType="com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto"
             resultType="long">
+
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM kpi k
         JOIN employee e ON k.emp_id = e.emp_id
@@ -67,7 +91,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}
@@ -118,6 +142,17 @@
 
     <!-- KPI 사원별 목록 -->
     <select id="getEmployeeKpiSummary" resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiEmployeeSummaryResponseDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             e.emp_no,
             e.name AS employeeName,
@@ -137,7 +172,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="year != null">
                 AND YEAR(k.created_at) = #{year}
@@ -152,6 +187,17 @@
 
     <!-- 카운트 (페이징용) -->
     <select id="countEmployeeKpiSummary" resultType="long">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*) FROM (
         SELECT e.emp_id
         FROM kpi k
@@ -161,7 +207,7 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="year != null">
                 AND YEAR(k.created_at) = #{year}
