@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/kpis")
+@RequestMapping("/kpi")
 @RequiredArgsConstructor
 @Tag(name = "KPI", description = "KPI 생성, 취소 요청 API")
 public class KpiCommandController {
