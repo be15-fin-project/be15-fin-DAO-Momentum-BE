@@ -14,8 +14,11 @@
                 email,
                 payment_day,
                 establish_date,
-                work_start_time
-        FROM company
+                work_start_time,
+                (SELECT COUNT(*) FROM EMPLOYEE e WHERE e.status != 'RESIGNED') AS employeeCount,
+                TIMESTAMPDIFF(YEAR, c.establish_date, NOW())+1 AS foundedYears,
+                (SELECT COUNT(*) FROM DEPARTMENT d WHERE d.is_deleted = 'N')
+        FROM company c
         LIMIT 1;
     </select>
 
