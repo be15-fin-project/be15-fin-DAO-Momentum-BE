@@ -20,8 +20,6 @@ public class Notification {
 
     private long empId;
 
-    private int notificationTemplateId;
-
     private Long approveId;
 
     private Long contactId;

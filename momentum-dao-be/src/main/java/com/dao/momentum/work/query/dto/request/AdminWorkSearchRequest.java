@@ -12,13 +12,18 @@ public class AdminWorkSearchRequest {
 
     private String empName;
 
-    private String deptName;
+    private Integer deptId;
+//    private String deptName;
+
+    private Integer positionId;
 
     private LocalDate rangeStartDate;
 
     private LocalDate rangeEndDate;
 
-    private String typeName;
+    private Integer typeId;
+//    private String typeName;
+    private Integer childTypeId;
 
     private Integer vacationTypeId;
 
@@ -27,6 +32,5 @@ public class AdminWorkSearchRequest {
     private Integer page;
 
     private Integer size;
-
 
 }

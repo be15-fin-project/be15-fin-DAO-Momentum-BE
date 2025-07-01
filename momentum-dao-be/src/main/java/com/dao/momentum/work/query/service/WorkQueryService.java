@@ -80,4 +80,23 @@ public class WorkQueryService {
                 .workId(attendance.getWorkId())
                 .build();
     }
+
+    public WorkTypeResponse getWorkTypes() {
+        List<WorkTypeDTO> parentWorkTypes = workMapper.getParentWorkTypes();
+
+        List<WorkTypeDTO> childWorkTypes = workMapper.getChildWorkTypes();
+
+        return WorkTypeResponse.builder()
+                .parentWorkTypes(parentWorkTypes)
+                .childWorkTypes(childWorkTypes)
+                .build();
+    }
+
+    public VacationTypeResponse getVacationTypes() {
+        List<VacationTypeDTO> vacationTypes = workMapper.getVacationTypes();
+
+        return VacationTypeResponse.builder()
+                .vacationTypes(vacationTypes)
+                .build();
+    }
 }

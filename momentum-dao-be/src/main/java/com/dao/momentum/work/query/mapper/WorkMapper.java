@@ -2,9 +2,7 @@ package com.dao.momentum.work.query.mapper;
 
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
-import com.dao.momentum.work.query.dto.response.AttendanceDTO;
-import com.dao.momentum.work.query.dto.response.WorkDTO;
-import com.dao.momentum.work.query.dto.response.WorkDetailsDTO;
+import com.dao.momentum.work.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +20,10 @@ public interface WorkMapper {
     WorkDetailsDTO getWorkDetails(long workId);
 
     AttendanceDTO getMyTodaysAttendance(long empId, LocalDate today, LocalDate tomorrow);
+
+    List<WorkTypeDTO> getParentWorkTypes();
+
+    List<WorkTypeDTO> getChildWorkTypes();
+
+    List<VacationTypeDTO> getVacationTypes();
 }

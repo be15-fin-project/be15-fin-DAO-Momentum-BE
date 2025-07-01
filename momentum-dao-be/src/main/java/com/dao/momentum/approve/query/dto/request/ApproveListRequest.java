@@ -18,7 +18,7 @@ public class ApproveListRequest {
     private final String tab;
 
     @Schema(description = "결재 문서 종류")
-    private final ApproveType approveType;
+    private final String approveType;
 
     @Schema(description = "영수증 종류")
     private final String receiptType;
@@ -32,8 +32,8 @@ public class ApproveListRequest {
     @Schema(description = "기안자 이름 검색어")
     private final String employeeName;
 
-    @Schema(description = "기안자 소속 부서 이름", example = "기획팀")
-    private final String departmentName;
+    @Schema(description = "기안자 소속 부서 아이디", example = "1")
+    private final Long deptId;
 
     @Schema(description = "검색 시작일")
     private final LocalDate startDate;
