@@ -30,7 +30,7 @@ public class EvaluationTaskResponseDto {
     private int deptId;
 
     @Schema(description = "평가 대상자 사원 No (자가/조직 평가는 null)")
-    private Long targetEmpNo;
+    private String targetEmpNo;
 
     @Schema(description = "평가 대상자 이름 (사가 self/org는 자신의 이름)")
     private String targetName;

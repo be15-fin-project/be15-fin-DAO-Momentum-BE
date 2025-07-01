@@ -109,7 +109,7 @@ public enum ErrorCode {
     INVALID_REQUEST("40013", "평가 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     EVAL_ROUND_NOT_FOUND("40014", "평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVAL_ROUND_DUPLICATE("40015", "이미 존재하는 회차 번호입니다.", HttpStatus.BAD_REQUEST),
-    EVAL_ROUND_INVALID_START_DATE("40016", "시작일은 오늘 이후여야 합니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_INVALID_START_DATE("40016", "시작일은 반드시 오늘 또는 이후 날짜여야 합니다.", HttpStatus.BAD_REQUEST),
     EVAL_ALREADY_SUBMITTED("40017", "이미 제출된 평가입니다.", HttpStatus.BAD_REQUEST),
     EVAL_INVALID_NOT_EXIST("40018", "요인별 점수가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_RESULT_REQUEST("40019", "평가 결과 ID는 필수입니다.", HttpStatus.BAD_REQUEST),

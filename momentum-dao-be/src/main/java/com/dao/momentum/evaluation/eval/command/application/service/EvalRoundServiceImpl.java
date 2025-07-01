@@ -25,7 +25,7 @@ public class EvalRoundServiceImpl implements EvalRoundService {
             throw new EvalException(ErrorCode.EVAL_ROUND_DUPLICATE);
         }
 
-        if (dto.getStartAt().isBefore(java.time.LocalDate.now().plusDays(1))) {
+        if (dto.getStartAt().isBefore(java.time.LocalDate.now())) {
             throw new EvalException(ErrorCode.EVAL_ROUND_INVALID_START_DATE);
         }
 
