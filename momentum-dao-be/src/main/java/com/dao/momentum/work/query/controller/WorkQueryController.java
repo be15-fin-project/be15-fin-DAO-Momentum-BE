@@ -3,9 +3,7 @@ package com.dao.momentum.work.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
-import com.dao.momentum.work.query.dto.response.AttendanceResponse;
-import com.dao.momentum.work.query.dto.response.WorkDetailsResponse;
-import com.dao.momentum.work.query.dto.response.WorkListResponse;
+import com.dao.momentum.work.query.dto.response.*;
 import com.dao.momentum.work.query.service.WorkQueryService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/works")
@@ -96,6 +93,29 @@ public class WorkQueryController {
                 )
         );
     }
+
+    @GetMapping("/types")
+    @Operation(summary = "근무 유형 조회", description = "관리자가 회사에 등록된 근무 유형을 조회합니다.")
+    public ResponseEntity<ApiResponse<WorkTypeResponse>> getWorkTypes() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getWorkTypes()
+                )
+        );
+    }
+
+    @GetMapping("/vacation-types")
+    @Operation(summary = "휴가 유형 조회", description = "관리자가 회사에 등록된 휴가 유형을 조회합니다.")
+    public ResponseEntity<ApiResponse<VacationTypeResponse>> getVacationTypes() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        workQueryService.getVacationTypes()
+                )
+        );
+    }
+
 
 
 }

@@ -36,16 +36,25 @@
             work.emp_id,
             emp.emp_no,
             emp.name AS empName,
+            dept.dept_id,
+            dept.name AS deptName,
+            pos.position_id,
+            pos.name AS positionName,
+            TIMESTAMPDIFF(MINUTE, work.start_at, work.end_at) - work.break_time AS workTime,
             work.type_id,
-            wt.type_name,
+            COALESCE(pwt.type_name, cwt.type_name) AS typeName,
+            cwt.type_name AS childTypeName,
             work.vacation_type_id,
-            vt.vacation_type AS vacationType,
+            vt.description AS vacationType,
             work.start_at,
             work.end_at,
             work.is_normal_work
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
-        JOIN work_type AS wt ON work.type_id = wt.type_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
+        JOIN position AS pos ON emp.position_id = pos.position_id
+        JOIN work_type AS cwt ON work.type_id = cwt.type_id
+        LEFT JOIN work_type AS pwt ON cwt.parent_type_id = pwt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
         <if test="request.empNo != null and request.empNo != ''">
@@ -60,8 +69,30 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null and request.typeName != ''">
-            AND wt.type_name = #{request.typeName}
+
+        <!-- 일반 유형: typeId 필터 (childTypeId 없을 때만 적용) -->
+        <if test="request.typeId != null and request.childTypeId == null">
+            AND (
+            cwt.type_id = #{request.typeId}
+            OR pwt.type_id = #{request.typeId}
+            )
+        </if>
+
+        <!-- 초과 근무: childTypeId가 우선 -->
+        <if test="request.childTypeId != null">
+            AND cwt.type_id = #{request.childTypeId}
+        </if>
+
+        <!-- 휴가 세부 유형 추가 필터 -->
+        <if test="request.vacationTypeId != null">
+            AND work.vacation_type_id = #{request.vacationTypeId}
+        </if>
+
+        <if test="request.deptId != null">
+            AND dept.dept_id = #{request.deptId}
+        </if>
+        <if test="request.positionId != null">
+            AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.order == null or request.order.name() != 'DESC'">
             ORDER BY work.start_at ASC
@@ -74,10 +105,13 @@
 
     <select id="countWorks" resultType="java.lang.Long">
         SELECT
-        COUNT(work.work_id)
+            COUNT(work.work_id)
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
-        JOIN work_type AS wt ON work.type_id = wt.type_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
+        JOIN position AS pos ON emp.position_id = pos.position_id
+        JOIN work_type AS cwt ON work.type_id = cwt.type_id
+        LEFT JOIN work_type AS pwt ON cwt.parent_type_id = pwt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE 1 = 1
         <if test="request.empNo != null and request.empNo != ''">
@@ -92,10 +126,31 @@
         <if test="request.rangeEndDate != null">
             AND work.start_at <![CDATA[ <= ]]> #{request.rangeEndDate}
         </if>
-        <if test="request.typeName != null and request.typeName != ''">
-            AND wt.type_name = #{request.typeName}
+
+        <!-- 일반 유형: typeId 필터 (childTypeId 없을 때만 적용) -->
+        <if test="request.typeId != null and request.childTypeId == null">
+            AND (
+            cwt.type_id = #{request.typeId}
+            OR pwt.type_id = #{request.typeId}
+            )
         </if>
-        ;
+
+        <!-- 초과 근무: childTypeId가 우선 -->
+        <if test="request.childTypeId != null">
+            AND cwt.type_id = #{request.childTypeId}
+        </if>
+
+        <!-- 휴가 세부 유형 추가 필터 -->
+        <if test="request.vacationTypeId != null">
+            AND work.vacation_type_id = #{request.vacationTypeId}
+        </if>
+
+        <if test="request.deptId != null">
+            AND dept.dept_id = #{request.deptId}
+        </if>
+        <if test="request.positionId != null">
+            AND pos.position_id = #{request.positionId}
+        </if>
     </select>
 
     <select id = "getWorkDetails" resultType = "com.dao.momentum.work.query.dto.response.WorkDetailsDTO">
@@ -137,5 +192,31 @@
             AND wt.type_name = 'WORK'
         )
         LIMIT 1
+    </select>
+
+    <select id="getParentWorkTypes" resultType="com.dao.momentum.work.query.dto.response.WorkTypeDTO">
+        SELECT
+            type_id,
+            type_name,
+            parent_type_id
+        FROM work_type
+        WHERE parent_type_id IS NULL
+    </select>
+
+    <select id="getChildWorkTypes" resultType="com.dao.momentum.work.query.dto.response.WorkTypeDTO">
+        SELECT
+            cwt.type_id,
+            cwt.type_name,
+            cwt.parent_type_id
+        FROM work_type AS cwt
+        JOIN work_type AS pwt ON pwt.type_id = cwt.parent_type_id
+    </select>
+
+    <select id="getVacationTypes" resultType="com.dao.momentum.work.query.dto.response.VacationTypeDTO">
+        SELECT
+            vacation_type_id,
+            vacation_type,
+            description
+        FROM vacation_type
     </select>
 </mapper>
