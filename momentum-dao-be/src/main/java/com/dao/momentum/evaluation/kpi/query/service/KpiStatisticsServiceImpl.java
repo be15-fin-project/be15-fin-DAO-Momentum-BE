@@ -93,6 +93,8 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
                 ? KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(dto.getEmpNo())
+                .deptId(dto.getDeptId())
+                .positionId(dto.getPositionId())
                 .build()
                 : KpiTimeseriesRequestDto.builder()
                 .year(year)
