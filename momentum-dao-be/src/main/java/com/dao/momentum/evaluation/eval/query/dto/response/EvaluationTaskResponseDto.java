@@ -10,7 +10,6 @@ import java.time.LocalDate;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "평가 작성 대상 항목 DTO")
 public class EvaluationTaskResponseDto {

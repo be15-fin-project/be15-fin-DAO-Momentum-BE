@@ -15,7 +15,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            er.created_at AS createdAt
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
         FROM eval_response er
         JOIN employee e ON er.eval_id = e.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id
@@ -53,7 +53,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            er.created_at AS createdAt
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
         FROM eval_response er
         JOIN employee e ON er.eval_id = e.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id

@@ -7,7 +7,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Schema(description = "조직 평가 내역 조회 요청 DTO")
 public class OrgEvaluationListRequestDto {
 
