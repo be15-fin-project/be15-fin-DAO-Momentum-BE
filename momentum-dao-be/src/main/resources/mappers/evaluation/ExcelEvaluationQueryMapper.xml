@@ -21,6 +21,7 @@
         )
         SELECT
             r.round_no       AS roundNo,
+            ef.description    AS formName,
             t.emp_no         AS targetEmpNo,
             t.name           AS targetName,
             d.name           AS departmentName,
@@ -32,6 +33,8 @@
         FROM eval_response er
         JOIN employee t ON er.target_id = t.emp_id
         JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form et ON ef.form_id = er.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p   ON t.position_id = p.position_id
         JOIN eval_round r ON er.round_id = r.round_id
@@ -71,6 +74,7 @@
         )
         SELECT
             r.round_no       AS roundNo,
+            f.description    AS formName,
             e.emp_no         AS evalEmpNo,
             e.name           AS evalName,
             d.name           AS departmentName,
@@ -119,6 +123,7 @@
         )
         SELECT
             r.round_no       AS roundNo,
+            f.description    AS formName,
             e.emp_no         AS empNo,
             e.name           AS name,
             d.name           AS departmentName,

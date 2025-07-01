@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "평가 태스크 목록 결과 DTO")
 public class EvaluationTaskListResultDto {

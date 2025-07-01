@@ -16,7 +16,7 @@
                 er.round_id,
                 r.round_no,
                 er.score,
-                er.created_at
+                DATE_FORMAT(er.created_at, '%Y-%m-%d'),
             FROM eval_response er
             JOIN eval_round r ON er.round_id = r.round_id
             JOIN eval_form f ON er.form_id = f.form_id
@@ -55,7 +55,7 @@
             SELECT
                 r.result_id,
                 r.round_no,
-                r.created_at,
+                DATE_FORMAT(r.created_at, '%Y-%m-%d') AS createdAt,
                 CASE
                     WHEN r.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
                     WHEN r.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
@@ -69,7 +69,7 @@
         SELECT
             g.round_no      AS round_no,
             g.overall_grade AS overall_grade,
-            g.created_at    AS evaluated_at,
+            DATE_FORMAT(g.created_at, '%Y-%m-%d') AS evaluated_at,
             g.result_id     AS result_id
         FROM graded g
         ORDER BY g.created_at DESC
@@ -125,7 +125,7 @@
                 er.round_id,
                 er.eval_id,
                 er.score,
-                er.created_at,
+                DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
                 e.emp_no,
                 e.name
             FROM eval_response er
@@ -164,7 +164,7 @@
                 b.result_id,
                 b.emp_no,
                 b.name,
-                b.created_at,
+                DATE_FORMAT(b.created_at, '%Y-%m-%d'),
                 CASE
                     WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
                     WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
@@ -180,7 +180,7 @@
             result_id      AS resultId,
             emp_no         AS empNo,
             name           AS empName,
-            created_at     AS evaluatedAt,
+            DATE_FORMAT(created_at, '%Y-%m-%d') AS evaluatedAt,
             overall_grade  AS overallGrade
         FROM evaluated
 

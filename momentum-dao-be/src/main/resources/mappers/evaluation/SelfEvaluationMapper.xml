@@ -7,6 +7,17 @@
 
     <!-- 자가 진단 목록 조회 -->
     <select id="findSelfEvaluations" resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationResponseDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             er.result_id AS resultId,
             e.emp_no AS empNo,
@@ -15,7 +26,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            er.created_at AS createdAt
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt
         FROM eval_response er
         JOIN employee e ON er.eval_id = e.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id
@@ -25,12 +36,25 @@
             <if test="empNo != null">AND e.emp_no = #{empNo}</if>
             <if test="formId != null">AND ef.form_id = #{formId}</if>
             <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+            <if test="deptId != null">AND e.dept_id IN (SELECT dept_id FROM dept_tree)</if>
+            <if test="positionId != null">AND e.position_id = #{positionId}</if>
         ORDER BY er.created_at DESC
         LIMIT #{size} OFFSET #{offset}
     </select>
 
     <!-- 자가 진단 총 개수 -->
     <select id="countSelfEvaluations" resultType="long">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM eval_response er
         JOIN employee e ON er.eval_id = e.emp_id
@@ -41,6 +65,8 @@
             <if test="empNo != null">AND e.emp_no = #{empNo}</if>
             <if test="formId != null">AND ef.form_id = #{formId}</if>
             <if test="roundNo != null">AND r.round_no = #{roundNo}</if>
+            <if test="deptId != null">AND e.dept_id IN (SELECT dept_id FROM dept_tree)</if>
+            <if test="positionId != null">AND e.position_id = #{positionId}</if>
     </select>
 
     <!-- 자가 진단 상세 조회 -->
@@ -53,7 +79,7 @@
             r.round_no AS roundNo,
             er.score AS score,
             er.reason AS reason,
-            er.created_at AS createdAt
+            DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt
         FROM eval_response er
         JOIN employee e ON er.eval_id = e.emp_id
         JOIN eval_form ef ON er.form_id = ef.form_id
