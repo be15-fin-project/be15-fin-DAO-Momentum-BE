@@ -10,6 +10,9 @@ public record SelfEvaluationExcelDto(
     @Schema(description = "회차 번호", example = "2025-01")
     String roundNo,
 
+    @Schema(description = "평가 양식명", example = "조직 몰입도")
+    String formName,
+
     @Schema(description = "사번", example = "EMP1204")
     String empNo,
 

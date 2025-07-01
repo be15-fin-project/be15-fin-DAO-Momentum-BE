@@ -13,6 +13,12 @@ public class OrgEvaluationListRequestDto {
     @Schema(description = "평가자 사번", example = "1001")
     private String empNo;
 
+    @Schema(description = "부서 ID", example = "10")
+    private Long deptId;
+
+    @Schema(description = "직위 ID", example = "5")
+    private Long positionId;
+
     @Schema(description = "평가 양식 ID", example = "5")
     private Integer formId;
 

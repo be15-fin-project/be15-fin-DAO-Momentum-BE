@@ -13,6 +13,12 @@ public class PeerEvaluationListRequestDto {
     @Schema(description = "평가자 사번", example = "1001")
     private String evalNo;
 
+    @Schema(description = "부서 ID", example = "10")
+    private Long deptId;
+
+    @Schema(description = "직위 ID", example = "5")
+    private Long positionId;
+
     @Schema(description = "피평가자 사번", example = "20250002")
     private Long targetNo;
 
