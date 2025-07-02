@@ -69,6 +69,42 @@
             </if>
         ORDER BY ef.form_id ASC
     </select>
+    <!-- 평가 타입 목록 -->
+    <select id="findAllEvalTypes" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTypeDto">
+        SELECT
+            et.type_id      AS typeId,
+            et.name         AS typeName,
+            et.description  AS description
+        FROM eval_type et
+        ORDER BY et.type_id
+    </select>
+
+    <!-- 평가 양식 목록 (활성화된 것만) -->
+    <select id="findAllActiveForms" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormDto">
+        SELECT
+            ef.form_id     AS formId,
+            ef.name        AS formName,
+            ef.description AS description,
+            ef.type_id     AS typeId
+        FROM eval_form ef
+        WHERE ef.is_active = 'Y'
+        ORDER BY ef.type_id, ef.form_id
+    </select>
+
+    <!-- 평가 양식별 요인 조회 -->
+    <select id="findFormProperties"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormPropertyDto">
+        SELECT
+            p.property_id   AS propertyId,
+            p.name          AS name
+        FROM eval_property p
+        WHERE 1=1
+        <if test="typeId != null">
+            AND p.form_id = #{formId}
+        </if>
+        ORDER BY p.property_id
+    </select>
 
     <!-- 평가 회차 번호 조회 -->
     <select id="findSimpleRounds" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto">

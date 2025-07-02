@@ -3,11 +3,9 @@ package com.dao.momentum.evaluation.eval.query.controller;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -115,6 +113,46 @@ class EvaluationManageControllerTest {
     }
 
     @Test
+    @DisplayName("평가 양식 트리 조회 성공 - children 포함")
+    @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
+    void getFormTree_success() throws Exception {
+        // given: 자식 평가 양식 DTO
+        EvaluationFormDto formDto = new EvaluationFormDto(
+                5L,
+                "동료 평가",
+                "같은 부서 동료 대상 평가",
+                1L
+        );
+
+        // 부모 평가 타입 트리 DTO
+        EvaluationTypeTreeResponseDto treeDto = EvaluationTypeTreeResponseDto.builder()
+                .typeId(1L)
+                .typeName("PEER")
+                .description("사원 간 평가")
+                .children(List.of(formDto))
+                .build();
+
+        Mockito.when(evaluationManageService.getFormTree())
+                .thenReturn(List.of(treeDto));
+
+        // when & then
+        mockMvc.perform(get("/evaluations/form-tree"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].typeId").value(1))
+                .andExpect(jsonPath("$.data[0].typeName").value("PEER"))
+                .andExpect(jsonPath("$.data[0].description").value("사원 간 평가"))
+                .andExpect(jsonPath("$.data[0].children", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].children[0].formId").value(5))
+                .andExpect(jsonPath("$.data[0].children[0].formName").value("동료 평가"))
+                .andExpect(jsonPath("$.data[0].children[0].description").value("같은 부서 동료 대상 평가"))
+                .andExpect(jsonPath("$.data[0].children[0].typeId").value(1))
+                .andDo(print());
+    }
+
+
+    @Test
     @DisplayName("평가 회차 번호 및 ID 목록 조회 성공")
     @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
     void getSimpleRoundList_success() throws Exception {
@@ -134,6 +172,30 @@ class EvaluationManageControllerTest {
                 .andExpect(jsonPath("$.data", hasSize(1)))
                 .andExpect(jsonPath("$.data[0].roundId").value(1))
                 .andExpect(jsonPath("$.data[0].roundNo").value("2025-1차"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("평가별 요인 조회 성공")
+    @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
+    void getFormProperty_success() throws Exception {
+        // given
+        EvaluationFormPropertyDto propDto = EvaluationFormPropertyDto.builder()
+                .propertyId(101L)
+                .name("몰입도")
+                .build();
+
+        Mockito.when(evaluationManageService.getFormProperties(any(EvaluationFormPropertyRequestDto.class)))
+                .thenReturn(List.of(propDto));
+
+        // when & then
+        mockMvc.perform(get("/evaluations/form-property")
+                        .param("formId", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].propertyId").value(101))
+                .andExpect(jsonPath("$.data[0].name").value("몰입도"))
                 .andDo(print());
     }
 
