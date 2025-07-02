@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 @Getter
 public class AttendanceDTO {
-    private IsAttended isAttended;
-
     private Long workId;
 
     private LocalDateTime startAt;

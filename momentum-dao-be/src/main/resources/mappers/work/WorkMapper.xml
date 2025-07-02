@@ -165,35 +165,28 @@
 
     <select id="getMyTodaysAttendance" resultType="com.dao.momentum.work.query.dto.response.AttendanceDTO">
         SELECT
-            'Y' AS isAttended,
             work.work_id,
             work.start_at,
             work.end_at
         FROM work AS work
         JOIN work_type AS wt ON work.type_id = wt.type_id
+        LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE work.emp_id = #{empId}
         AND work.start_at &gt;= #{today}
         AND work.start_at &lt; #{tomorrow}
-        AND wt.type_name = 'WORK'
+        <if test="workTypeNames != null and workTypeNames.size() > 0">
+            AND wt.type_name IN
+            <foreach item="type" collection="workTypeNames" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
 
-        UNION ALL
-
-        SELECT
-            'N' AS isAttended,
-            null AS workId,
-            null AS startAt,
-            null AS endAt
-        FROM DUAL
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM work
-            JOIN work_type AS wt ON work.type_id = wt.type_id
-            WHERE emp_id = #{empId}
-            AND work.start_at &gt;= #{today}
-            AND work.start_at &lt; #{tomorrow}
-            AND wt.type_name = 'WORK'
-        )
-        LIMIT 1
+        <if test="vacationTypes != null and vacationTypes.size() > 0">
+            AND vt.vacation_type IN
+            <foreach item="type" collection="vacationTypes" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
     </select>
 
     <select id="getParentWorkTypes" resultType="com.dao.momentum.work.query.dto.response.WorkTypeDTO">

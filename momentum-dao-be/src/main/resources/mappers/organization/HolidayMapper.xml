@@ -42,4 +42,12 @@
         WHERE
                 date BETWEEN #{startDate} AND #{endDate}
     </select>
+
+    <select id="isHoliday" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM holiday
+            WHERE date = #{date}
+        )
+    </select>
 </mapper>

@@ -15,4 +15,6 @@ public interface HolidayMapper {
     long countHolidays(HolidaySearchRequest request);
 
     List<HolidayGetDTO> searchHolidaysPerMonth(LocalDate startDate, LocalDate endDate);
+
+    boolean isHoliday(LocalDate date);
 }
