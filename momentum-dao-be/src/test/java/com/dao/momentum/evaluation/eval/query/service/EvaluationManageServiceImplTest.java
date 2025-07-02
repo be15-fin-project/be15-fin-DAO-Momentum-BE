@@ -255,5 +255,43 @@ class EvaluationManageServiceImplTest {
         verify(evaluationManageMapper).findFormProperties(5L);
     }
 
+    @Test
+    @DisplayName("평가 진행 여부 조회 - 진행 중인 회차 존재")
+    void getTodayRoundStatus_inProgress() {
+        // given
+        LocalDate today = LocalDate.now();
+        List<Long> roundIds = List.of(100L); // 진행 중 회차 하나 존재
+
+        given(evaluationManageMapper.findOngoingRoundIds(today))
+                .willReturn(roundIds);
+
+        // when
+        EvaluationRoundStatusDto result = evaluationManageService.getTodayRoundStatus();
+
+        // then
+        assertThat(result.isInProgress()).isTrue();
+        assertThat(result.getRoundId()).isEqualTo(100L);
+
+        verify(evaluationManageMapper).findOngoingRoundIds(today);
+    }
+
+    @Test
+    @DisplayName("평가 진행 여부 조회 - 진행 중인 회차 없음")
+    void getTodayRoundStatus_notInProgress() {
+        // given
+        LocalDate today = LocalDate.now();
+
+        given(evaluationManageMapper.findOngoingRoundIds(today))
+                .willReturn(List.of());
+
+        // when
+        EvaluationRoundStatusDto result = evaluationManageService.getTodayRoundStatus();
+
+        // then
+        assertThat(result.isInProgress()).isFalse();
+        assertThat(result.getRoundId()).isNull();
+
+        verify(evaluationManageMapper).findOngoingRoundIds(today);
+    }
 
 }
