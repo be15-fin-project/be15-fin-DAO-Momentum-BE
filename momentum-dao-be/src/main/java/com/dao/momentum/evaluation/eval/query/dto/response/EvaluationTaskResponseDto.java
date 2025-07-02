@@ -19,7 +19,7 @@ public class EvaluationTaskResponseDto {
     @Schema(description = "평가 유형 이름 (PEER/UPWARD/DOWNWARD/ORG/SELF)")
     private String typeName;
 
-    @Schema(description = "평가 유형 ID", example = "3")
+    @Schema(description = "평가 유형 ID (PEER/UPWARD/DOWNWARD/ORG/SELF)")
     private int typeId;
 
     @Schema(description = "평가 양식 ID", example = "3")
@@ -31,7 +31,10 @@ public class EvaluationTaskResponseDto {
     @Schema(description = "부서 ID", example = "10")
     private int deptId;
 
-    @Schema(description = "평가 대상자 사원 No (자가/조직 평가는 null)")
+    @Schema(description = "평가 대상자 사원 번호 (자가/조직 평가는 null)")
+    private Long targetEmpId;
+
+    @Schema(description = "평가 대상자 사번 (자가/조직 평가는 null)")
     private String targetEmpNo;
 
     @Schema(description = "평가 대상자 이름 (사가 self/org는 자신의 이름)")
