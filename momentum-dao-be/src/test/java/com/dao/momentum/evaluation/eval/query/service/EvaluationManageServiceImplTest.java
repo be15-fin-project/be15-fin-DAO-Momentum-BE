@@ -4,10 +4,7 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -189,6 +186,47 @@ class EvaluationManageServiceImplTest {
         assertThat(result.get(0).getRoundNo()).isEqualTo("2025-1차");
 
         verify(evaluationManageMapper).findSimpleRounds();
+    }
+
+    @Test
+    @DisplayName("평가 종류 트리 조회 - 성공")
+    void getFormTree_success() {
+        // given
+        EvaluationTypeDto type1 = new EvaluationTypeDto(1L, "PEER", "사원 간 평가");
+        EvaluationTypeDto type2 = new EvaluationTypeDto(2L, "ORG", "조직 평가");
+
+        EvaluationFormDto form1 = new EvaluationFormDto(10L, "동료 평가", "같은 부서 동료 대상 평가", 1L);
+        EvaluationFormDto form2 = new EvaluationFormDto(20L, "조직 몰입도 평가", "조직 몰입 척도", 2L);
+
+        given(evaluationManageMapper.findAllEvalTypes()).willReturn(List.of(type1, type2));
+        given(evaluationManageMapper.findAllActiveForms()).willReturn(List.of(form1, form2));
+
+        // when
+        List<EvaluationTypeTreeResponseDto> result = evaluationManageService.getFormTree();
+
+        // then
+        assertThat(result).hasSize(2);
+
+        EvaluationTypeTreeResponseDto peerTree = result.stream()
+                .filter(tree -> tree.getTypeId() == 1L)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(peerTree.getTypeName()).isEqualTo("PEER");
+        assertThat(peerTree.getChildren()).hasSize(1);
+        assertThat(peerTree.getChildren().get(0).formId()).isEqualTo(10L);
+
+        EvaluationTypeTreeResponseDto orgTree = result.stream()
+                .filter(tree -> tree.getTypeId() == 2L)
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(orgTree.getTypeName()).isEqualTo("ORG");
+        assertThat(orgTree.getChildren()).hasSize(1);
+        assertThat(orgTree.getChildren().get(0).formId()).isEqualTo(20L);
+
+        verify(evaluationManageMapper).findAllEvalTypes();
+        verify(evaluationManageMapper).findAllActiveForms();
     }
 
 }
