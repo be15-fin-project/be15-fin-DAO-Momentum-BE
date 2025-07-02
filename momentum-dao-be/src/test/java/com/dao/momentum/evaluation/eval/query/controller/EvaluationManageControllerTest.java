@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.eval.query.controller;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
@@ -171,6 +172,30 @@ class EvaluationManageControllerTest {
                 .andExpect(jsonPath("$.data", hasSize(1)))
                 .andExpect(jsonPath("$.data[0].roundId").value(1))
                 .andExpect(jsonPath("$.data[0].roundNo").value("2025-1차"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("평가별 요인 조회 성공")
+    @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
+    void getFormProperty_success() throws Exception {
+        // given
+        EvaluationFormPropertyDto propDto = EvaluationFormPropertyDto.builder()
+                .propertyId(101L)
+                .name("몰입도")
+                .build();
+
+        Mockito.when(evaluationManageService.getFormProperties(any(EvaluationFormPropertyRequestDto.class)))
+                .thenReturn(List.of(propDto));
+
+        // when & then
+        mockMvc.perform(get("/evaluations/form-property")
+                        .param("formId", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].propertyId").value(101))
+                .andExpect(jsonPath("$.data[0].name").value("몰입도"))
                 .andDo(print());
     }
 

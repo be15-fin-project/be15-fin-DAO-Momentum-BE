@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.eval.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
@@ -228,5 +229,31 @@ class EvaluationManageServiceImplTest {
         verify(evaluationManageMapper).findAllEvalTypes();
         verify(evaluationManageMapper).findAllActiveForms();
     }
+
+    @Test
+    @DisplayName("평가 양식별 요인 조회 - 성공")
+    void getFormProperties_success() {
+        // given
+        EvaluationFormPropertyRequestDto request = new EvaluationFormPropertyRequestDto();
+        ReflectionTestUtils.setField(request, "formId", 5L);
+
+        EvaluationFormPropertyDto propDto = EvaluationFormPropertyDto.builder()
+                .propertyId(101L)
+                .name("몰입도")
+                .build();
+
+        given(evaluationManageMapper.findFormProperties(5L)).willReturn(List.of(propDto));
+
+        // when
+        List<EvaluationFormPropertyDto> result = evaluationManageService.getFormProperties(request);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getPropertyId()).isEqualTo(101L);
+        assertThat(result.get(0).getName()).isEqualTo("몰입도");
+
+        verify(evaluationManageMapper).findFormProperties(5L);
+    }
+
 
 }
