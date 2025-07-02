@@ -49,7 +49,8 @@ public class AnnouncementCommandService {
                         .announcementId(savedAnnouncement.getAnnouncementId())
                         .approveId(null)
                         .contractId(null)
-                        .s3Key(attachment.getS3Key()) // 이미 S3 업로드된 URL
+                        .name(attachment.getName())
+                        .s3Key(attachment.getS3Key())
                         .type(attachment.getType())
                         .build();
                 fileRepository.save(file);
@@ -102,6 +103,7 @@ public class AnnouncementCommandService {
                             .announcementId(announcementId)
                             .approveId(null)
                             .contractId(null)
+                            .name(attachment.getName())
                             .s3Key(attachment.getS3Key())  // 현재는 URL 필드를 s3Key로 사용 중
                             .type(attachment.getType())
                             .build();

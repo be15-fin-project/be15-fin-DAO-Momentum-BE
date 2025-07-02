@@ -21,6 +21,9 @@ public class File {
     private Long contractId;
 
     @NotBlank
+    private String name;
+
+    @NotBlank
     @Column(name = "s3_key")
     private String s3Key;
 
