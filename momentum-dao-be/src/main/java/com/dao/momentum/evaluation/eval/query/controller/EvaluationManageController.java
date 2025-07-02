@@ -2,11 +2,9 @@ package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTypeTreeResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +42,15 @@ public class EvaluationManageController {
     public ApiResponse<List<EvaluationTypeTreeResponseDto>> getFormTree() {
         List<EvaluationTypeTreeResponseDto> result = evaluationManageService.getFormTree();
         return ApiResponse.success(result);
+    }
+
+    @GetMapping("/form-property")
+    @Operation(summary = "평가별 요인 조회", description = "특정 평가 양식(formId)의 요인 리스트를 조회합니다.")
+    public ApiResponse<List<EvaluationFormPropertyDto>> getFormProperty(
+            @ModelAttribute EvaluationFormPropertyRequestDto request
+    ) {
+        List<EvaluationFormPropertyDto> props = evaluationManageService.getFormProperties(request);
+        return ApiResponse.success(props);
     }
 
     @GetMapping("/roundNo")

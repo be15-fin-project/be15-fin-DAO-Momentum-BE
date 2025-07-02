@@ -91,6 +91,21 @@
         ORDER BY ef.type_id, ef.form_id
     </select>
 
+    <!-- 평가 양식별 요인 조회 -->
+    <select id="findFormProperties"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormPropertyDto">
+        SELECT
+            p.property_id   AS propertyId,
+            p.name          AS name
+        FROM eval_property p
+        WHERE 1=1
+        <if test="typeId != null">
+            AND p.form_id = #{formId}
+        </if>
+        ORDER BY p.property_id
+    </select>
+
     <!-- 평가 회차 번호 조회 -->
     <select id="findSimpleRounds" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto">
         SELECT

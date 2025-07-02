@@ -5,6 +5,7 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
@@ -84,6 +85,13 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
                         .children(formMap.getOrDefault(type.typeId(), List.of()))
                         .build())
                 .toList();
+    }
+
+    // 평가 양식별 요인 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<EvaluationFormPropertyDto> getFormProperties(EvaluationFormPropertyRequestDto request) {
+        return evaluationManageMapper.findFormProperties(request.getFormId());
     }
 
     // 평가 회차 번호 조회
