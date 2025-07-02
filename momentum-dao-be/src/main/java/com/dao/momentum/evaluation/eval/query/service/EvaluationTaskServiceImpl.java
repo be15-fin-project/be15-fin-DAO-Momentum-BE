@@ -1,15 +1,14 @@
 package com.dao.momentum.evaluation.eval.query.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationTaskMapper;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationTaskService;
 
@@ -68,6 +67,52 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
                 .pagination(pagination)
                 .build();
         System.out.println("[EvaluationTaskService] 최종 반환 DTO=" + result);
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NoneSubmitDto> getNoneSubmitters(Integer roundId) {
+
+        List<EmployeeSimpleDto> allEmployees = mapper.findAllActiveEmployees();
+        List<NoneSubmitDto> result = new ArrayList<>();
+        System.out.println("▶️ 검사 대상 사원 수 = " + allEmployees.size());
+
+        for (EmployeeSimpleDto emp : allEmployees) {
+            EvaluatorRoleDto evaluator = mapper.findEvaluatorRole(emp.getEmpId());
+
+            EvaluationTaskRequestDto req = new EvaluationTaskRequestDto();
+            req.setRoundNo(roundId);
+            req.setFormId(0); // 전체 폼
+
+            List<EvaluationTaskResponseDto> tasks = mapper.findAllTasks(
+                    req,
+                    emp.getEmpId(),
+                    roundId,
+                    evaluator,
+                    Integer.MAX_VALUE, // 모든 태스크 가져오기
+                    0
+            );
+
+            System.out.println("🔍 " + emp.getName() + " → task 개수 = " + tasks.size());
+
+            for (EvaluationTaskResponseDto task : tasks) {
+                System.out.println("   ▫️ formId=" + task.getFormId() + ", submitted=" + task.isSubmitted());
+            }
+            boolean hasUnsubmitted = tasks.stream().anyMatch(t -> !t.isSubmitted());
+
+            if (hasUnsubmitted) {
+                System.out.println("❌ 미제출자 발견: " + emp.getName());
+                result.add(NoneSubmitDto.builder()
+                        .empId(emp.getEmpId())
+                        .empNo(emp.getEmpNo())
+                        .name(emp.getName())
+                        .deptId(emp.getDeptId())
+                        .deptName(emp.getDeptName())
+                        .build());
+            }
+        }
+
         return result;
     }
 

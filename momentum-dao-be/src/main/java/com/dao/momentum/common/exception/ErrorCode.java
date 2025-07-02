@@ -116,6 +116,7 @@ public enum ErrorCode {
     EVALUATION_NOT_FOUND("40020", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_PROMPT_NOT_FOUND("40021", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_TYPE_NOT_FOUND("40022", "평가 타입 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATOR_ROLE_NOT_FOUND("40023", "사원의 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
