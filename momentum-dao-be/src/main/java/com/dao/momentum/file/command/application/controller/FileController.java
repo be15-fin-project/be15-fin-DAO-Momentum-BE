@@ -8,6 +8,7 @@ import com.dao.momentum.file.command.application.dto.request.DownloadUrlRequest;
 import com.dao.momentum.file.command.application.dto.response.DownloadUrlResponse;
 import com.dao.momentum.file.command.application.service.FileService;
 import com.dao.momentum.file.exception.FileUploadFailedException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +29,8 @@ public class FileController {
     }
 
     @PostMapping("/download-url")
-    public ResponseEntity<ApiResponse<DownloadUrlResponse>> getDownloadUrl(@RequestBody DownloadUrlRequest request) {
-        DownloadUrlResponse response = fileService.generateDownloadUrl(request.getKey());
+    public ResponseEntity<ApiResponse<DownloadUrlResponse>> getDownloadUrl(@RequestBody @Valid DownloadUrlRequest request) {
+        DownloadUrlResponse response = fileService.generateDownloadUrl(request.getKey(), request.getFileName());
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

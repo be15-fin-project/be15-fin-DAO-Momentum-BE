@@ -9,4 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class DownloadUrlResponse {
     private String signedUrl;
+    private String fileName;
 }
