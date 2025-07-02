@@ -2,9 +2,11 @@ package com.dao.momentum.evaluation.eval.query.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @Schema(description = "간단한 사원 정보 DTO")
 public class EmployeeSimpleDto {

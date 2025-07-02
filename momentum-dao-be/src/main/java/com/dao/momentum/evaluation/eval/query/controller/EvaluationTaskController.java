@@ -45,7 +45,7 @@ public class EvaluationTaskController {
     @GetMapping("/none-submit")
     @Operation(
             summary = "미제출자 목록 조회",
-            description = "해당 회차에서 평가를 하나 이상 제출하지 않은 사원 목록을 조회합니다. 관리자/HR만 접근 가능합니다."
+            description = "해당 회차에서 평가를 하나 이상 제출하지 않은 사원 목록을 조회합니다."
     )
     public ApiResponse<NoneSubmitListResultDto> getNoneSubmitters(
             @RequestParam Integer roundId

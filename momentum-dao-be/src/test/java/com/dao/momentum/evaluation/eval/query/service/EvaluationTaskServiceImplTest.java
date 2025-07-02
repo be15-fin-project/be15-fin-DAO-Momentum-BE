@@ -2,9 +2,7 @@ package com.dao.momentum.evaluation.eval.query.service;
 
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationTaskMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -95,5 +93,67 @@ class EvaluationTaskServiceImplTest {
         verify(mapper).countTasks(req, empId, latestRoundNo, evaluator);
 
         verifyNoMoreInteractions(mapper);
+    }
+
+
+    @Test
+    @DisplayName("미제출자 목록 조회 - 성공")
+    void getNoneSubmitters_success() {
+        // given
+        int roundId = 3;
+
+        EmployeeSimpleDto emp1 = EmployeeSimpleDto.builder()
+                .empId(100L)
+                .empNo("20250001")
+                .name("김사원")
+                .deptId(10L)
+                .deptName("영업팀")
+                .build();
+
+        EmployeeSimpleDto emp2 = EmployeeSimpleDto.builder()
+                .empId(101L)
+                .empNo("20250002")
+                .name("이철수")
+                .deptId(10L)
+                .deptName("영업팀")
+                .build();
+
+        List<EmployeeSimpleDto> employees = List.of(emp1, emp2);
+        given(mapper.findAllActiveEmployees()).willReturn(employees);
+
+        EvaluatorRoleDto evaluator = EvaluatorRoleDto.builder()
+                .isDeptHead(false)
+                .isTeamLeader(false)
+                .build();
+        given(mapper.findEvaluatorRole(anyLong())).willReturn(evaluator);
+
+        // emp1은 제출 안 함
+        EvaluationTaskResponseDto task1 = EvaluationTaskResponseDto.builder()
+                .formId(1)
+                .submitted(false)
+                .build();
+
+        // emp2는 다 제출함
+        EvaluationTaskResponseDto task2 = EvaluationTaskResponseDto.builder()
+                .formId(1)
+                .submitted(true)
+                .build();
+
+        given(mapper.findAllTasks(any(), eq(100L), eq(roundId), eq(evaluator), anyInt(), eq(0)))
+                .willReturn(List.of(task1));
+        given(mapper.findAllTasks(any(), eq(101L), eq(roundId), eq(evaluator), anyInt(), eq(0)))
+                .willReturn(List.of(task2));
+
+        // when
+        List<NoneSubmitDto> result = service.getNoneSubmitters(roundId);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getEmpNo()).isEqualTo("20250001");
+
+        verify(mapper).findAllActiveEmployees();
+        verify(mapper, times(2)).findEvaluatorRole(anyLong());
+        verify(mapper).findAllTasks(any(), eq(100L), eq(roundId), eq(evaluator), anyInt(), eq(0));
+        verify(mapper).findAllTasks(any(), eq(101L), eq(roundId), eq(evaluator), anyInt(), eq(0));
     }
 }
