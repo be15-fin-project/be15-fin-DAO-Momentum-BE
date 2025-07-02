@@ -12,7 +12,7 @@ public class AppointSearchDTO {
 
     private Integer positionId;
 
-    private Long empId;
+    private String empNo;
 
     private String empName;
 
@@ -40,7 +40,7 @@ public class AppointSearchDTO {
         return AppointSearchDTO.builder()
                 .deptId(request.getDeptId())
                 .positionId(request.getPositionId())
-                .empId(request.getEmpId())
+                .empNo(request.getEmpNo())
                 .empName(request.getEmpName())
                 .type(request.getType())
                 .order(request.getOrder())

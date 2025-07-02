@@ -13,7 +13,7 @@ public class AppointSearchRequest {
 
     private Integer positionId;
 
-    private Long empId;
+    private String empNo;
 
     private String empName;
 
