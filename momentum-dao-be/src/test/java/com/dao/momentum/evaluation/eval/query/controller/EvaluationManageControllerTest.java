@@ -199,4 +199,27 @@ class EvaluationManageControllerTest {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("평가 진행 여부 조회 성공")
+    @WithMockUser(authorities = {"MASTER", "HR_MANAGER"})
+    void getRoundStatus_success() throws Exception {
+        // given
+        EvaluationRoundStatusDto dto = EvaluationRoundStatusDto.builder()
+                .inProgress(true)
+                .roundId(42L)
+                .build();
+
+        Mockito.when(evaluationManageService.getTodayRoundStatus())
+                .thenReturn(dto);
+
+        // when & then
+        mockMvc.perform(get("/evaluations/roundStatus"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.inProgress").value(true))
+                .andExpect(jsonPath("$.data.roundId").value(42))
+                .andDo(print());
+    }
+
+
 }

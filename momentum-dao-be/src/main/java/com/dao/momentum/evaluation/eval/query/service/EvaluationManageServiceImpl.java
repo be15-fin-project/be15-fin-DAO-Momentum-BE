@@ -94,6 +94,23 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
         return evaluationManageMapper.findFormProperties(request.getFormId());
     }
 
+    // 평가 진행 여부 조회
+    @Override
+    @Transactional(readOnly = true)
+    public EvaluationRoundStatusDto getTodayRoundStatus() {
+        LocalDate today = LocalDate.now();
+        List<Long> ongoing = evaluationManageMapper.findOngoingRoundIds(today);
+
+        boolean inProgress = !ongoing.isEmpty();
+        // 가장 최신 회차 하나만 선택
+        Long roundId = inProgress ? ongoing.get(0) : null;
+
+        return EvaluationRoundStatusDto.builder()
+                .inProgress(inProgress)
+                .roundId(roundId)
+                .build();
+    }
+
     // 평가 회차 번호 조회
     @Override
     public List<EvaluationRoundSimpleDto> getSimpleRoundList() {

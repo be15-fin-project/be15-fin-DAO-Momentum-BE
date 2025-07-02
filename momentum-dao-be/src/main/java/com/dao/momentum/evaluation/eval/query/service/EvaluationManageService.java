@@ -21,6 +21,9 @@ public interface EvaluationManageService {
     //  평가 양식별 요인 조회
     List<EvaluationFormPropertyDto> getFormProperties(EvaluationFormPropertyRequestDto request);
 
+    // 평가 진행 여부 조회
+    EvaluationRoundStatusDto getTodayRoundStatus();
+
     // 평가 회차 번호 조회
     List<EvaluationRoundSimpleDto> getSimpleRoundList();
 

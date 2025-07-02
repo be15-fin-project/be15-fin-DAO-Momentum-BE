@@ -53,6 +53,13 @@ public class EvaluationManageController {
         return ApiResponse.success(props);
     }
 
+    @GetMapping("/roundStatus")
+    @Operation(summary = "평가 진행 여부 조회", description = "오늘 진행 중인 평가 회차가 있는지, 있다면 roundId를 반환합니다.")
+    public ApiResponse<EvaluationRoundStatusDto> getRoundStatus() {
+        EvaluationRoundStatusDto status = evaluationManageService.getTodayRoundStatus();
+        return ApiResponse.success(status);
+    }
+
     @GetMapping("/roundNo")
     @Operation(summary = "평가 회차 번호 및 ID 목록 조회", description = "필터링용으로 평가 회차 번호와 ID만 간단히 조회합니다.")
     public ApiResponse<List<EvaluationRoundSimpleDto>> getSimpleRoundList() {
