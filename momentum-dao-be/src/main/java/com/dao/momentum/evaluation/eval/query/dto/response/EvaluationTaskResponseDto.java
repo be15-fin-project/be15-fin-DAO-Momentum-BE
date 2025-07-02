@@ -19,6 +19,9 @@ public class EvaluationTaskResponseDto {
     @Schema(description = "평가 유형 이름 (PEER/UPWARD/DOWNWARD/ORG/SELF)")
     private String typeName;
 
+    @Schema(description = "평가 유형 ID", example = "3")
+    private int typeId;
+
     @Schema(description = "평가 양식 ID", example = "3")
     private int formId;
 
