@@ -105,13 +105,14 @@ class FileServiceTest {
     void generateDownloadUrl_success() {
         // given
         String key = "announcements/uuid/test.png";
+        String fileName = "test.png";
         String expectedUrl = "https://cloudfront.domain/test.png";
 
         when(s3Service.generateCloudFrontSignedUrl(key, Duration.ofMinutes(5)))
                 .thenReturn(expectedUrl);
 
         // when
-        DownloadUrlResponse response = fileService.generateDownloadUrl(key);
+        DownloadUrlResponse response = fileService.generateDownloadUrl(key, fileName);
 
         // then
         assertNotNull(response);

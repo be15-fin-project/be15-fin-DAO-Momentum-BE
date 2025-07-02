@@ -1,5 +1,6 @@
 package com.dao.momentum.announcement.query.dto.response;
 
+import com.dao.momentum.file.command.application.dto.response.AttachmentDto;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,5 +22,5 @@ public class AnnouncementDetailDto {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<String> urls; // 첨부파일 URL 목록
+    private List<AttachmentDto> attachments; // 첨부파일 URL 목록
 }
