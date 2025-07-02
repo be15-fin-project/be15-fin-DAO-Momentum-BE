@@ -14,6 +14,9 @@ public class HrObjectionCreateResponse {
     @Schema(description = "이의제기 ID", example = "501")
     private Long objectionId;
 
+    @Schema(description = "작성자 ID", example = "501")
+    private Long writerId;
+
     @Schema(description = "이의제기 상태", example = "PENDING")
     private String status;
 
