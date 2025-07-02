@@ -6,6 +6,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListReq
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTypeTreeResponseDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,13 @@ public class EvaluationManageController {
             @ModelAttribute EvaluationFormListRequestDto request
     ) {
         List<EvaluationFormResponseDto> result = evaluationManageService.getEvaluationForms(request);
+        return ApiResponse.success(result);
+    }
+
+    @GetMapping("/form-tree")
+    @Operation(summary = "평가 양식 트리 조회", description = "평가 타입별 평가 양식 트리 구조를 조회합니다.")
+    public ApiResponse<List<EvaluationTypeTreeResponseDto>> getFormTree() {
+        List<EvaluationTypeTreeResponseDto> result = evaluationManageService.getFormTree();
         return ApiResponse.success(result);
     }
 

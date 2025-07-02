@@ -4,10 +4,7 @@ import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRoundStatus;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationManageService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +59,26 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
     @Transactional(readOnly = true)
     public List<EvaluationFormResponseDto> getEvaluationForms(EvaluationFormListRequestDto request) {
         return evaluationManageMapper.findEvaluationForms(request);
+    }
+
+    // 평가 종류 트리 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<EvaluationTypeTreeResponseDto> getFormTree() {
+        List<EvaluationTypeDto> types = evaluationManageMapper.findAllEvalTypes();
+        List<EvaluationFormDto> forms = evaluationManageMapper.findAllActiveForms();
+
+        Map<Long, List<EvaluationFormDto>> formMap = forms.stream()
+                .collect(Collectors.groupingBy(EvaluationFormDto::typeId));
+
+        return types.stream()
+                .map(type -> EvaluationTypeTreeResponseDto.builder()
+                        .typeId(type.typeId())
+                        .typeName(type.typeName())
+                        .description(type.description())
+                        .children(formMap.getOrDefault(type.typeId(), List.of()))
+                        .build())
+                .toList();
     }
 
     @Override

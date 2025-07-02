@@ -5,6 +5,7 @@ import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListReq
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTypeTreeResponseDto;
 
 import java.util.List;
 
@@ -15,6 +16,9 @@ public interface EvaluationManageService {
 
     // 평가 종류 조회
     List<EvaluationFormResponseDto> getEvaluationForms(EvaluationFormListRequestDto request);
+
+    // 평가 종류 트리 구조 조회
+    List<EvaluationTypeTreeResponseDto> getFormTree() ;
 
     // 평가 회차 번호 조회
     List<EvaluationRoundSimpleDto> getSimpleRoundList();
