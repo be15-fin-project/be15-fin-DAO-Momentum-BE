@@ -167,7 +167,8 @@
         SELECT
             'Y' AS isAttended,
             work.work_id,
-            work.emp_id
+            work.start_at,
+            work.end_at
         FROM work AS work
         JOIN work_type AS wt ON work.type_id = wt.type_id
         WHERE work.emp_id = #{empId}
@@ -180,7 +181,8 @@
         SELECT
             'N' AS isAttended,
             null AS workId,
-            null AS empId
+            null AS startAt,
+            null AS endAt
         FROM DUAL
         WHERE NOT EXISTS (
             SELECT 1

@@ -75,9 +75,8 @@ public class WorkQueryService {
         AttendanceDTO attendance = workMapper.getMyTodaysAttendance(empId, today, tomorrow);
 
         return AttendanceResponse.builder()
-                .isAttended(attendance.getIsAttended())
+                .Attendance(attendance)
                 .empId(empId)
-                .workId(attendance.getWorkId())
                 .build();
     }
 

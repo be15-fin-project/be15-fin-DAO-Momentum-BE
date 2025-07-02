@@ -6,14 +6,11 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "당일 출근 여부 응답 객체")
+@Schema(description = "당일 출근 응답 객체")
 public class AttendanceResponse {
-    @Schema(description = "출근 여부")
-    private IsAttended isAttended;
+    @Schema(description = "출근 DTO")
+    private AttendanceDTO Attendance;
 
     @Schema(description = "사원 ID", example = "1")
     private long empId;
-
-    @Schema(description = "출퇴근 ID", example = "1")
-    private Long workId;
 }
