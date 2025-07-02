@@ -162,8 +162,8 @@
             <if test="request.positionId != null">
                 AND apos.position_id = #{request.positionId}
             </if>
-            <if test="request.empId != null">
-                AND emp.emp_id = #{request.empId}
+            <if test="request.empNo != null and request.empNo != ''">
+                AND emp.emp_no = #{request.empNo}
             </if>
             <if test="request.empName != null and request.empName != ''">
                 AND emp.name = #{request.empName}
@@ -205,8 +205,8 @@
             <if test="request.positionId != null">
                 AND apos.position_id = #{request.positionId}
             </if>
-            <if test="request.empId != null">
-                AND emp.emp_id = #{request.empId}
+            <if test="request.empNo != null and request.empNo != ''">
+                AND emp.emp_no = #{request.empNo}
             </if>
             <if test="request.empName != null and request.empName != ''">
                 AND emp.name = #{request.empName}

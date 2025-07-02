@@ -72,7 +72,7 @@ public class AppointCommandService {
         LocalDate appointDate = request.getAppointDate();
         LocalDate today = LocalDate.now();
         if (appointDate.isBefore(today)) {
-            throw new EmployeeException(ErrorCode.INVALID_COMMAND_REQUEST);
+            throw new EmployeeException(ErrorCode.INVALID_APPOINT_DATE);
         }
 
         Appoint appoint = Appoint.builder()

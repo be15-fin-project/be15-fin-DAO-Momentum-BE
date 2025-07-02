@@ -49,7 +49,7 @@ public class ContractCommandService {
         }
         if (contractType != ContractType.SALARY_AGREEMENT && salary != null) {
             log.warn("유효하지 않은 계약 요청 - type: {}, salary: {}", contractType, salary);
-            throw new ContractException(ErrorCode.INVALID_SALARY_AGREEMENT);
+            throw new ContractException(ErrorCode.INVALID_CONTRACT);
         }
 
         Contract contract = Contract.builder()
