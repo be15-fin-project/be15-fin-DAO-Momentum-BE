@@ -17,7 +17,7 @@ public enum ErrorCode {
     INVALID_LEVEL("10006","유효하지 않은 직위 단계입니다." , HttpStatus.BAD_REQUEST),
     POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
     NOT_EMPLOYED_USER("10008", "현재 재직중이지 않은 직원입니다.",HttpStatus.FORBIDDEN),
-    INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST),
     INVALID_POSITION_FOR_PROMOTION("10010", "한 단계 높은 직위로만 승진 가능합니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
@@ -114,7 +114,9 @@ public enum ErrorCode {
     EVAL_INVALID_NOT_EXIST("40018", "요인별 점수가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_RESULT_REQUEST("40019", "평가 결과 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     EVALUATION_NOT_FOUND("40020", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    EVALUATION_PROMPT_NOT_FOUND("40020", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_PROMPT_NOT_FOUND("40021", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_TYPE_NOT_FOUND("40022", "평가 타입 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATOR_ROLE_NOT_FOUND("40023", "사원의 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),

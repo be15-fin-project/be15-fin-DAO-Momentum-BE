@@ -2,11 +2,11 @@ package com.dao.momentum.evaluation.eval.query.mapper;
 
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationFormResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationRoundSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper
@@ -19,6 +19,18 @@ public interface EvaluationManageMapper {
 
     // 평가 종류 조회
     List<EvaluationFormResponseDto> findEvaluationForms(EvaluationFormListRequestDto request);
+
+    // 평가 타입 목록 조회
+    List<EvaluationTypeDto> findAllEvalTypes();
+
+    // 활성화된 평가 양식 목록 조회
+    List<EvaluationFormDto> findAllActiveForms();
+
+    // 평가 종류별 요인 조회
+    List<EvaluationFormPropertyDto> findFormProperties(@Param("formId") Long formId);
+
+    // 평가 진행 여부 확인
+    List<Long> findOngoingRoundIds(@Param("today") LocalDate today);
 
     // 평가 회차 번호 조회
     List<EvaluationRoundSimpleDto> findSimpleRounds();
