@@ -77,7 +77,13 @@
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
             ep.name   AS propertyName,
-            es.score  AS score
+            CASE
+                WHEN es.score >= 95 THEN '탁월'
+                WHEN es.score >= 85 THEN '우수'
+                WHEN es.score >= 70 THEN '양호'
+                WHEN es.score >= 60 THEN '주의'
+                ELSE '미흡'
+            END                     AS Score
         FROM eval_score es
         JOIN eval_property ep
             ON ep.property_id = es.property_id
