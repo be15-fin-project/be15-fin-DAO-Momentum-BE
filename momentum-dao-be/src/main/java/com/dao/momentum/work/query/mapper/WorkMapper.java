@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper
 public interface WorkMapper {
-    List<WorkDTO> getMyWorks(WorkSearchDTO request, long empId);
+    List<MyWorkDTO> getMyWorks(WorkSearchDTO request, long empId);
 
     List<WorkDTO> getWorks(@Param("request") AdminWorkSearchDTO request);
 
