@@ -3,14 +3,15 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.work.query.mapper.WorkMapper">
-    <select id="getMyWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+    <select id="getMyWorks" resultType="com.dao.momentum.work.query.dto.response.MyWorkDTO">
         SELECT
             work.work_id,
             work.emp_id,
             emp.emp_no,
             emp.name AS empName,
             work.type_id,
-            wt.type_name,
+            COALESCE(pwt.type_name, cwt.type_name) AS typeName,
+            cwt.type_name AS childTypeName,
             work.vacation_type_id,
             vt.vacation_type AS vacationType,
             work.start_at,
@@ -18,7 +19,8 @@
             work.is_normal_work
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
-        JOIN work_type AS wt ON work.type_id = wt.type_id
+        JOIN work_type AS cwt ON work.type_id = cwt.type_id
+        LEFT JOIN work_type AS pwt ON cwt.parent_type_id = pwt.type_id
         LEFT JOIN vacation_type AS vt ON work.vacation_type_id = vt.vacation_type_id
         WHERE work.emp_id = #{empId}
         <if test="request.rangeStartDate != null">

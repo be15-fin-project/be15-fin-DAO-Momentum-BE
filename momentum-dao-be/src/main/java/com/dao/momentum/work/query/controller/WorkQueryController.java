@@ -26,7 +26,7 @@ public class WorkQueryController {
 
     @GetMapping("/me")
     @Operation(summary = "출퇴근 조회", description = "사원이 자신의 출퇴근 내역을 조회합니다.")
-    public ResponseEntity<ApiResponse<WorkListResponse>> getMyWorks(
+    public ResponseEntity<ApiResponse<MyWorkListResponse>> getMyWorks(
             @AuthenticationPrincipal UserDetails userDetails, @ModelAttribute WorkSearchRequest workSearchRequest
             ) {
 

@@ -27,14 +27,14 @@ public class WorkQueryService {
     private final HolidayQueryService holidayQueryService;
 
     @Transactional(readOnly = true)
-    public WorkListResponse getMyWorks(UserDetails userDetails, WorkSearchRequest workSearchRequest) {
+    public MyWorkListResponse getMyWorks(UserDetails userDetails, WorkSearchRequest workSearchRequest) {
         long empId = Long.parseLong(userDetails.getUsername());
 
         WorkSearchDTO workSearchDTO = WorkSearchDTO.fromRequest(workSearchRequest);
 
-        List<WorkDTO> works = workMapper.getMyWorks(workSearchDTO, empId);
+        List<MyWorkDTO> works = workMapper.getMyWorks(workSearchDTO, empId);
 
-        return WorkListResponse.builder()
+        return MyWorkListResponse.builder()
                 .works(works)
                 .pagination(null)
                 .build();
