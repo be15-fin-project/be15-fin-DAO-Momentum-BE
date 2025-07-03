@@ -11,7 +11,7 @@ import java.util.List;
 
 @Mapper
 public interface WorkMapper {
-    List<WorkDTO> getMyWorks(WorkSearchDTO request, long empId);
+    List<MyWorkDTO> getMyWorks(WorkSearchDTO request, long empId);
 
     List<WorkDTO> getWorks(@Param("request") AdminWorkSearchDTO request);
 
@@ -19,7 +19,7 @@ public interface WorkMapper {
 
     WorkDetailsDTO getWorkDetails(long workId);
 
-    AttendanceDTO getMyTodaysAttendance(long empId, LocalDate today, LocalDate tomorrow);
+    AttendanceDTO getMyTodaysAttendance(long empId, LocalDate today, LocalDate tomorrow, List<WorkTypeName> workTypeNames, List<VacationTypeEnum> vacationTypes);
 
     List<WorkTypeDTO> getParentWorkTypes();
 
