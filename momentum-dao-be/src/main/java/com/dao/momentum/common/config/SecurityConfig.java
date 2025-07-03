@@ -129,8 +129,12 @@ public class SecurityConfig {
                 "/employees/roles",
                 "/employees/{empId}/roles"
                 ).hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.GET,"/holiday").hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.GET,"/holiday", "employees/ids").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.POST,
+                        "/employees/batch-token",
+                        "/departments",
+                        "/holiday"
+                ).hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
     }

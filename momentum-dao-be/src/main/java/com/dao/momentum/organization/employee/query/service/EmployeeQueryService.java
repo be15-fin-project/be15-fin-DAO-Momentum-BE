@@ -98,4 +98,10 @@ public class EmployeeQueryService {
                 .userRolesIds(userRolesIds)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllEmployeeIds() {
+        return adminEmployeeMapper.getAllEmployeeIds();
+    }
+
 }

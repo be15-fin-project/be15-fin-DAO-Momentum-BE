@@ -57,6 +57,20 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    // 배치 서버용 영구 토큰 발급하기
+    public String createPermanentToken(String userId, String[] role) {
+        Date now = new Date();
+        // 100년짜리 유효기간
+        Date expiryDate = new Date(now.getTime() + 100L * 365 * 24 * 60 * 60 * 1000);
+        return Jwts.builder()
+                .subject(userId)
+                .claim("role", role)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(secretKey)
+                .compact();
+    }
+
     public String createPasswordResetToken(String employeeId){
         Date now  = new Date();
         Date expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24시간 후
