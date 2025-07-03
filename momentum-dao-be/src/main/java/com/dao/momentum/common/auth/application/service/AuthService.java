@@ -17,7 +17,6 @@ import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -213,4 +212,23 @@ public class AuthService {
                 .message("비밀번호가 변경되었습니다.")
                 .build();
     }
+
+    public TokenResponse issuePermanentBatchToken() {
+        // 1. 사번 1번 사용자 조회 (관리자)
+        Long empId = 1L;
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        List<String> employeeRoles = userRoleMapper.findByEmpId(employee.getEmpId());
+        String[] employeeRoleArray = employeeRoles.toArray(new String[0]);
+
+        // 2. 만료되지 않는 토큰 생성
+        String accessToken = jwtTokenProvider.createPermanentToken(String.valueOf(employee.getEmpId()), employeeRoleArray);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(null) // 배치용이므로 refresh token 생략
+                .build();
+    }
+
 }
