@@ -12,7 +12,7 @@ public interface HrObjectionService {
 
     Long getResultIdByObjectionId(Long objectionId);
 
-    HrObjectionCreateResponse create(HrObjectionCreateDto dto);
+    HrObjectionCreateResponse create(HrObjectionCreateDto dto, Long empId);
 
     HrObjectionDeleteResponse deleteById(Long objectionId, Long empId);
 }

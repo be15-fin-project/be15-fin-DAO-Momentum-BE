@@ -14,9 +14,11 @@
         SELECT
         r.round_no      AS roundNo,
         et.name         AS typeName,
+        ef.type_id      AS typeId,
         ef.form_id      AS formId,
         ef.name         AS formName,
         e.dept_id       AS deptId,
+        e.emp_id        AS targetEmpId,
         e.emp_no        AS targetEmpNo,
         e.name          AS targetName,
         CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -25,6 +27,7 @@
         JOIN eval_form  ef
         ON ef.type_id IN (3)
         AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+        AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
         JOIN eval_type  et  ON et.type_id = ef.type_id
         JOIN employee   e   ON e.emp_id = #{empId}
         LEFT JOIN eval_response resp
@@ -39,9 +42,11 @@
         SELECT
         r.round_no      AS roundNo,
         et.name         AS typeName,
+        ef.type_id      AS typeId,
         ef.form_id      AS formId,
         ef.name         AS formName,
         e.dept_id       AS deptId,
+        NULL            AS targetEmpId,
         NULL            AS targetEmpNo,
         e.name          AS targetName,
         CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -50,6 +55,7 @@
         JOIN eval_form  ef
         ON ef.type_id IN (2)
         AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+        AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
         JOIN eval_type  et  ON et.type_id = ef.type_id
         JOIN employee   e   ON e.emp_id = #{empId}
         LEFT JOIN eval_response resp
@@ -65,9 +71,11 @@
             SELECT
             r.round_no      AS roundNo,
             et2.name        AS typeName,
+            et2.type_id     AS typeId,
             ef2.form_id     AS formId,
             ef2.name        AS formName,
             emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
             emp.emp_no      AS targetEmpNo,
             emp.name        AS targetName,
             CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -91,6 +99,7 @@
             AND resp2.round_id = r.round_id
             WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
         </if>
 
 
@@ -99,9 +108,11 @@
         SELECT
         r.round_no      AS roundNo,
         et2.name        AS typeName,
+        et2.type_id     AS typeId,
         ef2.form_id     AS formId,
         ef2.name        AS formName,
         emp.dept_id     AS deptId,
+        emp.emp_id      AS targetEmpId,
         emp.emp_no      AS targetEmpNo,
         emp.name        AS targetName,
         CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -150,15 +161,18 @@
         AND resp2.round_id  = r.round_id
         WHERE r.round_no = #{roundNo}
         AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+        AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
 
         <!-- PEER - 하향 및 인사 평가 (formId IN 3, 4) -->
         UNION ALL
         SELECT
         r.round_no      AS roundNo,
         et2.name        AS typeName,
+        et2.type_id     AS typeId,
         ef2.form_id     AS formId,
         ef2.name        AS formName,
         emp.dept_id     AS deptId,
+        emp.emp_id      AS targetEmpId,
         emp.emp_no      AS targetEmpNo,
         emp.name        AS targetName,
         CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -223,6 +237,7 @@
         AND resp2.round_id  = r.round_id
         WHERE r.round_no = #{roundNo}
         AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+        AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
 
         ORDER BY roundNo DESC, formId ASC, submitted ASC
         LIMIT #{size} OFFSET #{offset}
@@ -240,6 +255,7 @@
         ef.form_id      AS formId,
         ef.name         AS formName,
         e.dept_id       AS deptId,
+        e.emp_id        AS targetEmpId,
         e.emp_no        AS targetEmpNo,
         e.name          AS targetName,
         CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -265,6 +281,7 @@
         ef.form_id      AS formId,
         ef.name         AS formName,
         e.dept_id       AS deptId,
+        NULL            AS targetEmpId,
         NULL            AS targetEmpNo,
         e.name          AS targetName,
         CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -291,6 +308,7 @@
             ef2.form_id     AS formId,
             ef2.name        AS formName,
             emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
             emp.emp_no      AS targetEmpNo,
             emp.name        AS targetName,
             CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -325,6 +343,7 @@
         ef2.form_id     AS formId,
         ef2.name        AS formName,
         emp.dept_id     AS deptId,
+        emp.emp_id      AS targetEmpId,
         emp.emp_no      AS targetEmpNo,
         emp.name        AS targetName,
         CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -382,6 +401,7 @@
         ef2.form_id     AS formId,
         ef2.name        AS formName,
         emp.dept_id     AS deptId,
+        emp.emp_id      AS targetEmpId,
         emp.emp_no      AS targetEmpNo,
         emp.name        AS targetName,
         CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
@@ -463,6 +483,7 @@
         JOIN eval_form ef ON ef.type_id = 3
         WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
 
         UNION ALL
 
@@ -472,6 +493,7 @@
         JOIN eval_form ef ON ef.type_id = 2
         WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
 
 
         <!-- PEER - 동료 평가 -->
@@ -490,6 +512,7 @@
         ) t ON 1=1
         WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
         </if>
 
         UNION ALL
@@ -527,6 +550,7 @@
         ) t ON 1=1
         WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
 
         UNION ALL
 
@@ -574,6 +598,7 @@
         ) t ON 1=1
         WHERE r.round_no = #{roundNo}
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
 
         ) total
     </select>
