@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/employees")
 @RequiredArgsConstructor
@@ -76,4 +78,12 @@ public class AdminEmployeeQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/ids")
+    @Operation(summary = "사원 ID 목록 조회", description = "모든 사원의 ID만 리스트로 조회합니다.")
+    public ResponseEntity<List<Long>> getAllEmployeeIds() {
+        List<Long> response = employeeQueryService.getAllEmployeeIds();
+        return ResponseEntity.ok(response);
+    }
+
 }

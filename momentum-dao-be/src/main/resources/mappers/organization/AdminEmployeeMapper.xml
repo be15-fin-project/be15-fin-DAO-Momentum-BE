@@ -223,4 +223,9 @@
         </where>
     </select>
 
+    <select id="getAllEmployeeIds" resultType="long">
+        SELECT emp_id
+        FROM employee
+        WHERE status = 'EMPLOYED'
+    </select>
 </mapper>
