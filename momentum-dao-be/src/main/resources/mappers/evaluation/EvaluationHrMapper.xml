@@ -22,6 +22,9 @@
             JOIN eval_form f ON er.form_id = f.form_id
             WHERE er.target_id = #{empId}
                 AND f.name = 'HR_REVIEW'
+                <if test="req.roundId != null">
+                    AND r.round_id = #{req.roundId}
+                </if>
                 <if test="req.startDate != null">
                     <![CDATA[AND r.start_at >= #{req.startDate}]]>
                 </if>
@@ -94,6 +97,9 @@
         JOIN eval_form  f  ON er.form_id  = f.form_id
         WHERE er.target_id = #{empId}
             AND f.name = 'HR_REVIEW'
+            <if test="req.roundId != null">
+                AND r.round_id = #{req.roundId}
+            </if>
             <if test="req.startDate != null">
                 AND r.start_at <![CDATA[>=]]> #{req.startDate}
             </if>

@@ -17,6 +17,9 @@ public class MyObjectionItemDto {
     @Schema(description = "평가 결과 ID", example = "10023")
     private Long resultId;
 
+    @Schema(description = "평가 회차 번호", example = "10023")
+    private Integer roundNo;
+
     @Schema(description = "이의제기 상태 ID", example = "1")
     private Integer statusId;
 

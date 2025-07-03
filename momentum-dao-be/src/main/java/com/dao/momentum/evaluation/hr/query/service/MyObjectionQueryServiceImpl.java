@@ -23,10 +23,6 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     @Override
     public MyObjectionListResultDto getMyObjections(Long empId, MyObjectionListRequestDto req) {
         long total = mapper.countMyObjections(empId, req);
-        if (total == 0) {
-            throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
-        }
-
         List<MyObjectionRaw> rawList = mapper.findMyObjections(empId, req);
         if (rawList == null) {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
@@ -37,6 +33,7 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
                         .objectionId(raw.getObjectionId())
                         .resultId(raw.getResultId())
                         .statusId(raw.getStatusId())
+                        .roundNo(raw.getRoundNo())
                         .statusType(raw.getStatusType())
                         .createdAt(raw.getCreatedAt())
                         .overallGrade(toGrade(raw.getOverallScore()))

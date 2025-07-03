@@ -14,6 +14,9 @@ public class MyObjectionListRequestDto {
     @Schema(description = "상태 ID 필터 (1=대기,2=승인,3=반려 등)", example = "1")
     private Integer statusId;
 
+    @Schema(description = "평가 회차 ID", example = "10023")
+    private Integer roundId;
+
     @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
     private int page = 1;
 
