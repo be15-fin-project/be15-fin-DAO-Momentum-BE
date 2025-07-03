@@ -57,6 +57,7 @@ class AnnouncementCommandServiceTest {
         AttachmentRequest attachment = new AttachmentRequest();
         attachment.setS3Key("announcements/uuid/test_file.png");
         attachment.setType("png");
+        attachment.setName("test_file.png");
         request.setAttachments(List.of(attachment));
 
         UserDetails mockUserDetails = mock(UserDetails.class);
@@ -110,6 +111,7 @@ class AnnouncementCommandServiceTest {
         AttachmentRequest newAttachment = new AttachmentRequest();
         newAttachment.setS3Key("announcements/uuid/new_file.pdf");
         newAttachment.setType("pdf");
+        newAttachment.setName("new_file.pdf");
         request.setAttachments(List.of(newAttachment));
 
         UserDetails mockUserDetails = mock(UserDetails.class);
@@ -174,6 +176,7 @@ class AnnouncementCommandServiceTest {
         AttachmentRequest newAttachment = new AttachmentRequest();
         newAttachment.setS3Key("announcements/uuid/new.pdf");
         newAttachment.setType("pdf");
+        newAttachment.setName("new.pdf");
         request.setAttachments(List.of(newAttachment));
 
         when(announcementRepository.findById(announcementId))

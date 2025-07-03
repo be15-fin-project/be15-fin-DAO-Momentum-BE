@@ -4,6 +4,8 @@ import com.dao.momentum.work.query.dto.request.AdminWorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.AdminWorkSearchRequest;
 import com.dao.momentum.work.query.dto.request.WorkSearchDTO;
 import com.dao.momentum.work.query.dto.request.WorkSearchRequest;
+import com.dao.momentum.work.query.dto.response.MyWorkDTO;
+import com.dao.momentum.work.query.dto.response.MyWorkListResponse;
 import com.dao.momentum.work.query.dto.response.WorkDTO;
 import com.dao.momentum.work.query.dto.response.WorkListResponse;
 import com.dao.momentum.work.query.mapper.WorkMapper;
@@ -46,13 +48,13 @@ class WorkQueryServiceTest {
                 .rangeEndDate(LocalDate.of(2024, 1, 10))
                 .build();
 
-        List<WorkDTO> mockWorks = List.of(
-                WorkDTO.builder().workId(1L).empId(123L).build()
+        List<MyWorkDTO> mockWorks = List.of(
+                MyWorkDTO.builder().workId(1L).empId(123L).build()
         );
         when(workMapper.getMyWorks(any(WorkSearchDTO.class), eq(123L))).thenReturn(mockWorks);
 
         // when
-        WorkListResponse response = workQueryService.getMyWorks(userDetails, request);
+        MyWorkListResponse response = workQueryService.getMyWorks(userDetails, request);
 
         // then
         assertNotNull(response);

@@ -23,4 +23,7 @@ public class HrEvaluationItemDto {
 
     @Schema(description = "평가 일시 (yyyy-MM-dd HH:mm:ss)", example = "2025-06-15 14:23:45")
     private LocalDateTime evaluatedAt;
+
+    @Schema(description = "이의제기 제출 여부", example = "true")
+    private boolean objectionSubmitted;
 }

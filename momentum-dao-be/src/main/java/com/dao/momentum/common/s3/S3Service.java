@@ -47,13 +47,11 @@ public class S3Service {
      * 업로드용 Presigned URL 발급
      */
     public FilePresignedUrlResponse generatePresignedUploadUrlWithKey(String key, String contentType) {
-        String filename = extractFilenameFromKey(key);
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .contentType(resolveContentTypeWithCharset(contentType, key))
-                .contentDisposition("attachment; filename=\"" + filename + "\"")
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()

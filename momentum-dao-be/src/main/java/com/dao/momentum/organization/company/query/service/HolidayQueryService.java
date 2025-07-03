@@ -54,4 +54,9 @@ public class HolidayQueryService {
                 .holidayGetDTOList(holidayGetDTOList)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public boolean isHoliday(LocalDate date) {
+        return holidayMapper.isHoliday(date);
+    }
 }

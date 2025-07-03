@@ -19,10 +19,6 @@ public class EvalSubmitRequest {
     @Schema(description = "평가 양식 ID", example = "1")
     private Integer formId;
 
-    @Schema(description = "작성자 ID (사원 ID)", example = "1001")
-    @NotNull
-    private Long evalId;
-
     @Schema(description = "피평가자 ID", example = "1002")
     private Long targetId;
 
@@ -37,7 +33,6 @@ public class EvalSubmitRequest {
         return EvalResponseCreateDTO.builder()
                 .roundId(roundId)
                 .formId(formId)
-                .evalId(evalId)
                 .targetId(targetId)
                 .reason(reason)
                 .build();

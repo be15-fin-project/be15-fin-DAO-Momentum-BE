@@ -34,9 +34,9 @@ class HrObjectionServiceImplTest {
         // given
         HrObjectionCreateDto dto = HrObjectionCreateDto.builder()
                 .resultId(1L)
-                .writerId(1001L)
                 .reason("정당한 사유입니다.")
                 .build();
+        Long empId = 1001L;
 
         given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(false);
         given(objectionRepository.existsEvaluation(dto.getResultId())).willReturn(true);
@@ -49,23 +49,21 @@ class HrObjectionServiceImplTest {
         given(objectionRepository.save(any(HrObjection.class))).willReturn(saved);
 
         // when & then
-        assertThatCode(() -> service.create(dto)).doesNotThrowAnyException();
+        assertThatCode(() -> service.create(dto, empId)).doesNotThrowAnyException();
     }
 
     @Test
     @DisplayName("이의제기 생성 - 이미 제출된 경우 예외")
     void create_duplicate() {
-        // given
         HrObjectionCreateDto dto = HrObjectionCreateDto.builder()
                 .resultId(1L)
-                .writerId(1001L)
                 .reason("중복 제출 테스트")
                 .build();
+        Long empId = 1001L;
 
         given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(true);
 
-        // when & then
-        assertThatThrownBy(() -> service.create(dto))
+        assertThatThrownBy(() -> service.create(dto, empId))
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.ALREADY_SUBMITTED_OBJECTION.getMessage());
     }
@@ -73,18 +71,16 @@ class HrObjectionServiceImplTest {
     @Test
     @DisplayName("이의제기 생성 - 평가 결과 없음 → 예외")
     void create_evaluationNotFound() {
-        // given
         HrObjectionCreateDto dto = HrObjectionCreateDto.builder()
                 .resultId(1L)
-                .writerId(1001L)
                 .reason("결과 없음 테스트")
                 .build();
+        Long empId = 1001L;
 
         given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(false);
         given(objectionRepository.existsEvaluation(dto.getResultId())).willReturn(false);
 
-        // when & then
-        assertThatThrownBy(() -> service.create(dto))
+        assertThatThrownBy(() -> service.create(dto, empId))
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.EVALUATION_NOT_FOUND.getMessage());
     }
@@ -118,7 +114,7 @@ class HrObjectionServiceImplTest {
     void delete_forbidden() {
         HrObjection objection = HrObjection.builder()
                 .objectionId(1L)
-                .writerId(200L) // 다른 사람
+                .writerId(200L)
                 .statusId(1)
                 .createdAt(LocalDateTime.now())
                 .isDeleted(UseStatus.N)
@@ -137,7 +133,7 @@ class HrObjectionServiceImplTest {
         HrObjection objection = HrObjection.builder()
                 .objectionId(1L)
                 .writerId(100L)
-                .statusId(2) // 대기 아님
+                .statusId(2)
                 .createdAt(LocalDateTime.now())
                 .isDeleted(UseStatus.N)
                 .build();
@@ -158,7 +154,6 @@ class HrObjectionServiceImplTest {
                 .isInstanceOf(HrException.class)
                 .hasMessageContaining(ErrorCode.HR_OBJECTION_NOT_FOUND.getMessage());
     }
-
 
     @Test
     @DisplayName("이의제기 승인 - 성공")

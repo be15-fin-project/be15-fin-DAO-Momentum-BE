@@ -24,7 +24,7 @@ public class HrObjectionServiceImpl implements HrObjectionService {
 
     @Override
     @Transactional
-    public HrObjectionCreateResponse create(HrObjectionCreateDto dto) {
+    public HrObjectionCreateResponse create(HrObjectionCreateDto dto, Long empId) {
 
         // 1. 중복 제출 방지
         if (objectionRepository.existsByResultId(dto.getResultId())) {
@@ -42,6 +42,7 @@ public class HrObjectionServiceImpl implements HrObjectionService {
 
         return HrObjectionCreateResponse.builder()
                 .objectionId(saved.getObjectionId())
+                .writerId(empId)
                 .status("대기")
                 .createdAt(saved.getCreatedAt())
                 .build();
