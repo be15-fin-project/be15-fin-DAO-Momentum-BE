@@ -7,12 +7,17 @@ import com.dao.momentum.approve.command.domain.aggregate.*;
 import com.dao.momentum.approve.command.domain.repository.*;
 import com.dao.momentum.approve.exception.ApproveException;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.kafka.dto.NotificationMessage;
+import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,36 +47,62 @@ class ApproveCommandServiceImplTest {
     @Mock
     private FormDetailStrategy formDetailStrategy;
 
+    @Mock
+    private EmployeeRepository employeeRepository;
+
+    @Mock
+    private NotificationKafkaProducer notificationKafkaProducer;
+
+
     @InjectMocks
     private ApproveCommandServiceImpl approveCommandService;
 
     @Test
     @DisplayName("결재 생성 성공 테스트")
-    void createApprovalSuccess() {
+    void createApprovalSuccess() throws Exception {
         ApproveRequest request = ApproveRequest.builder()
                 .approveTitle("독서 동호회 신청")
                 .approveType(ApproveType.PROPOSAL)
                 .formDetail(mock(com.fasterxml.jackson.databind.JsonNode.class))
-                .approveLineLists(List.of(ApproveLineRequest.builder()
-                        .approveLineOrder(1)
-                        .isRequiredAll(IsRequiredAll.REQUIRED)
-                        .approveLineList(List.of(ApproveLineListRequest.builder().empId(100L).build()))
-                        .build()))
-                .refRequests(List.of(ApproveRefRequest.builder().empId(200L).build()))
+                .approveLineLists(List.of(
+                        ApproveLineRequest.builder()
+                                .approveLineOrder(1)
+                                .isRequiredAll(IsRequiredAll.REQUIRED)
+                                .approveLineList(List.of(
+                                        ApproveLineListRequest.builder().empId(100L).build()))
+                                .build()))
+                .refRequests(List.of(
+                        ApproveRefRequest.builder().empId(200L).build()))
                 .build();
 
-        when(dispatcher.dispatch(ApproveType.PROPOSAL)).thenReturn(formDetailStrategy);
+        when(employeeRepository.findByEmpId(1L))
+                .thenReturn(Optional.of(Employee.builder()
+                        .empId(1L)
+                        .name("홍길동")
+                        .build()));
 
+        when(dispatcher.dispatch(ApproveType.PROPOSAL))
+                .thenReturn(formDetailStrategy);
+        when(formDetailStrategy.createNotificationContent(anyLong(), anyString()))
+                .thenReturn("알림 내용입니다");
         doNothing().when(formDetailStrategy).saveDetail(any(), anyLong());
+
+        ApproveLine firstLine = ApproveLine.builder().approveId(10L).build();
+        when(approveLineRepository.findFirstLine(anyLong()))
+                .thenReturn(Optional.of(firstLine));
+        when(approveLineListRepository.findByApproveLineId(any()))
+                .thenReturn(List.of(
+                        ApproveLineList.builder().approveLineId(10L).empId(300L).build()
+                ));
+
+        doNothing().when(notificationKafkaProducer)
+                .sendNotification(anyString(), any());
 
         when(approveRepository.save(any())).thenAnswer(invocation -> {
             Approve a = invocation.getArgument(0);
-
-            // 리플렉션으로 approveId 필드 강제 설정 (테스트에서만 사용되기 때문에 실제 코드에는 영향이 없는 부분)
-            java.lang.reflect.Field field = a.getClass().getDeclaredField("approveId");
+            Field field = a.getClass().getDeclaredField("approveId");
             field.setAccessible(true);
             field.set(a, 1L);
-
             return a;
         });
 
@@ -82,6 +113,8 @@ class ApproveCommandServiceImplTest {
         verify(approveLineRepository, times(1)).save(any());
         verify(approveLineListRepository, times(1)).save(any());
         verify(approveRefRepository, times(1)).save(any());
+        verify(notificationKafkaProducer, times(1))
+                .sendNotification(eq("300"), any(NotificationMessage.class));
     }
 
     @Test
