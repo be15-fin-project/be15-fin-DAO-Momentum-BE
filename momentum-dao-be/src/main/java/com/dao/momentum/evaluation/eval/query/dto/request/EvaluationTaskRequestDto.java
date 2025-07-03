@@ -11,6 +11,10 @@ import lombok.Setter;
 @Setter
 @Schema(description = "평가 태스크 목록 조회 요청 DTO")
 public class EvaluationTaskRequestDto {
+
+    @Schema(description = "평가 유형 ID", example = "3")
+    private int typeId;
+
     @Schema(description = "평가 양식 ID", example = "1")
     private int formId;
 

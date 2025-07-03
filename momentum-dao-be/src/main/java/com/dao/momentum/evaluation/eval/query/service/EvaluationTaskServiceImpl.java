@@ -43,13 +43,14 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
         System.out.println("[EvaluationTaskService] empId 조회 결과=" + empId);
 
         // 2) 요청 DTO에서 formId, roundNo, page, size 추출
+        int typeId = req.getTypeId();
         int formId = req.getFormId();
         int roundNo = req.getRoundNo();
         int offset = req.getOffset();
         int size = req.getSize();
         System.out.println(String.format(
-                "[EvaluationTaskService] offset=%d, size=%d, formId=%d, roundNo=%d",
-                offset, size, formId, roundNo
+                "[EvaluationTaskService] offset=%d, size=%d, typeId=%d, formId=%d, roundNo=%d",
+                offset, size, typeId, formId, roundNo
         ));
 
         // 3) 평가 태스크 목록 조회 (SELF, ORG, PEER 통합)

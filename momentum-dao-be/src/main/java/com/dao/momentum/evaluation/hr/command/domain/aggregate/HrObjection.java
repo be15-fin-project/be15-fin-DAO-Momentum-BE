@@ -49,6 +49,7 @@ public class HrObjection {
     public static HrObjection create(HrObjectionCreateDto dto, Integer defaultStatusId) {
         return HrObjection.builder()
                 .resultId(dto.getResultId())
+                .writerId(dto.getWriterId())
                 .statusId(defaultStatusId)
                 .reason(dto.getReason())
                 .createdAt(LocalDateTime.now())
