@@ -82,3 +82,7 @@ naver:
   service:
     url: ${NAVER_URL}
     secret-key: ${NAVER_SECRET_KEY}
+
+batch:
+  server:
+    url: ${BATCH_SERVER_URL} # 알림 배치 서버
