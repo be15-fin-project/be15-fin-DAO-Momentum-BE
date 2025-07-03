@@ -1,6 +1,11 @@
 package com.dao.momentum.retention.interview.command.application.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.kafka.dto.NotificationMessage;
+import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
@@ -13,16 +18,20 @@ import com.dao.momentum.retention.interview.command.domain.aggregate.RetentionCo
 import com.dao.momentum.retention.interview.command.domain.repository.RetentionContactRepository;
 import com.dao.momentum.retention.interview.exception.InterviewException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetentionContactCommandServiceImpl implements RetentionContactCommandService {
 
     private final RetentionContactRepository repository;
+    private final NotificationKafkaProducer notificationKafkaProducer;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     @Transactional
@@ -30,18 +39,44 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
         if (dto.targetId().equals(dto.managerId())) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER);
         }
-        // 1. 엔티티 생성
-        RetentionContact contact = RetentionContact.create(
-                dto.targetId(),
-                dto.managerId(),
-                dto.writerId(),
-                dto.reason()
-        );
 
-        // 2. 저장
+        // 1. 하급자 이름 조회
+        Employee targetEmployee = employeeRepository.findByEmpId(dto.targetId())
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        String targetName = targetEmployee.getName();
+
+        // 2. 면담 엔티티 생성 및 저장
+        RetentionContact contact = RetentionContact.create(
+                dto.targetId(), dto.managerId(), dto.writerId(), dto.reason()
+        );
         RetentionContact saved = repository.save(contact);
 
-        // 3. 응답 DTO 변환
+        // 3. 알림 메시지 생성
+        String content = String.format(
+                "[근속 리스크 알림]\n팀원 %s님의 근속 전망이 낮게 분석되었습니다.\n리스크 완화를 위해 조속한 면담을 권장드립니다.",
+                targetName
+        );
+
+        NotificationMessage message = NotificationMessage.builder()
+                .content(content)
+                .type("RETENTION_CONTACT")
+                .url("/retention-support/communication-requests")
+                .receiverId(saved.getManagerId())
+                .contactId(saved.getRetentionId())
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        // 4. Kafka 전송
+        try {
+            notificationKafkaProducer.sendNotification(saved.getManagerId().toString(), message);
+            log.info("면담 ID: {}, 상급자 ID: {}, 하급자 ID: {} → 근속 면담 요청 알림 전송 완료",
+                    saved.getRetentionId(), saved.getManagerId(), saved.getTargetId());
+        } catch (Exception e) {
+            log.error("알림 전송 실패 - 면담 ID: {}, 수신자 ID: {}, 사유: {}", saved.getRetentionId(), saved.getManagerId(), e.getMessage(), e);
+        }
+
+        // 5. 응답 반환
         return RetentionContactResponse.builder()
                 .retentionId(saved.getRetentionId())
                 .targetId(saved.getTargetId())
