@@ -106,6 +106,14 @@ public class AuthController {
         return ResponseEntity.ok().body(ApiResponse.success(response));
     }
 
+    @Operation(summary = "배치용 AccessToken 발급", description = "배치 서버에서 사용할 영구 AccessToken을 발급한다.")
+    @PostMapping("/batch-token")
+    public ResponseEntity<ApiResponse<TokenResponse>> issueBatchToken() {
+        TokenResponse response = authService.issuePermanentBatchToken();
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
