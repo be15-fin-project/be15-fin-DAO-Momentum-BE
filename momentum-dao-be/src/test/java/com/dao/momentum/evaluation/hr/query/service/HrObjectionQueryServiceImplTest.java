@@ -3,8 +3,7 @@ package com.dao.momentum.evaluation.hr.query.service;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionItemDto;
-import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.HrObjectionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -101,5 +101,58 @@ class HrObjectionQueryServiceImplTest {
         assertThat(result.getList()).isEmpty();
         assertThat(result.getPagination().getTotalItems()).isZero();
         assertThat(result.getPagination().getTotalPage()).isZero();
+    }
+
+    @Test
+    @DisplayName("정상: 이의제기 상세 조회 성공 시 ObjectionDetailResultDto 생성")
+    void getObjectionDetail_success() {
+        // given
+        Long objectionId = 1L;
+        Long resultId = 100L;
+
+        ObjectionItemDto itemDto = ObjectionItemDto.builder()
+                .objectionId(objectionId)
+                .resultId(resultId)
+                .empNo("20250001")
+                .empName("홍길동")
+                .build();
+
+        List<FactorScoreDto> factorScores = Arrays.asList(
+                new FactorScoreDto("업무 수행 역량", "우수"),
+                new FactorScoreDto("협업 역량", "보통")
+        );
+
+        WeightInfo weightInfo = new WeightInfo(20, 20, 20, 20, 10, 10);
+        RateInfo rateInfo = new RateInfo(10, 20, 30, 30, 10);
+
+        given(mapper.findObjectionDetail(objectionId)).willReturn(itemDto);
+        given(mapper.findFactorScores(resultId)).willReturn(factorScores);
+        given(mapper.findWeightInfo(resultId)).willReturn(weightInfo);
+        given(mapper.findRateInfo(resultId)).willReturn(rateInfo);
+
+        // when
+        ObjectionDetailResultDto result = service.getObjectionDetail(objectionId);
+
+        // then
+        assertThat(result.getItemDto()).isEqualTo(itemDto);
+        assertThat(result.getFactorScores()).hasSize(2);
+        assertThat(result.getWeightInfo()).isEqualTo(weightInfo);
+        assertThat(result.getRateInfo()).isEqualTo(rateInfo);
+    }
+
+    @Test
+    @DisplayName("비정상: 이의제기 상세 조회 실패 시 HrException 발생")
+    void getObjectionDetail_notFound_throwsHrException() {
+        // given
+        Long objectionId = 1L;
+        given(mapper.findObjectionDetail(objectionId)).willReturn(null);
+
+        // when
+        Throwable thrown = catchThrowable(() -> service.getObjectionDetail(objectionId));
+
+        // then
+        assertThat(thrown)
+                .isInstanceOf(HrException.class)
+                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
     }
 }

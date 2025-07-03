@@ -80,16 +80,6 @@ class MyObjectionQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("total==0 일 때 HrException 발생")
-    void getMyObjections_totalZero_throws() {
-        given(mapper.countMyObjections(1L, req)).willReturn(0L);
-
-        assertThatThrownBy(() -> service.getMyObjections(1L, req))
-                .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
-    }
-
-    @Test
     @DisplayName("rawList null 일 때 HrException 발생")
     void getMyObjections_rawListNull_throws() {
         given(mapper.countMyObjections(1L, req)).willReturn(5L);

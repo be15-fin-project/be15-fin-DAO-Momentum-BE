@@ -13,6 +13,9 @@ import java.time.LocalDate;
 @Schema(description = "사원 본인 인사평가 결과 목록 조회 요청 DTO (회차 날짜 기준 기간 조회 지원)")
 public class MyHrEvaluationListRequestDto {
 
+    @Schema(description = "평가 회차 ID", example = "10023")
+    private Integer roundId;
+
     @Schema(description = "조회 시작일 (yyyy-MM-dd)", example = "2025-01-01")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate startDate;
