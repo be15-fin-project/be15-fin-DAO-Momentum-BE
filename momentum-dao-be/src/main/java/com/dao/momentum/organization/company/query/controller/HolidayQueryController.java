@@ -32,7 +32,7 @@ public class HolidayQueryController {
     }
 
     @Operation(summary="사원 회사 휴일 조회", description = "사원은 캘린더에서 회사의 휴일을 조회할 수 있다.")
-    @GetMapping("/calender/{yearMonth}")
+    @GetMapping("/calendar/{yearMonth}")
     public ResponseEntity<ApiResponse<MonthPerHolidayGetResponse>> getHolidaysPerMonth(
             @PathVariable YearMonth yearMonth
     ) {
