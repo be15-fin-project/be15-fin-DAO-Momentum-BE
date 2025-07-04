@@ -12,6 +12,9 @@ public class StabilityRatioByDeptRaw {
     @Schema(description = "부서명", example = "기획팀")
     private String deptName;
 
+    @Schema(description = "직위명", example = "대리")
+    private String positionName;
+
     @Schema(description = "안정형 인원 수", example = "15")
     private Long stableCount;
 

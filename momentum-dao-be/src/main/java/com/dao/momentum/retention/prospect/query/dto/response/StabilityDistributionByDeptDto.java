@@ -9,10 +9,16 @@ import lombok.Getter;
 @Schema(description = "근속 안정성 유형 분포 DTO")
 public class StabilityDistributionByDeptDto {
 
-    @Schema(description = "부서명", example = "인사팀")
+    @Schema(description = "부서 ID", example = "인사팀")
+    private final Integer deptId;
+
+    @Schema(description = "부서 이름", example = "인사팀")
     private final String deptName;
 
-    @Schema(description = "직급명", example = "사원")
+    @Schema(description = "직급 ID", example = "사원")
+    private final Integer positionId;
+
+    @Schema(description = "직급 이름", example = "사원")
     private final String positionName;
 
     @Schema(description = "전체 사원 수", example = "100")

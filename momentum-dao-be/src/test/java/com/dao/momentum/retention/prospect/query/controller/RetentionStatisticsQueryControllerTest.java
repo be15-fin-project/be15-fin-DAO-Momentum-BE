@@ -42,21 +42,24 @@ class RetentionStatisticsQueryControllerTest {
         // given
         RetentionAverageScoreDto dto = RetentionAverageScoreDto.builder()
                 .averageScore(78.4)
+                .totalEmpCount(100)
+                .stabilitySafeRatio(45.0)
+                .stabilityRiskRatio(12.5)
                 .build();
 
         Mockito.when(retentionStatisticsQueryService.getAverageScore(any(RetentionStatisticsRequestDto.class)))
                 .thenReturn(dto);
 
         // when & then
-        mockMvc.perform(get("/retention/statistics/average-score")
+        mockMvc.perform(get("/retention/statistics/overview")
                         .param("year", "2025")
-                        .param("month", "6")
-                        .param("deptId", "3")
-                        .param("page", "1")
-                        .param("size", "10"))
+                        .param("month", "6"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.averageScore").value(78.4))
+                .andExpect(jsonPath("$.data.totalEmpCount").value(100))
+                .andExpect(jsonPath("$.data.stabilitySafeRatio").value(45.0))
+                .andExpect(jsonPath("$.data.stabilityRiskRatio").value(12.5))
                 .andDo(print());
     }
 
@@ -95,9 +98,10 @@ class RetentionStatisticsQueryControllerTest {
     }
 
     @Test
-    @DisplayName("전체 근속 안정성 비율 조회 성공 (요약)")
+    @DisplayName("전체 근속 안정성 분포 조회 성공")
     @WithMockUser(authorities = "HR")
     void getOverallStabilityDistribution_success() throws Exception {
+        // given
         StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
                 .deptName("전체")
                 .positionName(null)
@@ -112,12 +116,14 @@ class RetentionStatisticsQueryControllerTest {
         Mockito.when(retentionStatisticsQueryService.getOverallStabilityDistribution(any(RetentionInsightRequestDto.class)))
                 .thenReturn(dto);
 
+        // when & then
         mockMvc.perform(get("/retention/statistics/stability-distribution/overall")
                         .param("roundId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.deptName").value("전체"))
                 .andExpect(jsonPath("$.data.empCount").value(50))
+                .andExpect(jsonPath("$.data.progress20").value(2))
                 .andExpect(jsonPath("$.data.progress100").value(15))
                 .andDo(print());
     }

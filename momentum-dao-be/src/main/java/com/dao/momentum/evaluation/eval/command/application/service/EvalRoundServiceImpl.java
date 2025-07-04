@@ -59,6 +59,10 @@ public class EvalRoundServiceImpl implements EvalRoundService {
     @Override
     @Transactional
     public void delete(Integer roundId) {
+        if (!evalRoundRepository.existsById(roundId)) {
+            throw new EvalException(ErrorCode.EVAL_ROUND_NOT_FOUND);
+        }
+
         evalRoundRepository.deleteById(roundId);
     }
 

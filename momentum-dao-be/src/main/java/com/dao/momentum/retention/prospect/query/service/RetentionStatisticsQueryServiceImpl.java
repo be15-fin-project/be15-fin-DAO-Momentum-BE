@@ -29,8 +29,12 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
         }
 
         return RetentionAverageScoreDto.builder()
-                .averageScore(raw != null ? raw.getAverageScore() : 0.0)
+                .averageScore(raw.getAverageScore())
+                .totalEmpCount(raw.getTotalEmpCount())
+                .stabilitySafeRatio(raw.getStabilitySafeRatio())
+                .stabilityRiskRatio(raw.getStabilityRiskRatio())
                 .build();
+
     }
 
     // 전체 기준 또는 단일 부서/직급 기준 근속 안정성 분포 조회
@@ -43,20 +47,6 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
 
         if (result == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
-        }
-
-        // 전체 조회인 경우 부서명 표시
-        if (req.getDeptId() == null) {
-            result = StabilityDistributionByDeptDto.builder()
-                    .deptName("전체")
-                    .positionName(result.getPositionName())
-                    .empCount(result.getEmpCount())
-                    .progress20(result.getProgress20())
-                    .progress40(result.getProgress40())
-                    .progress60(result.getProgress60())
-                    .progress80(result.getProgress80())
-                    .progress100(result.getProgress100())
-                    .build();
         }
 
         return result;
