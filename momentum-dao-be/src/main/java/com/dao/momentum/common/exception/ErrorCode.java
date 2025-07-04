@@ -117,6 +117,7 @@ public enum ErrorCode {
     EVALUATION_PROMPT_NOT_FOUND("40021", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATION_TYPE_NOT_FOUND("40022", "평가 타입 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATOR_ROLE_NOT_FOUND("40023", "사원의 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVAL_RESULT_NOT_FOUND("40024", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
@@ -132,6 +133,7 @@ public enum ErrorCode {
     HR_OBJECTION_CANNOT_DELETE("40031", "대기 상태의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_CANNOT_MODIFY("40032", "이미 처리된 이의제기는 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_NOT_FOUND2("40033", "reult id searching failed", HttpStatus.NOT_FOUND),
+    HR_EVALUATION_FORBIDDEN("40034", "인사 평가 처리 권한이 없습니다.", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),

@@ -10,6 +10,9 @@ import lombok.Getter;
 @Schema(description = "근속 전망 항목 DTO")
 public class RetentionForecastItemDto {
 
+    @Schema(description = "근속 전망 Id", example = "31")
+    private Long retentionId;
+
     @Schema(description = "사번", example = "20240001")
     private String empNo;
 

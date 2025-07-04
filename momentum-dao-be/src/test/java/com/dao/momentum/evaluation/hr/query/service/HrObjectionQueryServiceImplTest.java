@@ -118,8 +118,8 @@ class HrObjectionQueryServiceImplTest {
                 .build();
 
         List<FactorScoreDto> factorScores = Arrays.asList(
-                new FactorScoreDto("업무 수행 역량", "우수"),
-                new FactorScoreDto("협업 역량", "보통")
+                new FactorScoreDto("11", "업무 수행 역량", "우수"),
+                new FactorScoreDto("12", "협업 역량", "보통")
         );
 
         WeightInfo weightInfo = new WeightInfo(20, 20, 20, 20, 10, 10);

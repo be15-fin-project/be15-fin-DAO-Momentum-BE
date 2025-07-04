@@ -39,19 +39,20 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
 
         // 3. 안정성 유형 필터링 (Java에서 처리)
         List<RetentionForecastItemDto> filtered =
-            rawList.stream()
-                   .map(raw -> RetentionForecastItemDto.builder()
-                       .empNo(raw.getEmpNo())
-                       .empName(raw.getEmpName())
-                       .deptName(raw.getDeptName())
-                       .positionName(raw.getPositionName())
-                       .retentionGrade(convertScoreToGrade(raw.getRetentionScore()))
-                       .stabilityType(convertScoreToStabilityType(raw.getRetentionScore()))
-                       .summaryComment(raw.getSummaryComment())
-                       .roundNo(raw.getRoundNo())
-                       .build())
-                   .filter(dto -> req.getStabilityType() == null || dto.getStabilityType() == req.getStabilityType())
-                   .toList();
+                rawList.stream()
+                        .map(raw -> RetentionForecastItemDto.builder()
+                                .retentionId(raw.getRetentionId())
+                                .empNo(raw.getEmpNo())
+                                .empName(raw.getEmpName())
+                                .deptName(raw.getDeptName())
+                                .positionName(raw.getPositionName())
+                                .retentionGrade(convertScoreToGrade(raw.getRetentionScore()))
+                                .stabilityType(convertScoreToStabilityType(raw.getRetentionScore()))
+                                .summaryComment(raw.getSummaryComment())
+                                .roundNo(raw.getRoundNo())
+                                .build())
+                        .filter(dto -> req.getStabilityType() == null || dto.getStabilityType() == req.getStabilityType())
+                        .toList();
 
         // 4. 페이지네이션 정보 생성
         Pagination pagination = Pagination.builder()

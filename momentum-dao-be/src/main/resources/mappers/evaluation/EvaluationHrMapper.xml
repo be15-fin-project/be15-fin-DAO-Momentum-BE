@@ -113,7 +113,8 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
-            p.name      AS property_name,
+            p.property_id      AS propertyId,
+            p.name             AS propertyName,
             CASE
                 WHEN s.score >= 95 THEN '탁월'
                 WHEN s.score >= 85 THEN '우수'

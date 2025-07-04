@@ -8,6 +8,9 @@ public record RetentionInsightDto(
         @Schema(description = "부서 ID", example = "101")
         Integer deptId,
 
+        @Schema(description = "직위 ID", example = "101")
+        Integer positionId,
+
         @Schema(description = "해당 부서 평균 근속 전망 점수", example = "76")
         int retentionScore,
 

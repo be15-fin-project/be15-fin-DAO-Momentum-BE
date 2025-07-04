@@ -12,11 +12,13 @@ public class RetentionRoundCommandServiceImpl implements RetentionRoundCommandSe
     private final RetentionRoundRepository retentionRoundRepository;
 
     @Override
-    public RetentionRound create(int year, int month) {
-        int count = retentionRoundRepository.countByYearAndMonth(year, month);
-        int roundNo = count + 1;
+    public RetentionRound create(int year, int month, Integer roundNo) {
+        // roundNo가 null이면 자동 채번
+        int finalRoundNo = roundNo != null
+                ? roundNo
+                : retentionRoundRepository.findMaxRoundNo().orElse(0) + 1;
 
-        RetentionRound round = RetentionRound.create(roundNo, year, month);
+        RetentionRound round = RetentionRound.create(finalRoundNo, year, month);
         return retentionRoundRepository.save(round);
     }
 }
