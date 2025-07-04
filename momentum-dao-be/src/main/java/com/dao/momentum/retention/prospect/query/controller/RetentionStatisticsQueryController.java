@@ -21,7 +21,7 @@ public class RetentionStatisticsQueryController {
 
     private final RetentionStatisticsQueryService service;
 
-    @GetMapping("/average-score")
+    @GetMapping("/overview")
     @Operation(summary = "전체 사원 평균 근속 지수 조회")
     public ApiResponse<RetentionAverageScoreDto> getAverageScore(
             @ModelAttribute RetentionStatisticsRequestDto req

@@ -29,8 +29,12 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
         }
 
         return RetentionAverageScoreDto.builder()
-                .averageScore(raw != null ? raw.getAverageScore() : 0.0)
+                .averageScore(raw.getAverageScore())
+                .totalEmpCount(raw.getTotalEmpCount())
+                .stabilitySafeRatio(raw.getStabilitySafeRatio())
+                .stabilityRiskRatio(raw.getStabilityRiskRatio())
                 .build();
+
     }
 
     // 전체 기준 또는 단일 부서/직급 기준 근속 안정성 분포 조회
