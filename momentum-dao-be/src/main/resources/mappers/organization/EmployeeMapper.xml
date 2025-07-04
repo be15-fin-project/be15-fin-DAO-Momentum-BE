@@ -4,6 +4,7 @@
 <mapper namespace="com.dao.momentum.organization.employee.query.mapper.EmployeeMapper">
     <select id="getEmployeeByDeptId" resultType="com.dao.momentum.organization.employee.query.dto.response.DepartmentMemberDTO">
         SELECT
+                e.emp_id,
                 e.name,
                 e.email,
                 e.contact,
