@@ -15,38 +15,38 @@
 
         <if test="req.deptId != null">
             WITH RECURSIVE dept_tree AS (
-            SELECT dept_id
-            FROM department
-            WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
-            UNION ALL
-            SELECT d.dept_id
-            FROM department d
-            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
-            WHERE d.is_deleted = 'N'
+                SELECT dept_id
+                FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
             )
         </if>
 
         SELECT
-        ROUND(AVG(rs.retention_score), 2) AS averageScore,
-        COUNT(*) AS totalEmpCount,
+            ROUND(AVG(rs.retention_score), 2) AS averageScore,
+            COUNT(*) AS totalEmpCount,
 
-        ROUND(
-        SUM(
-        CASE
-        WHEN rs.retention_score &gt;= 60 THEN 1
-        ELSE 0
-        END
-        ) * 100.0 / COUNT(*), 1
-        ) AS stabilitySafeRatio,
+            ROUND(
+                SUM(
+                    CASE
+                    WHEN rs.retention_score &gt;= 60 THEN 1
+                    ELSE 0
+                    END
+                ) * 100.0 / COUNT(*), 1
+            ) AS stabilitySafeRatio,
 
-        ROUND(
-        SUM(
-        CASE
-        WHEN rs.retention_score &lt; 60 THEN 1
-        ELSE 0
-        END
-        ) * 100.0 / COUNT(*), 1
-        ) AS stabilityRiskRatio
+            ROUND(
+                SUM(
+                    CASE
+                    WHEN rs.retention_score &lt; 60 THEN 1
+                    ELSE 0
+                    END
+                ) * 100.0 / COUNT(*), 1
+            ) AS stabilityRiskRatio
 
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id

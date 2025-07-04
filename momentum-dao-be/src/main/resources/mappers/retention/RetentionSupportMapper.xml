@@ -6,6 +6,17 @@
 
     <!-- 근속 전망 조회 -->
     <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportRaw">
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+                SELECT dept_id FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT
             e.name AS empName,
             e.emp_no AS empNo,
@@ -14,13 +25,13 @@
             rs.retention_score,
             rr.round_no AS roundNo,
             CONCAT(
-                    '직무:', rs.job_level, ', ',
-                    '보상:', rs.comp_level, ', ',
-                    '관계:', rs.relation_level, ', ',
-                    '성장:', rs.growth_level, ', ',
-                    '근속:', rs.tenure_level, ', ',
-                    '워라밸:', rs.wlb_level
-                ) AS summaryComment
+                '직무:', rs.job_level, ', ',
+                '보상:', rs.comp_level, ', ',
+                '관계:', rs.relation_level, ', ',
+                '성장:', rs.growth_level, ', ',
+                '근속:', rs.tenure_level, ', ',
+                '워라밸:', rs.wlb_level
+            ) AS summaryComment
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
@@ -28,14 +39,22 @@
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
             <if test="req.empNo != null">
-                AND t.emp_no = #{req.empNo}
+                AND e.emp_no = #{req.empNo}
             </if>
             <if test="req.deptId != null">
-                AND e.dept_id = #{req.deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND e.position_id = #{req.positionId}
             </if>
+            <if test="req.stabilityType != null">
+                AND CASE
+                    WHEN rs.retention_score >= 80 THEN 'STABLE'
+                    WHEN rs.retention_score >= 60 THEN 'WARNING'
+                    ELSE 'UNSTABLE'
+                END = #{req.stabilityType}
+            </if>
+
         ORDER BY rs.retention_score DESC
         LIMIT #{req.size}
         OFFSET #{req.offset}
@@ -43,6 +62,17 @@
 
     <!-- 총 개수 조회 -->
     <select id="countRetentionForecasts" resultType="long">
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+                SELECT dept_id FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT COUNT(*)
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
@@ -51,21 +81,28 @@
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
             <if test="req.empNo != null">
-                AND t.emp_no = #{req.empNo}
+                AND e.emp_no = #{req.empNo}
             </if>
             <if test="req.deptId != null">
-                AND e.dept_id = #{req.deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND e.position_id = #{req.positionId}
             </if>
+            <if test="req.stabilityType != null">
+                AND CASE
+                    WHEN rs.retention_score >= 80 THEN 'STABLE'
+                    WHEN rs.retention_score >= 60 THEN 'WARNING'
+                    ELSE 'UNSTABLE'
+                END = #{req.stabilityType}
+            </if>
+
     </select>
 
     <!-- 최신 회차 조회 -->
     <select id="findLatestRoundNo" resultType="int">
         SELECT MAX(round_no) FROM retention_round
     </select>
-
 
     <!-- 근속 전망 상세 조회 -->
     <select id="findSupportDetail"
