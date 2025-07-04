@@ -12,6 +12,7 @@ import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionIns
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionRound;
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionSupport;
 import com.dao.momentum.retention.prospect.command.domain.repository.RetentionRoundCommandService;
+import com.dao.momentum.retention.prospect.command.domain.repository.RetentionRoundRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,39 +23,44 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RetentionForecastFacade {
 
+    private final RetentionRoundRepository roundRepository;
     private final RetentionRoundCommandService roundService;
     private final RetentionSupportCommandService supportService;
     private final RetentionInsightCommandService insightService;
     private final RetentionScoreCalculator calculator;
-
     private final EmployeeRepository employeeRepository;
 
     @Transactional
     public RetentionForecastCreateResponse createNewForecast(RetentionForecastCreateRequest request) {
 
-        // 1. 회차 등록
-        RetentionRound round = roundService.create(request.year(), request.month());
+        // 1. roundNo 결정: 입력값이 없으면 자동 채번
+        int roundNo = request.roundNo() != null
+                ? request.roundNo()
+                : roundRepository.findMaxRoundNo().orElse(0) + 1;
 
-        // 2. 재직 중인 사원 조회
+        // 2. 회차 등록
+        RetentionRound round = roundService.create(request.year(), request.month(), roundNo);
+
+        // 3. 재직 중인 사원 조회
         List<Employee> employees = employeeRepository.findByStatus(Status.EMPLOYED);
 
-        // 3. 각 사원별 근속 지수 계산 및 저장
+        // 4. 각 사원별 근속 지수 계산 및 저장
         List<RetentionSupport> supports = employees.stream()
                 .map(emp -> {
                     var dto = calculator.calculate(emp); // 점수 계산
                     return RetentionSupport.of(round.getRoundId(), emp.getEmpId(), dto);
                 })
                 .toList();
-
         supportService.saveAll(supports);
 
-        // 4. 통계(근속 전망) 계산 및 저장
+        // 5. 통계(근속 전망) 계산 및 저장
         List<RetentionInsight> insights = insightService.generateInsights(round.getRoundId(), supports);
         insightService.saveAll(insights);
 
-        // 5. 응답 반환
+        // 6. 응답 반환
         return RetentionForecastCreateResponse.builder()
                 .roundId(round.getRoundId())
+                .roundNo(roundNo)
                 .message("근속 전망 회차 등록 및 계산이 완료되었습니다.")
                 .build();
     }
