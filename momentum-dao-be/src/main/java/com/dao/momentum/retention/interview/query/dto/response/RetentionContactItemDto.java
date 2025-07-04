@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 @Schema(description = "면담 기록 항목 DTO")
 public class RetentionContactItemDto {
 
+    @Schema(description = "면담 ID", example = "12")
+    private Integer retention_id;
+
     @Schema(description = "면담 요청 일시", example = "2025-06-01T09:00:00")
     private LocalDateTime createdAt;
 

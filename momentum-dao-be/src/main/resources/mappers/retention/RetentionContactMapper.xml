@@ -6,6 +6,7 @@
 
     <select id="findContacts" resultType="com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto">
         SELECT
+            rc.retention_id AS retentionId,
             rc.created_at,
             t.emp_no AS targetNo,
             t.name AS targetName,
