@@ -16,6 +16,8 @@
             vt.vacation_type AS vacationType,
             work.start_at,
             work.end_at,
+            work.break_time,
+            TIMESTAMPDIFF(MINUTE, work.start_at, work.end_at) - work.break_time AS workTime,
             work.is_normal_work
         FROM work AS work
         JOIN employee AS emp ON work.emp_id = emp.emp_id
