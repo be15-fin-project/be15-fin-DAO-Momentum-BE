@@ -14,18 +14,14 @@
         retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         <where>
-            <if test="req.year != null">
-                AND rs.round_id IN (
-                SELECT round_id
-                FROM retention_round
-                WHERE year = #{req.year}
-                <if test="req.month != null">
-                    AND month = #{req.month}
-                </if>
-                )
+            <if test="req.roundId != null">
+                AND i.round_id = #{req.roundId}
             </if>
             <if test="req.deptId != null">
                 AND e.dept_id = #{req.deptId}
+            </if>
+            <if test="req.positionId != null">
+                AND e.position_id = #{req.positionId}
             </if>
         </where>
     </select>
@@ -79,6 +75,9 @@
             <where>
                 <if test="req.roundId != null">
                     AND i.round_id = #{req.roundId}
+                </if>
+                <if test="req.positionId != null">
+                    AND i.position_id = #{req.positionId}
                 </if>
             </where>
         ORDER BY d.name ASC

@@ -2,6 +2,8 @@ package com.dao.momentum.retention.interview.command.application.service;
 
 import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
@@ -25,6 +27,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +38,9 @@ class RetentionContactCommandServiceImplTest {
     @Mock
     private RetentionContactRepository repository;
 
+    @Mock
+    private EmployeeRepository employeeRepository;
+
     @InjectMocks
     private RetentionContactCommandServiceImpl service;
 
@@ -42,8 +48,17 @@ class RetentionContactCommandServiceImplTest {
     @DisplayName("면담 요청 등록 성공")
     void createContact_success() {
         // given
+        Long targetId = 1001L; // DTO와 employeeRepository stub 모두 이 ID 사용
+        Employee employee = Employee.builder()
+                .empId(targetId)
+                .empNo("20240001")
+                .name("김현우")
+                .deptId(10)
+                .build();
+        given(employeeRepository.findByEmpId(targetId)).willReturn(Optional.of(employee));
+
         RetentionContactCreateDto dto = RetentionContactCreateDto.builder()
-                .targetId(1001L)
+                .targetId(targetId)
                 .managerId(2002L)
                 .writerId(3003L)
                 .reason("근무 태도 관련 상담 필요")
@@ -66,11 +81,12 @@ class RetentionContactCommandServiceImplTest {
 
         // then
         assertThat(result.retentionId()).isEqualTo(1L);
-        assertThat(result.targetId()).isEqualTo(1001L);
+        assertThat(result.targetId()).isEqualTo(targetId);
         assertThat(result.managerId()).isEqualTo(2002L);
         assertThat(result.writerId()).isEqualTo(3003L);
         assertThat(result.reason()).isEqualTo("근무 태도 관련 상담 필요");
     }
+
 
     @Test
     @DisplayName("면담 요청 등록 실패 - 대상자와 상급자가 동일")

@@ -29,11 +29,17 @@ public class HrObjectionProcessFacade {
     private final EvalResponseService evalResponseService;
 
     @Transactional
-    public HrObjectionProcessResponseDto processObjection(HrObjectionProcessRequestDto request) {
+    public HrObjectionProcessResponseDto processObjection(Long empId, HrObjectionProcessRequestDto request) {
         Long objectionId = request.getObjectionId();
 
-        // Step 1: objectionId → resultId
+        // Step 0. objectionId → resultId
         Long resultId = hrObjectionService.getResultIdByObjectionId(objectionId);
+
+        // Step 0-1. 평가자 본인인지 검증
+        Long evaluatorEmpId = evalResponseService.getEvaluatorEmpIdByResultId(resultId); // ← 신규 메서드 필요
+        if (!evaluatorEmpId.equals(empId)) {
+            throw new HrException(ErrorCode.HR_EVALUATION_FORBIDDEN); // 또는 적절한 오류 코드
+        }
 
         if (Boolean.FALSE.equals(request.getApproved())) {
             // 반려 처리

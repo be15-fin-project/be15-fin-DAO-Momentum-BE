@@ -32,63 +32,76 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
         // 1. 모든 하위부서 없는 활성 부서 조회
         List<Department> activeLeafDepts = departmentRepository.findActiveLeafDepartments();
 
-        // 2. empId → deptId 매핑
+        // 2. empId → Employee 매핑
         Set<Long> empIds = supports.stream()
                 .map(RetentionSupport::getEmpId)
                 .collect(Collectors.toSet());
 
         List<Employee> employees = employeeRepository.findAllById(empIds);
 
-        Map<Long, Integer> empIdToDeptIdMap = employees.stream()
+        Map<Long, Employee> empIdToEmployeeMap = employees.stream()
                 .collect(Collectors.toMap(
                         Employee::getEmpId,
-                        Employee::getDeptId,
+                        e -> e,
                         (a, b) -> a // 중복 처리
                 ));
 
-
-        // 3. deptId → List<RetentionSupport> 그룹핑
-        Map<Integer, List<RetentionSupport>> grouped = supports.stream()
-                .filter(s -> empIdToDeptIdMap.containsKey(s.getEmpId()))
-                .collect(Collectors.groupingBy(s -> empIdToDeptIdMap.get(s.getEmpId())));
+        // 3. (deptId, positionId) → List<RetentionSupport> 그룹핑
+        Map<String, List<RetentionSupport>> grouped = supports.stream()
+                .filter(s -> empIdToEmployeeMap.containsKey(s.getEmpId()))
+                .collect(Collectors.groupingBy(s -> {
+                    Employee emp = empIdToEmployeeMap.get(s.getEmpId());
+                    return emp.getDeptId() + "-" + emp.getPositionId();
+                }));
 
         List<RetentionInsight> result = new ArrayList<>();
 
+        // 4. 부서 + 직위 기준으로 통계 생성
         for (Department dept : activeLeafDepts) {
-            List<RetentionSupport> list = grouped.getOrDefault(dept.getDeptId(), Collections.emptyList());
-            if (list.isEmpty()) continue;
+            // 해당 부서에 속한 직원들의 직위 목록 추출
+            Set<Integer> positionIdsInDept = employees.stream()
+                    .filter(e -> e.getDeptId().equals(dept.getDeptId()))
+                    .map(Employee::getPositionId)
+                    .collect(Collectors.toSet());
 
-            List<Integer> scores = list.stream()
-                    .map(RetentionSupport::getRetentionScore)
-                    .sorted()
-                    .toList();
+            for (Integer positionId : positionIdsInDept) {
+                String key = dept.getDeptId() + "-" + positionId;
+                List<RetentionSupport> list = grouped.getOrDefault(key, Collections.emptyList());
+                if (list.isEmpty()) continue;
 
-            int empCount = scores.size();
-            int avg = (int) scores.stream().mapToInt(i -> i).average().orElse(0);
+                List<Integer> scores = list.stream()
+                        .map(RetentionSupport::getRetentionScore)
+                        .sorted()
+                        .toList();
 
-            int p20 = percentileThreshold(scores, 0.2);
-            int p40 = percentileThreshold(scores, 0.4);
-            int p60 = percentileThreshold(scores, 0.6);
-            int p80 = percentileThreshold(scores, 0.8);
+                int empCount = scores.size();
+                int avg = (int) scores.stream().mapToInt(i -> i).average().orElse(0);
 
-            int count20 = (int) scores.stream().filter(score -> score <= p20).count();
-            int count40 = (int) scores.stream().filter(score -> score > p20 && score <= p40).count();
-            int count60 = (int) scores.stream().filter(score -> score > p40 && score <= p60).count();
-            int count80 = (int) scores.stream().filter(score -> score > p60 && score <= p80).count();
-            int count100 = empCount - count20 - count40 - count60 - count80;
+                int p20 = percentileThreshold(scores, 0.2);
+                int p40 = percentileThreshold(scores, 0.4);
+                int p60 = percentileThreshold(scores, 0.6);
+                int p80 = percentileThreshold(scores, 0.8);
 
-            RetentionInsightDto dto = new RetentionInsightDto(
-                    dept.getDeptId(),
-                    avg,
-                    empCount,
-                    count20,
-                    count40,
-                    count60,
-                    count80,
-                    count100
-            );
+                int count20 = (int) scores.stream().filter(score -> score <= p20).count();
+                int count40 = (int) scores.stream().filter(score -> score > p20 && score <= p40).count();
+                int count60 = (int) scores.stream().filter(score -> score > p40 && score <= p60).count();
+                int count80 = (int) scores.stream().filter(score -> score > p60 && score <= p80).count();
+                int count100 = empCount - count20 - count40 - count60 - count80;
 
-            result.add(RetentionInsight.of(roundId, dto));
+                RetentionInsightDto dto = new RetentionInsightDto(
+                        dept.getDeptId(),
+                        positionId,
+                        avg,
+                        empCount,
+                        count20,
+                        count40,
+                        count60,
+                        count80,
+                        count100
+                );
+
+                result.add(RetentionInsight.of(roundId, dto));
+            }
         }
 
         return result;

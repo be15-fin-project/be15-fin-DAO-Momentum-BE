@@ -16,11 +16,11 @@ public class EvaluationTaskResponseDto {
     @Schema(description = "회차 번호", example = "2")
     private int roundNo;
 
-    @Schema(description = "평가 유형 이름 (PEER/UPWARD/DOWNWARD/ORG/SELF)")
-    private String typeName;
-
     @Schema(description = "평가 유형 ID (PEER/UPWARD/DOWNWARD/ORG/SELF)")
     private int typeId;
+
+    @Schema(description = "평가 유형 이름 (PEER/UPWARD/DOWNWARD/ORG/SELF)")
+    private String typeName;
 
     @Schema(description = "평가 양식 ID", example = "3")
     private int formId;

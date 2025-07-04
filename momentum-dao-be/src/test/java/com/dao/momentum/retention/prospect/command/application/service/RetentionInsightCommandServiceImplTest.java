@@ -10,7 +10,8 @@ import com.dao.momentum.retention.prospect.command.domain.repository.RetentionIn
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
@@ -40,12 +41,12 @@ class RetentionInsightCommandServiceImplTest {
     private final Department deptA = Department.builder().deptId(10).build();
     private final Department deptB = Department.builder().deptId(20).build();
 
-    private final Employee emp1 = Employee.builder().empId(101L).deptId(10).build();
-    private final Employee emp2 = Employee.builder().empId(102L).deptId(10).build();
-    private final Employee emp3 = Employee.builder().empId(103L).deptId(20).build();
+    private final Employee emp1 = Employee.builder().empId(101L).deptId(10).positionId(1).build();
+    private final Employee emp2 = Employee.builder().empId(102L).deptId(10).positionId(1).build();
+    private final Employee emp3 = Employee.builder().empId(103L).deptId(20).positionId(2).build();
 
     @Test
-    @DisplayName("근속 인사이트 생성 - 부서별 그룹핑 및 평균, 퍼센타일 계산 성공")
+    @DisplayName("근속 인사이트 생성 - 부서+직위별 그룹핑 및 평균, 퍼센타일 계산 성공")
     void generateInsights_success() {
         // given
         List<Department> depts = List.of(deptA, deptB);
@@ -67,13 +68,13 @@ class RetentionInsightCommandServiceImplTest {
         assertThat(result).hasSize(2);
 
         RetentionInsight insightA = result.stream()
-                .filter(i -> i.getDeptId().equals(10))
+                .filter(i -> i.getDeptId().equals(10) && i.getPositionId().equals(1))
                 .findFirst().orElseThrow();
-        assertThat(insightA.getRetentionScore()).isEqualTo(80);
+        assertThat(insightA.getRetentionScore()).isEqualTo(80); // (70+90)/2
         assertThat(insightA.getEmpCount()).isEqualTo(2);
 
         RetentionInsight insightB = result.stream()
-                .filter(i -> i.getDeptId().equals(20))
+                .filter(i -> i.getDeptId().equals(20) && i.getPositionId().equals(2))
                 .findFirst().orElseThrow();
         assertThat(insightB.getRetentionScore()).isEqualTo(50);
         assertThat(insightB.getEmpCount()).isEqualTo(1);
@@ -86,11 +87,10 @@ class RetentionInsightCommandServiceImplTest {
         when(departmentRepository.findActiveLeafDepartments()).thenReturn(List.of(deptA));
 
         List<RetentionSupport> supports = List.of(
-                RetentionSupport.builder().empId(103L).retentionScore(50).build() // deptId=20
+                RetentionSupport.builder().empId(103L).retentionScore(50).build() // emp3: deptId=20
         );
 
-        when(employeeRepository.findAllById(any()))
-                .thenReturn(List.of(emp3)); // deptB 소속만 있음
+        when(employeeRepository.findAllById(any())).thenReturn(List.of(emp3));
 
         // when
         List<RetentionInsight> result = service.generateInsights(roundId, supports);

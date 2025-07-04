@@ -10,4 +10,5 @@ public interface EvalResponseService {
 
     Integer getRoundIdByResultId(Long resultId);
 
+    Long getEvaluatorEmpIdByResultId(Long resultId);
 }

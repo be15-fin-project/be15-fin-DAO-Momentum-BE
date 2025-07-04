@@ -64,4 +64,11 @@ public class EvalResponseServiceImpl implements EvalResponseService {
                 .orElseThrow(() -> new EvalException(ErrorCode.EVALUATION_NOT_FOUND));
     }
 
+    @Override
+    public Long getEvaluatorEmpIdByResultId(Long resultId) {
+        return evalResponseRepository.findEvalIdByResultId(resultId)
+                .orElseThrow(() -> new EvalException(ErrorCode.EVAL_RESULT_NOT_FOUND));
+    }
+
+
 }
