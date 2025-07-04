@@ -57,6 +57,17 @@
 
     <!-- 게시글 목록 검색 -->
     <select id="findAnnouncementsByCondition" resultType="com.dao.momentum.announcement.query.dto.response.AnnouncementDto">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
         SELECT a.announcement_id,
         a.title,
         e.name,
@@ -75,7 +86,7 @@
             </if>
 
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
 
             <if test="startDate != null">
@@ -90,8 +101,20 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+
     <!-- 게시글 목록 수 카운트 -->
     <select id="countAnnouncementsByCondition" resultType="long">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM announcement a
         JOIN employee e ON a.emp_id = e.emp_id
@@ -107,7 +130,7 @@
             </if>
 
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
 
             <if test="startDate != null">

@@ -129,7 +129,7 @@ public class SecurityConfig {
                 "/employees/roles",
                 "/employees/{empId}/roles"
                 ).hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.GET,"/holiday", "employees/ids").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.GET,"/holiday", "/employees/ids").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.POST,
                         "/employees/batch-token",
                         "/departments",
