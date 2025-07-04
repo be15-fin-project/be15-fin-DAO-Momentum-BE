@@ -8,6 +8,20 @@
     <select id="findAverageRetentionScore"
             parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto"
             resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto">
+        <bind name="roundId" value="req.roundId"/>
+        <bind name="deptId" value="req.deptId"/>
+        <bind name="positionId" value="req.positionId"/>
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+            SELECT dept_id FROM department
+            WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT
         ROUND(AVG(rs.retention_score), 2) AS averageScore
         FROM
@@ -15,10 +29,10 @@
         JOIN employee e ON rs.emp_id = e.emp_id
         <where>
             <if test="req.roundId != null">
-                AND i.round_id = #{req.roundId}
+                AND rs.round_id = #{req.roundId}
             </if>
             <if test="req.deptId != null">
-                AND e.dept_id = #{req.deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND e.position_id = #{req.positionId}
@@ -26,60 +40,112 @@
         </where>
     </select>
 
-    <!-- 단일 결과 조회 (overall or 단일 부서/직급) -->
+    <!-- 단일 결과 조회 -->
     <select id="findInsightDistribution"
             parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto"
             resultType="com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto">
+        <bind name="roundId" value="req.roundId"/>
+        <bind name="deptId" value="req.deptId"/>
+        <bind name="positionId" value="req.positionId"/>
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+            SELECT dept_id FROM department
+            WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT
-            d.name AS deptName,
-            p.name AS positionName,
-            i.emp_count AS empCount,
-            i.progress_20 AS progress20,
-            i.progress_40 AS progress40,
-            i.progress_60 AS progress60,
-            i.progress_80 AS progress80,
-            i.progress_100 AS progress100
+        base.dept_id AS deptId,
+        base.name AS deptName,
+        <choose>
+            <when test="req.positionId != null">
+                p.position_id AS positionId,
+                p.name AS positionName,
+            </when>
+            <otherwise>
+                NULL AS positionId,
+                '전체' AS positionName,
+            </otherwise>
+        </choose>
+        COALESCE(SUM(i.emp_count), 0) AS empCount,
+        COALESCE(SUM(i.progress_20), 0) AS progress20,
+        COALESCE(SUM(i.progress_40), 0) AS progress40,
+        COALESCE(SUM(i.progress_60), 0) AS progress60,
+        COALESCE(SUM(i.progress_80), 0) AS progress80,
+        COALESCE(SUM(i.progress_100), 0) AS progress100
         FROM retention_insight i
         JOIN department d ON i.dept_id = d.dept_id
         LEFT JOIN position p ON i.position_id = p.position_id
-            <where>
-                <if test="req.roundId != null">
-                    AND i.round_id = #{req.roundId}
-                </if>
-                <if test="req.deptId != null">
-                    AND i.dept_id = #{req.deptId}
-                </if>
-                <if test="req.positionId != null">
-                    AND i.position_id = #{req.positionId}
-                </if>
-            </where>
-        LIMIT 1
+        JOIN department base ON base.dept_id = #{req.deptId}
+        <where>
+            <if test="req.roundId != null">
+                AND i.round_id = #{req.roundId}
+            </if>
+            <if test="req.deptId != null">
+                AND i.dept_id IN (SELECT dept_id FROM dept_tree)
+            </if>
+            <if test="req.positionId != null">
+                AND i.position_id = #{req.positionId}
+            </if>
+        </where>
     </select>
 
-    <!-- 부서별 리스트 조회 (roundId는 필수, 부서 필터 없음) -->
+    <!-- 부서별 리스트 조회 -->
     <select id="findInsightDistributionList"
             parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto"
             resultType="com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto">
+
         SELECT
-            d.name AS deptName,
-            p.name AS positionName,
-            i.emp_count AS empCount,
-            i.progress_20 AS progress20,
-            i.progress_40 AS progress40,
-            i.progress_60 AS progress60,
-            i.progress_80 AS progress80,
-            i.progress_100 AS progress100
+        i.dept_id AS deptId,
+        d.name AS deptName,
+
+        <choose>
+            <when test="req.positionId != null">
+                i.position_id AS positionId,
+                p.name AS positionName,
+            </when>
+            <otherwise>
+                NULL AS positionId,
+                '전체' AS positionName,
+            </otherwise>
+        </choose>
+
+        SUM(COALESCE(i.emp_count, 0)) AS empCount,
+        SUM(COALESCE(i.progress_20, 0)) AS progress20,
+        SUM(COALESCE(i.progress_40, 0)) AS progress40,
+        SUM(COALESCE(i.progress_60, 0)) AS progress60,
+        SUM(COALESCE(i.progress_80, 0)) AS progress80,
+        SUM(COALESCE(i.progress_100, 0)) AS progress100
+
         FROM retention_insight i
         JOIN department d ON i.dept_id = d.dept_id
         LEFT JOIN position p ON i.position_id = p.position_id
-            <where>
-                <if test="req.roundId != null">
-                    AND i.round_id = #{req.roundId}
-                </if>
-                <if test="req.positionId != null">
-                    AND i.position_id = #{req.positionId}
-                </if>
-            </where>
-        ORDER BY d.name ASC
+
+        <where>
+            <if test="req.roundId != null">
+                AND i.round_id = #{req.roundId}
+            </if>
+            <if test="req.positionId != null">
+                AND i.position_id = #{req.positionId}
+            </if>
+        </where>
+
+        <choose>
+            <when test="req.positionId != null">
+                GROUP BY i.dept_id, i.position_id
+            </when>
+            <otherwise>
+                GROUP BY i.dept_id
+            </otherwise>
+        </choose>
+
+        ORDER BY d.dept_id  ASC
+
     </select>
+
+
 </mapper>

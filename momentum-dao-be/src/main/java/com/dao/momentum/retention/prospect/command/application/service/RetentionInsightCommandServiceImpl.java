@@ -1,6 +1,5 @@
 package com.dao.momentum.retention.prospect.command.application.service;
 
-import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.infrastructure.repository.JpaDepartmentRepository;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionInsightDto;
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionInsight;
@@ -29,83 +28,92 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
 
     @Override
     public List<RetentionInsight> generateInsights(Integer roundId, List<RetentionSupport> supports) {
-        // 1. 모든 하위부서 없는 활성 부서 조회
-        List<Department> activeLeafDepts = departmentRepository.findActiveLeafDepartments();
-
-        // 2. empId → Employee 매핑
         Set<Long> empIds = supports.stream()
                 .map(RetentionSupport::getEmpId)
                 .collect(Collectors.toSet());
 
-        List<Employee> employees = employeeRepository.findAllById(empIds);
+        Map<Long, Employee> empMap = employeeRepository.findAllById(empIds).stream()
+                .collect(Collectors.toMap(Employee::getEmpId, e -> e));
 
-        Map<Long, Employee> empIdToEmployeeMap = employees.stream()
-                .collect(Collectors.toMap(
-                        Employee::getEmpId,
-                        e -> e,
-                        (a, b) -> a // 중복 처리
-                ));
+        // 전체 retentionScore 기준으로 상위 20% 구간 경계값 계산
+        List<Integer> allScores = supports.stream()
+                .map(RetentionSupport::getRetentionScore)
+                .sorted(Comparator.reverseOrder())
+                .toList();
 
-        // 3. (deptId, positionId) → List<RetentionSupport> 그룹핑
+        int[] thresholds = getPercentileThresholds(allScores);
+
+        // (deptId, positionId) 그룹화
         Map<String, List<RetentionSupport>> grouped = supports.stream()
-                .filter(s -> empIdToEmployeeMap.containsKey(s.getEmpId()))
+                .filter(s -> empMap.containsKey(s.getEmpId()))
                 .collect(Collectors.groupingBy(s -> {
-                    Employee emp = empIdToEmployeeMap.get(s.getEmpId());
-                    return emp.getDeptId() + "-" + emp.getPositionId();
+                    Employee e = empMap.get(s.getEmpId());
+                    return e.getDeptId() + "-" + e.getPositionId();
                 }));
 
         List<RetentionInsight> result = new ArrayList<>();
 
-        // 4. 부서 + 직위 기준으로 통계 생성
-        for (Department dept : activeLeafDepts) {
-            // 해당 부서에 속한 직원들의 직위 목록 추출
-            Set<Integer> positionIdsInDept = employees.stream()
-                    .filter(e -> e.getDeptId().equals(dept.getDeptId()))
-                    .map(Employee::getPositionId)
-                    .collect(Collectors.toSet());
+        for (Map.Entry<String, List<RetentionSupport>> entry : grouped.entrySet()) {
+            String key = entry.getKey();
+            List<RetentionSupport> list = entry.getValue();
+            if (list.isEmpty()) continue;
 
-            for (Integer positionId : positionIdsInDept) {
-                String key = dept.getDeptId() + "-" + positionId;
-                List<RetentionSupport> list = grouped.getOrDefault(key, Collections.emptyList());
-                if (list.isEmpty()) continue;
+            String[] split = key.split("-");
+            Integer deptId = Integer.valueOf(split[0]);
+            Integer positionId = Integer.valueOf(split[1]);
 
-                List<Integer> scores = list.stream()
-                        .map(RetentionSupport::getRetentionScore)
-                        .sorted()
-                        .toList();
+            int empCount = list.size();
+            int avg = (int) list.stream().mapToInt(RetentionSupport::getRetentionScore).average().orElse(0);
 
-                int empCount = scores.size();
-                int avg = (int) scores.stream().mapToInt(i -> i).average().orElse(0);
+            int[] progressCounts = distributeScoresByThreshold(list, thresholds);
 
-                int p20 = percentileThreshold(scores, 0.2);
-                int p40 = percentileThreshold(scores, 0.4);
-                int p60 = percentileThreshold(scores, 0.6);
-                int p80 = percentileThreshold(scores, 0.8);
+            RetentionInsightDto dto = new RetentionInsightDto(
+                    deptId,
+                    positionId,
+                    avg,
+                    empCount,
+                    progressCounts[0], // 20
+                    progressCounts[1], // 40
+                    progressCounts[2], // 60
+                    progressCounts[3], // 80
+                    progressCounts[4]  // 100
+            );
 
-                int count20 = (int) scores.stream().filter(score -> score <= p20).count();
-                int count40 = (int) scores.stream().filter(score -> score > p20 && score <= p40).count();
-                int count60 = (int) scores.stream().filter(score -> score > p40 && score <= p60).count();
-                int count80 = (int) scores.stream().filter(score -> score > p60 && score <= p80).count();
-                int count100 = empCount - count20 - count40 - count60 - count80;
-
-                RetentionInsightDto dto = new RetentionInsightDto(
-                        dept.getDeptId(),
-                        positionId,
-                        avg,
-                        empCount,
-                        count20,
-                        count40,
-                        count60,
-                        count80,
-                        count100
-                );
-
-                result.add(RetentionInsight.of(roundId, dto));
-            }
+            result.add(RetentionInsight.of(roundId, dto));
         }
 
         return result;
     }
+
+    private int[] getPercentileThresholds(List<Integer> sortedDescScores) {
+        // 내림차순이므로 상위 20% 경계값은 index: 0.2 * size
+        int size = sortedDescScores.size();
+        List<Integer> scores = new ArrayList<>(sortedDescScores);
+
+        return new int[]{
+                scores.get((int) Math.floor(0.2 * size)), // top 20% cutoff
+                scores.get((int) Math.floor(0.4 * size)),
+                scores.get((int) Math.floor(0.6 * size)),
+                scores.get((int) Math.floor(0.8 * size)),
+                Integer.MIN_VALUE // progress_20 이하
+        };
+    }
+
+    private int[] distributeScoresByThreshold(List<RetentionSupport> group, int[] thresholds) {
+        int[] counts = new int[5]; // [100, 80, 60, 40, 20]
+
+        for (RetentionSupport support : group) {
+            int score = support.getRetentionScore();
+            if (score >= thresholds[0]) counts[4]++;
+            else if (score >= thresholds[1]) counts[3]++;
+            else if (score >= thresholds[2]) counts[2]++;
+            else if (score >= thresholds[3]) counts[1]++;
+            else counts[0]++;
+        }
+
+        return counts;
+    }
+
 
     private int percentileThreshold(List<Integer> sorted, double percentile) {
         if (sorted.isEmpty()) return 0;
@@ -113,4 +121,5 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
         index = Math.min(index, sorted.size() - 1);
         return sorted.get(index);
     }
+
 }

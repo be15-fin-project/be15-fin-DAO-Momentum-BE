@@ -45,20 +45,6 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        // 전체 조회인 경우 부서명 표시
-        if (req.getDeptId() == null) {
-            result = StabilityDistributionByDeptDto.builder()
-                    .deptName("전체")
-                    .positionName(result.getPositionName())
-                    .empCount(result.getEmpCount())
-                    .progress20(result.getProgress20())
-                    .progress40(result.getProgress40())
-                    .progress60(result.getProgress60())
-                    .progress80(result.getProgress80())
-                    .progress100(result.getProgress100())
-                    .build();
-        }
-
         return result;
     }
 

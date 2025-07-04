@@ -14,8 +14,12 @@
             rs.retention_score,
             rr.round_no AS roundNo,
             CONCAT(
-                '직무:', rs.job_satisfaction, ', ',
-                '관계:', rs.relationship_score
+                    '직무:', rs.job_level, ', ',
+                    '보상:', rs.comp_level, ', ',
+                    '관계:', rs.relation_level, ', ',
+                    '성장:', rs.growth_level, ', ',
+                    '근속:', rs.tenure_level, ', ',
+                    '워라밸:', rs.wlb_level
                 ) AS summaryComment
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
