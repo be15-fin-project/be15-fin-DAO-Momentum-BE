@@ -84,13 +84,21 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         // 3.첨부파일 S3 업로드 및 DB 저장
         List<AttachmentRequest> attachments = approveRequest.getAttachments();
 
+        // 영수증 결재에는 반드시 첨부파일이 있어야 함
+        if (approveType == ApproveType.RECEIPT) {
+            if (attachments == null || attachments.isEmpty()) {
+                throw new ApproveException(ErrorCode.RECEIPT_IMAGE_REQUIRED);
+            }
+        }
+
         if (attachments != null && !attachments.isEmpty()) {
             for (AttachmentRequest attachment : attachments) {
                 File file = File.builder()
                         .announcementId(null)
                         .approveId(approveId)
                         .contractId(null)
-                        .s3Key(attachment.getS3Key()) // 이미 S3 업로드된 URL
+                        .name(attachment.getName())
+                        .s3Key(attachment.getS3Key())
                         .type(attachment.getType())
                         .build();
                 fileRepository.save(file);

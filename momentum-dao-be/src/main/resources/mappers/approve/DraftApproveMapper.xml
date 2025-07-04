@@ -60,13 +60,14 @@
             AND a.create_at &lt; #{req.endDate}
         </if>
 
-        <!-- 완료 날짜를 기준으로 정렬 -->
         ORDER BY
+        <!-- 완료 날짜를 기준으로 정렬 -->
         <choose>
             <when test="req.sort == 'asc'">a.complete_at ASC</when>
             <when test="req.sort == 'desc'">a.complete_at DESC</when>
-            <otherwise>a.complete_at DESC</otherwise>
+            <otherwise>a.complete_at ASC</otherwise>
         </choose>
+        , a.approve_id
 
         LIMIT #{pageRequest.limit} OFFSET #{pageRequest.offset}
     </select>
