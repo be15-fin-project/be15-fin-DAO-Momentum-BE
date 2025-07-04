@@ -13,7 +13,8 @@
             con.salary,
             con.created_at,
             file.attachment_id,
-            file.s3_key
+            file.s3_key,
+            file.fileName
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
         JOIN file AS file ON con.contract_id = file.contract_id
@@ -72,7 +73,8 @@
             con.salary,
             con.created_at,
             file.attachment_id,
-            file.s3_key
+            file.s3_key,
+            file.fileName
         FROM contract AS con
         JOIN employee AS emp ON con.emp_id = emp.emp_id
         JOIN file AS file ON con.contract_id = file.contract_id
