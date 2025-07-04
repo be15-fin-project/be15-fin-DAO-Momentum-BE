@@ -1,4 +1,4 @@
-package com.dao.momentum.retention.prospect.query.dto.request;
+package com.dao.momentum.retention.prospect.query.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

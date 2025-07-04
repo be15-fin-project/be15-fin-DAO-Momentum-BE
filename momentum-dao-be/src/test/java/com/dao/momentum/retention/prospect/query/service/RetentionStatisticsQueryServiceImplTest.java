@@ -29,30 +29,39 @@ class RetentionStatisticsQueryServiceImplTest {
     private RetentionStatisticsQueryServiceImpl service;
 
     @Test
-    @DisplayName("getAverageScore - 정상 조회")
+    @DisplayName("평균 근속 지수 - 정상 조회")
     void getAverageScore_success() {
         // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
-        req.setMonth(6);
-        req.setDeptId(1);
+        var req = new RetentionStatisticsRequestDto();
+        req.setRoundId(1);
+        req.setDeptId(10);
+        req.setPositionId(5);
 
-        when(mapper.findAverageRetentionScore(req))
-                .thenReturn(RetentionAverageScoreDto.builder().averageScore(75.5).build());
+        var dto = RetentionAverageScoreDto.builder()
+                .averageScore(75.5)
+                .totalEmpCount(20)
+                .stabilitySafeRatio(40.0)
+                .stabilityRiskRatio(10.0)
+                .build();
+
+        when(mapper.findAverageRetentionScore(req)).thenReturn(dto);
 
         // when
-        RetentionAverageScoreDto result = service.getAverageScore(req);
+        var result = service.getAverageScore(req);
 
         // then
         assertThat(result.getAverageScore()).isEqualTo(75.5);
+        assertThat(result.getTotalEmpCount()).isEqualTo(20);
+        assertThat(result.getStabilitySafeRatio()).isEqualTo(40.0);
+        assertThat(result.getStabilityRiskRatio()).isEqualTo(10.0);
     }
 
     @Test
-    @DisplayName("getAverageScore - 조회 결과 없음")
+    @DisplayName("평균 근속 지수 - 조회 결과 없음")
     void getAverageScore_empty() {
         // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
+        var req = new RetentionStatisticsRequestDto();
+        req.setRoundId(1);
 
         when(mapper.findAverageRetentionScore(req)).thenReturn(null);
 
@@ -63,11 +72,11 @@ class RetentionStatisticsQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("getOverallStabilityDistribution - 전체 기준 조회 성공")
+    @DisplayName("전체 안정성 분포 - 정상 조회")
     void getOverallStabilityDistribution_success() {
         // given
         var req = new RetentionInsightRequestDto();
-        req.setRoundId(3); // 필수
+        req.setRoundId(3);
 
         var dto = StabilityDistributionByDeptDto.builder()
                 .deptName(null)
@@ -86,13 +95,13 @@ class RetentionStatisticsQueryServiceImplTest {
         var result = service.getOverallStabilityDistribution(req);
 
         // then
-        assertThat(result.getDeptName()).isEqualTo("전체");
         assertThat(result.getEmpCount()).isEqualTo(100);
+        assertThat(result.getProgress40()).isEqualTo(20);
         assertThat(result.getProgress80()).isEqualTo(25);
     }
 
     @Test
-    @DisplayName("getOverallStabilityDistribution - 조회 결과 없음")
+    @DisplayName("전체 안정성 분포 - 조회 결과 없음")
     void getOverallStabilityDistribution_empty() {
         // given
         var req = new RetentionInsightRequestDto();
@@ -107,7 +116,19 @@ class RetentionStatisticsQueryServiceImplTest {
     }
 
     @Test
-    @DisplayName("getStabilityDistributionByDept - 정상 조회")
+    @DisplayName("전체 안정성 분포 - roundId 미지정 예외")
+    void getOverallStabilityDistribution_missingRoundId() {
+        // given
+        var req = new RetentionInsightRequestDto(); // roundId = null
+
+        // when & then
+        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
+                .isInstanceOf(ProspectException.class)
+                .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
+    }
+
+    @Test
+    @DisplayName("부서별 안정성 분포 - 정상 조회")
     void getStabilityDistributionByDept_success() {
         // given
         var req = new RetentionInsightRequestDto();
@@ -132,11 +153,12 @@ class RetentionStatisticsQueryServiceImplTest {
         // then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getDeptName()).isEqualTo("인사팀");
+        assertThat(result.get(0).getPositionName()).isEqualTo("대리");
         assertThat(result.get(0).getProgress60()).isEqualTo(4);
     }
 
     @Test
-    @DisplayName("getStabilityDistributionByDept - 조회 결과 없음")
+    @DisplayName("부서별 안정성 분포 - 조회 결과 없음")
     void getStabilityDistributionByDept_empty() {
         // given
         var req = new RetentionInsightRequestDto();
@@ -148,17 +170,5 @@ class RetentionStatisticsQueryServiceImplTest {
         assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
                 .isInstanceOf(ProspectException.class)
                 .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    @DisplayName("getOverallStabilityDistribution - roundId 누락 예외")
-    void getOverallStabilityDistribution_missingRoundId() {
-        // given
-        var req = new RetentionInsightRequestDto(); // roundId 미설정
-
-        // when & then
-        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(ProspectException.class)
-                .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
     }
 }

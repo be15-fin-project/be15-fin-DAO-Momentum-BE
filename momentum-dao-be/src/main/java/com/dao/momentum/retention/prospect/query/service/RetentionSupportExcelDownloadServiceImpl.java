@@ -2,7 +2,7 @@ package com.dao.momentum.retention.prospect.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.prospect.exception.ProspectException;
-import com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExcelDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportExcelDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionSupportExcelMapper;
 import com.dao.momentum.retention.prospect.query.util.ExcelGenerator;
 import lombok.RequiredArgsConstructor;
