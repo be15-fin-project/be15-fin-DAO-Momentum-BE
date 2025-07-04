@@ -95,6 +95,22 @@ public class Employee {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /*
+    * 연차 시간을 수정하는 메소드
+    * */
+    public void updateRemainingDayOff(int remainingDayoffHours) {
+        this.remainingDayoffHours = remainingDayoffHours;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /*
+    * 리프레시 휴가 일수를 수정하는 메소드
+    * */
+    public void updateRemainingRefreshDay(int remainingRefreshDays) {
+        this.remainingRefreshDays = remainingRefreshDays;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void fromUpdateMyInfo(MyInfoUpdateRequest request) {
         String name = request.getName();
         Gender gender = request.getGender();

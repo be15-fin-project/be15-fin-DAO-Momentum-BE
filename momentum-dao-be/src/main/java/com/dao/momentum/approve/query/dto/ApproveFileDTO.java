@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class ApproveFileDTO {
 
+    private String name;
     private String s3Key;
     private String type;
 

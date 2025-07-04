@@ -27,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -178,7 +180,14 @@ public class AuthService {
         );
 
         //이메일 처리
-        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("resetLink","http://localhost:5173/password/reset?token="+passwordResetToken);
+        emailService.sendEmailWithTemplate(
+                employee.getEmail(),
+                "Momentum 비밀번호 재설정",
+                "email/reset-password",
+                variables
+        );
 
         return PasswordResetResponse.builder()
                 .message("비밀번호 재설정 메일이 전송되었습니다.")
