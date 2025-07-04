@@ -3,6 +3,9 @@ package com.dao.momentum.work.command.application.service;
 import com.dao.momentum.approve.command.domain.aggregate.Approve;
 import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.work.command.application.validator.WorkCreateValidator;
 import com.dao.momentum.work.command.domain.aggregate.*;
 import com.dao.momentum.work.command.domain.repository.*;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.util.stream.Stream;
 
 import static com.dao.momentum.work.command.application.service.WorkTimeService.DEFAULT_WORK_HOURS;
 
@@ -34,6 +38,7 @@ public class WorkApplyCommandService {
     private final VacationRepository vacationRepository;
     private final VacationTypeRepository vacationTypeRepository;
     private final WorkCorrectionRepository workCorrectionRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Transactional
     public void applyApprovalWork(Approve approve) {
@@ -161,31 +166,58 @@ public class WorkApplyCommandService {
                 .endAt(vacationEndAt)
                 .breakTime(workTimeService.getBreakTime(vacationStartAt, vacationEndAt))
                 .build();
+
         IsNormalWork isNormalWork = newVacationWork.isNormalWork(requiredWorkMinutes) ?
                 IsNormalWork.Y : IsNormalWork.N;
+
         newVacationWork.setIsNormalWork(isNormalWork);
+
         workRepository.save(newVacationWork);
+
+        // 3. 회원 테이블에 반차 시간 만큼 차감
+        Employee employee =  employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        employee.updateRemainingDayOff(employee.getRemainingDayoffHours() - 4);
+
     }
 
     // 휴가
     private void applyVacation(long empId, VacationType vacationType, LocalDate startDate, LocalDate endDate) {
         WorkType workType = getWorkType(WorkTypeName.VACATION);
         Integer vacationTypeId = vacationType.getVacationTypeId();
+        VacationTypeEnum vacationTypeEnum = vacationType.getVacationType();
 
-        boolean isAMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.AM_HALF_DAYOFF;
-        boolean isPMHalfDayoff = vacationType.getVacationType() == VacationTypeEnum.PM_HALF_DAYOFF;
+        boolean isAMHalfDayoff = vacationTypeEnum == VacationTypeEnum.AM_HALF_DAYOFF;
+        boolean isPMHalfDayoff = vacationTypeEnum == VacationTypeEnum.PM_HALF_DAYOFF;
 
+        /* 1. 반차인 경우 따로 적용하기 */
         if (isAMHalfDayoff || isPMHalfDayoff) {
             applyHalfDayoff(empId, vacationType, startDate);
             return;
         }
 
+        // 2. 나머지 휴가인 경우
         // 기존 근무 데이터 삭제
         if (existsWork(empId, startDate, endDate, WorkTypeName.WORK)) {
             deleteExistingWork(empId, startDate, endDate, WorkTypeName.WORK);
         }
         // 휴가 기록 새로 저장
         saveMultiDayWork(empId, workType, startDate, endDate, vacationTypeId);
+
+        // 회원 테이블에 연차 혹은 리프레시 휴가 차감
+        Employee employee =  employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        if(vacationTypeEnum == VacationTypeEnum.DAYOFF) {
+            employee.updateRemainingDayOff(employee.getRemainingDayoffHours() - 8); // 연차인 경우 휴가 날짜 만큼 차감
+        } else {
+            int vacationDays = (int) Stream.iterate(startDate, date -> !date.isAfter(endDate), date -> date.plusDays(1))
+                    .filter(date -> !workCreateValidator.isHoliday(date))  // 휴일이 아닌 날만 필터링
+                    .count();
+
+            employee.updateRemainingRefreshDay(employee.getRemainingRefreshDays() - vacationDays); // 다른 경우엔 리프레시 휴가 차감
+        }
     }
 
     // 출퇴근 정정
@@ -245,12 +277,6 @@ public class WorkApplyCommandService {
 //        LocalDateTime nightEndTime = startAt.toLocalDate().plusDays(1).atTime(6, 0);
 
         // 휴일 여부 체크
-        // isHoliday 에서도 일요일인지를 확인하고 있어서 이 부분은 주석 처리
-//        boolean isSunday = startAt.toLocalDate().getDayOfWeek() == DayOfWeek.SUNDAY;
-//        if (isSunday) {
-//            saveWork(empId, workTypeHoliday, startAt, endAt, requestedBreakTime);
-//            return;
-//        }
         boolean isHoliday = workCreateValidator.isHoliday(startAt.toLocalDate());
         if (isHoliday) {
             // 휴일 전체 시간
