@@ -5,7 +5,6 @@ import com.dao.momentum.email.exception.EmailFailException;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,9 +12,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -24,6 +21,17 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
 
+    public void sendEmailWithTemplate(String to, String subject, String templateName, Map<String, Object> variables) {
+        Context context = new Context();
+        variables.forEach(context::setVariable);
+        String htmlMsg = templateEngine.process(templateName, context);
+
+        try {
+            sendEmail(to, subject, htmlMsg);
+        } catch (MessagingException e) {
+            throw new EmailFailException(ErrorCode.EMAIL_SENDING_FAILED);
+        }
+    }
 
     public void sendPasswordResetEmail(Employee employee, String token) {
         // 비밀번호 재설정 링크
