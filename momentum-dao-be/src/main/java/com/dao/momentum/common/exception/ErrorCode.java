@@ -143,6 +143,7 @@ public enum ErrorCode {
     RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_ROUND_NOT_FOUND("50007", "근속 전망 회차 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_ROUND_ALREADY_EXIST("50008", "해당 일자의 근속 전망 회차가 이미 등록되어 있습니다.", HttpStatus.BAD_REQUEST),
 
 
     //공지사항 오류(60001 - 69999)

@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.prospect.command.application.facade;
 
+import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
@@ -13,6 +14,7 @@ import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionRou
 import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionSupport;
 import com.dao.momentum.retention.prospect.command.domain.repository.RetentionRoundCommandService;
 import com.dao.momentum.retention.prospect.command.domain.repository.RetentionRoundRepository;
+import com.dao.momentum.retention.prospect.exception.ProspectException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,11 @@ public class RetentionForecastFacade {
 
     @Transactional
     public RetentionForecastCreateResponse createNewForecast(RetentionForecastCreateRequest request) {
+
+        boolean exists = roundRepository.existsByYearAndMonth(request.year(), request.month());
+        if (exists) {
+            throw new ProspectException(ErrorCode.RETENTION_ROUND_ALREADY_EXIST);
+        }
 
         // 1. roundNo 결정: 입력값이 없으면 자동 채번
         int roundNo = request.roundNo() != null
