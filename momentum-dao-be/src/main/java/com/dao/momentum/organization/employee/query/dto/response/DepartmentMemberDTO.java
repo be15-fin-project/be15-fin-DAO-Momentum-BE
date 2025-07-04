@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class DepartmentMemberDTO {
+    private Long empId;
     private String name;
     private String position;
     private String email;
