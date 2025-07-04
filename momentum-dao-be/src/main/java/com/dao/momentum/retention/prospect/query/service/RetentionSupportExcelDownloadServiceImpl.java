@@ -17,8 +17,8 @@ public class RetentionSupportExcelDownloadServiceImpl implements RetentionSuppor
     private final RetentionSupportExcelMapper excelMapper;
 
     @Override
-    public byte[] downloadExcel(Long roundId, Long deptId, String stabilityType) {
-        List<RetentionSupportExcelDto> data = excelMapper.selectSupportListForExcel(roundId, deptId, stabilityType);
+    public byte[] downloadExcel(Long roundId, Long deptId, Long positionId, String stabilityType) {
+        List<RetentionSupportExcelDto> data = excelMapper.selectSupportListForExcel(roundId, deptId, positionId, stabilityType);
         if (data == null || data.isEmpty()) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }

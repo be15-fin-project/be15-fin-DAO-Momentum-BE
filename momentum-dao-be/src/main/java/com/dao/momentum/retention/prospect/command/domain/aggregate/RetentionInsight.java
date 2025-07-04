@@ -22,9 +22,11 @@ public class RetentionInsight {
     @Column(name = "dept_id", nullable = false)
     private Integer deptId;
 
+    @Column(name = "position_id", nullable = false)
+    private Integer positionId;
+
     @Column(name = "round_id", nullable = false)
     private Integer roundId;
-
 
     @Column(name = "retention_score", nullable = false)
     private Integer retentionScore;
@@ -54,6 +56,7 @@ public class RetentionInsight {
         return new RetentionInsight(
                 null,
                 dto.deptId(),
+                dto.positionId(),
                 roundId,
                 dto.retentionScore(),
                 dto.empCount(),

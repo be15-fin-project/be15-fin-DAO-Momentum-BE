@@ -42,6 +42,12 @@ public class MyWorkDTO {
     @Schema(description = "종료 일시")
     private LocalDateTime endAt;
 
+    @Schema(description = "휴게시간 (분 단위)", example = "60")
+    private int breakTime;
+
+    @Schema(description = "근무시간 (분 단위)", example = "480")
+    private int workTime;
+
     @Schema(description = "정상 근무 여부")
     private IsNormalWork isNormalWork;
 

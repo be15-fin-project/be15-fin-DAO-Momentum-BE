@@ -33,7 +33,7 @@
         FROM eval_response er
         JOIN employee t ON er.target_id = t.emp_id
         JOIN employee e ON er.eval_id = e.emp_id
-        JOIN eval_form et ON ef.form_id = er.form_id
+        JOIN eval_form ef ON ef.form_id = er.form_id
         JOIN eval_type et ON ef.type_id = et.type_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p   ON t.position_id = p.position_id

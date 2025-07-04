@@ -12,6 +12,7 @@
             e.name             AS employeeName,
             rr.round_no        AS roundNo,
             d.name             AS deptName,
+            p.name             AS positionName,
             rs.retention_score AS retentionScore,
             rs.job_level       AS jobSatisfaction,
             rs.comp_level      AS compensationSatisfaction,
@@ -22,6 +23,7 @@
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
             <where>
                 <if test="roundId != null">
@@ -30,13 +32,16 @@
                 <if test="deptId != null">
                     AND e.dept_id = #{deptId}
                 </if>
+                <if test="positionId != null">
+                    AND e.position_id = #{positionId}
+                </if>
                 <if test="stabilityType != null">
                     AND (
-                    CASE
-                    WHEN rs.retention_score >= 80 THEN 'STABLE'
-                    WHEN rs.retention_score >= 60 THEN 'WARNING'
-                    ELSE 'UNSTABLE'
-                    END = #{stabilityType}
+                        CASE
+                            WHEN rs.retention_score >= 80 THEN 'STABLE'
+                            WHEN rs.retention_score >= 60 THEN 'WARNING'
+                            ELSE 'UNSTABLE'
+                        END = #{stabilityType}
                     )
                 </if>
             </where>

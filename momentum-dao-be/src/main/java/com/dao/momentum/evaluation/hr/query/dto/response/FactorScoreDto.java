@@ -11,6 +11,9 @@ import lombok.Getter;
 @Schema(description = "요인별 점수 DTO")
 public class FactorScoreDto {
 
+    @Schema(description = "요인 ID", example = "11")
+    private String propertyId;
+
     @Schema(description = "요인명", example = "커뮤니케이션")
     private String propertyName;
 

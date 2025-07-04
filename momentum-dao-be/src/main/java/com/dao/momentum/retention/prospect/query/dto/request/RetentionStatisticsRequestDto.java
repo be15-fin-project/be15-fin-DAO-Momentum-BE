@@ -9,12 +9,12 @@ import lombok.Setter;
 @Schema(description = "근속 전망 통계 조회 요청 DTO")
 public class RetentionStatisticsRequestDto {
 
-    @Schema(description = "조회 연도", example = "2025")
-    private Integer year;
-
-    @Schema(description = "조회 월", example = "6")
-    private Integer month;
+    @Schema(description = "회차 ID", example = "3")
+    private Integer roundId;
 
     @Schema(description = "부서 ID", example = "10")
     private Integer deptId;
+
+    @Schema(description = "직급 ID", example = "5")
+    private Integer positionId;
 }

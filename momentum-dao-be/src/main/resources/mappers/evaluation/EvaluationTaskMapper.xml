@@ -13,8 +13,8 @@
         <!-- SELF -->
         SELECT
             r.round_no      AS roundNo,
-            et.name         AS typeName,
             ef.type_id      AS typeId,
+            et.name         AS typeName,
             ef.form_id      AS formId,
             ef.name         AS formName,
             e.dept_id       AS deptId,
@@ -41,8 +41,8 @@
         <!-- ORG -->
         SELECT
             r.round_no      AS roundNo,
-            et.name         AS typeName,
             ef.type_id      AS typeId,
+            et.name         AS typeName,
             ef.form_id      AS formId,
             ef.name         AS formName,
             e.dept_id       AS deptId,
@@ -70,8 +70,8 @@
             UNION ALL
             SELECT
                 r.round_no      AS roundNo,
-                et2.name        AS typeName,
                 et2.type_id     AS typeId,
+                et2.name        AS typeName,
                 ef2.form_id     AS formId,
                 ef2.name        AS formName,
                 emp.dept_id     AS deptId,
@@ -107,8 +107,8 @@
         UNION ALL
         SELECT
             r.round_no      AS roundNo,
-            et2.name        AS typeName,
             et2.type_id     AS typeId,
+            et2.name        AS typeName,
             ef2.form_id     AS formId,
             ef2.name        AS formName,
             emp.dept_id     AS deptId,
@@ -167,8 +167,8 @@
         UNION ALL
         SELECT
             r.round_no      AS roundNo,
-            et2.name        AS typeName,
             et2.type_id     AS typeId,
+            et2.name        AS typeName,
             ef2.form_id     AS formId,
             ef2.name        AS formName,
             emp.dept_id     AS deptId,
@@ -251,6 +251,7 @@
         <!-- SELF -->
         SELECT
             r.round_no      AS roundNo,
+            et.type_id      AS typeId,
             et.name         AS typeName,
             ef.form_id      AS formId,
             ef.name         AS formName,
@@ -277,6 +278,7 @@
         <!-- ORG -->
         SELECT
             r.round_no      AS roundNo,
+            et.type_id      AS typeId,
             et.name         AS typeName,
             ef.form_id      AS formId,
             ef.name         AS formName,
@@ -304,6 +306,7 @@
             UNION ALL
             SELECT
                 r.round_no      AS roundNo,
+                et2.type_id     AS typeId,
                 et2.name        AS typeName,
                 ef2.form_id     AS formId,
                 ef2.name        AS formName,
@@ -339,6 +342,7 @@
         UNION ALL
         SELECT
             r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
             et2.name        AS typeName,
             ef2.form_id     AS formId,
             ef2.name        AS formName,
@@ -396,7 +400,8 @@
         <!-- PEER - 하향 및 인사 평가 (formId IN 3, 4) -->
         UNION ALL
         SELECT
-        r.round_no      AS roundNo,
+            r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
             et2.name        AS typeName,
             ef2.form_id     AS formId,
             ef2.name        AS formName,

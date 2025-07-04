@@ -18,6 +18,9 @@ public record RetentionSupportExcelDto(
     @Schema(description = "부서명", example = "인사팀")
     String deptName,
 
+    @Schema(description = "직위명", example = "대리")
+    String positionName,
+
     @Schema(description = "근속 전망 점수", example = "82.5")
     Double retentionScore,
 
