@@ -5,6 +5,17 @@
 <mapper namespace="com.dao.momentum.retention.interview.query.mapper.RetentionContactMapper">
 
     <select id="findContacts" resultType="com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             rc.retention_id AS retentionId,
             rc.created_at,
@@ -30,7 +41,7 @@
                 AND m.emp_no = #{req.managerNo}
             </if>
             <if test="req.deptId != null">
-                AND t.dept_id = #{req.deptId}
+                AND t.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND t.position_id = #{req.positionId}
@@ -46,6 +57,17 @@
     </select>
 
     <select id="countContacts" resultType="int">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM retention_contact rc
         JOIN employee t ON rc.target_id = t.emp_id
@@ -60,7 +82,7 @@
                 AND t.emp_no = #{req.managerNo}
             </if>
             <if test="req.deptId != null">
-                AND t.dept_id = #{req.deptId}
+                AND t.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND t.position_id = #{req.positionId}
