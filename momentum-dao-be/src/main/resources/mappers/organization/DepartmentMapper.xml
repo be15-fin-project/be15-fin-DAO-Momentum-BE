@@ -28,7 +28,7 @@
     <resultMap id="EmployeeSummaryResultMap" type="com.dao.momentum.organization.department.query.dto.response.EmployeeSummaryDTO">
         <id property="empId" column="emp_id"/>
         <result property="name" column="emp_name"/>
-        <result property="contact" column="contact"/>
+        <result property="positionName" column="position_name"/>
         <result property="status" column="status"/>
     </resultMap>
 
