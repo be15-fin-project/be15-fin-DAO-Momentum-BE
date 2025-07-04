@@ -76,7 +76,14 @@ public class EmployeeCommandService {
         String passwordResetToken = getPasswordResetToken(employee.getEmpId());
 
         //이메일 처리
-        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("resetLink","http://localhost:5173/password/init?token="+passwordResetToken);
+        emailService.sendEmailWithTemplate(
+                employee.getEmail(),
+                "Momentum 초기 비밀번호 설정",
+                "email/init-password",
+                variables
+        );
 
     }
 
