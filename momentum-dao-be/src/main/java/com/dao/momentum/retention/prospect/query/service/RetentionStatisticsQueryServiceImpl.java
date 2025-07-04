@@ -4,13 +4,16 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.retention.prospect.exception.ProspectException;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseriesRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto;
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -24,7 +27,7 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
     public RetentionAverageScoreDto getAverageScore(RetentionStatisticsRequestDto req) {
         RetentionAverageScoreDto raw = mapper.findAverageRetentionScore(req);
 
-        if (raw == null || raw.getAverageScore() == null) {
+        if (raw == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
@@ -60,11 +63,21 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
 
         List<StabilityDistributionByDeptDto> results = mapper.findInsightDistributionList(req);
 
-        if (results == null || results.isEmpty()) {
+        if (results == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
         return results;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RetentionMonthlyStatDto> getMonthlyRetentionStats(RetentionTimeseriesRequestDto req) {
+        if (req.getYear() == null) {
+            req.setYear(LocalDate.now().getYear());
+        }
+
+        return mapper.findMonthlyRetentionStats(req);
     }
 
     private void validateRoundId(RetentionInsightRequestDto req) {

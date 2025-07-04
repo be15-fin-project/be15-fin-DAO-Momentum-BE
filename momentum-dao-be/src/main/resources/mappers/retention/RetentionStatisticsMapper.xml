@@ -195,4 +195,46 @@
     </select>
 
 
+    <select id="findMonthlyRetentionStats"
+            parameterType="com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseriesRequestDto"
+            resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto">
+
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+                SELECT dept_id
+                FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
+            )
+        </if>
+
+        SELECT
+            r.month AS month,
+            ROUND(AVG(rs.retention_score), 2) AS averageScore,
+            ROUND(STDDEV(rs.retention_score), 2) AS stdDeviation
+
+        FROM retention_round r
+        JOIN retention_support rs ON r.round_id = rs.round_id
+        JOIN employee e ON rs.emp_id = e.emp_id
+
+        <where>
+            r.year = #{req.year}
+            <if test="req.deptId != null">
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
+            </if>
+            <if test="req.positionId != null">
+                AND e.position_id = #{req.positionId}
+            </if>
+        </where>
+
+        GROUP BY r.month
+        ORDER BY r.month
+
+    </select>
+
+
 </mapper>
