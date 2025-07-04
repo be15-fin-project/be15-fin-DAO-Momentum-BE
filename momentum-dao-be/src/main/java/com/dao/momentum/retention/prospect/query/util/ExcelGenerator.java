@@ -1,6 +1,6 @@
 package com.dao.momentum.retention.prospect.query.util;
 
-import com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportExcelDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExcelDto;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 

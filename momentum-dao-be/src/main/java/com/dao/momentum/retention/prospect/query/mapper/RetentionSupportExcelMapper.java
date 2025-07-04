@@ -1,6 +1,6 @@
 package com.dao.momentum.retention.prospect.query.mapper;
 
-import com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportExcelDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExcelDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

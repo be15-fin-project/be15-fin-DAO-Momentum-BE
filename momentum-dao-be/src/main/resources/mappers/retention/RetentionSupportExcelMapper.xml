@@ -6,7 +6,7 @@
 <mapper namespace="com.dao.momentum.retention.prospect.query.mapper.RetentionSupportExcelMapper">
 
     <select id="selectSupportListForExcel"
-            resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportExcelDto">
+            resultType="com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExcelDto">
         SELECT
             e.emp_no           AS employeeNo,
             e.name             AS employeeName,
