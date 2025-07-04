@@ -10,12 +10,14 @@ import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlySt
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQueryService {
@@ -25,59 +27,69 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
     @Override
     @Transactional(readOnly = true)
     public RetentionAverageScoreDto getAverageScore(RetentionStatisticsRequestDto req) {
-        RetentionAverageScoreDto raw = mapper.findAverageRetentionScore(req);
+        log.info(">>> getAverageScore called");
 
+        RetentionAverageScoreDto raw = mapper.findAverageRetentionScore(req);
         if (raw == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        return RetentionAverageScoreDto.builder()
+        RetentionAverageScoreDto result = RetentionAverageScoreDto.builder()
                 .averageScore(raw.getAverageScore())
                 .totalEmpCount(raw.getTotalEmpCount())
                 .stabilitySafeRatio(raw.getStabilitySafeRatio())
                 .stabilityRiskRatio(raw.getStabilityRiskRatio())
                 .build();
 
+        log.info("평균 근속 지수 조회 완료 - avgScore={}, empCount={}", result.getAverageScore(), result.getTotalEmpCount());
+        return result;
     }
 
-    // 전체 기준 또는 단일 부서/직급 기준 근속 안정성 분포 조회
     @Override
     @Transactional(readOnly = true)
     public StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionInsightRequestDto req) {
+        log.info(">>> getOverallStabilityDistribution called");
+
         validateRoundId(req);
 
         StabilityDistributionByDeptDto result = mapper.findInsightDistribution(req);
-
         if (result == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
+        log.info("전체 안정성 분포 조회 완료 - roundId={}", req.getRoundId());
         return result;
     }
 
-    // 부서별 근속 안정성 분포 리스트 조회
     @Override
     @Transactional(readOnly = true)
     public List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionInsightRequestDto req) {
+        log.info(">>> getStabilityDistributionByDept called");
+
         validateRoundId(req);
 
         List<StabilityDistributionByDeptDto> results = mapper.findInsightDistributionList(req);
-
         if (results == null) {
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
+        log.info("부서별 안정성 분포 조회 완료 - count={}, roundId={}", results.size(), req.getRoundId());
         return results;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<RetentionMonthlyStatDto> getMonthlyRetentionStats(RetentionTimeseriesRequestDto req) {
+        log.info(">>> getMonthlyRetentionStats called");
+
         if (req.getYear() == null) {
             req.setYear(LocalDate.now().getYear());
         }
 
-        return mapper.findMonthlyRetentionStats(req);
+        List<RetentionMonthlyStatDto> results = mapper.findMonthlyRetentionStats(req);
+
+        log.info("시계열 통계 조회 완료 - year={}, count={}", req.getYear(), results.size());
+        return results;
     }
 
     private void validateRoundId(RetentionInsightRequestDto req) {
@@ -85,5 +97,4 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
             throw new ProspectException(ErrorCode.INVALID_REQUEST);
         }
     }
-
 }

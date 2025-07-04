@@ -9,6 +9,7 @@ import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundList
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionRoundListResultDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionRoundMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetentionRoundQueryServiceImpl implements RetentionRoundQueryService {
@@ -25,6 +27,8 @@ public class RetentionRoundQueryServiceImpl implements RetentionRoundQueryServic
     @Override
     @Transactional(readOnly = true)
     public RetentionRoundListResultDto getRetentionRounds(RetentionRoundSearchRequestDto req) {
+        log.info(">>> getRetentionRounds called");
+
         List<RetentionRoundRawDto> rawList = mapper.findRetentionRounds(req);
         if (rawList == null) {
             throw new ProspectException(ErrorCode.RETENTION_ROUND_NOT_FOUND);
@@ -49,6 +53,8 @@ public class RetentionRoundQueryServiceImpl implements RetentionRoundQueryServic
                 .totalItems(total)
                 .totalPage((int) Math.ceil((double) total / req.getSize()))
                 .build();
+
+        log.info("Retention round list fetched - count={}, page={}", resultList.size(), req.getPage());
 
         return RetentionRoundListResultDto.builder()
                 .content(resultList)

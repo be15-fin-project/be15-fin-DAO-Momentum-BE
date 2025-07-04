@@ -36,23 +36,22 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactResponse createContact(RetentionContactCreateDto dto) {
+        log.info(">>> createContact called");
+
         if (dto.targetId().equals(dto.managerId())) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER);
         }
 
-        // 1. 하급자 이름 조회
         Employee targetEmployee = employeeRepository.findByEmpId(dto.targetId())
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
         String targetName = targetEmployee.getName();
 
-        // 2. 면담 엔티티 생성 및 저장
         RetentionContact contact = RetentionContact.create(
                 dto.targetId(), dto.managerId(), dto.writerId(), dto.reason()
         );
         RetentionContact saved = repository.save(contact);
 
-        // 3. 알림 메시지 생성
         String content = String.format(
                 "[근속 리스크 알림]\n팀원 %s님의 근속 전망이 낮게 분석되었습니다.\n리스크 완화를 위해 조속한 면담을 권장드립니다.",
                 targetName
@@ -67,17 +66,15 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        // 4. Kafka 전송
         try {
             notificationKafkaProducer.sendNotification(saved.getManagerId().toString(), message);
-            log.info("면담 ID: {}, 상급자 ID: {}, 하급자 ID: {} → 근속 면담 요청 알림 전송 완료",
+            log.info("면담 알림 전송 완료 - retentionId={}, managerId={}, targetId={}",
                     saved.getRetentionId(), saved.getManagerId(), saved.getTargetId());
         } catch (Exception e) {
             log.error("알림 전송 실패 - 면담 ID: {}, 수신자 ID: {}, 사유: {}", saved.getRetentionId(), saved.getManagerId(), e.getMessage(), e);
         }
 
-        // 5. 응답 반환
-        return RetentionContactResponse.builder()
+        RetentionContactResponse response = RetentionContactResponse.builder()
                 .retentionId(saved.getRetentionId())
                 .targetId(saved.getTargetId())
                 .managerId(saved.getManagerId())
@@ -85,27 +82,31 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .reason(saved.getReason())
                 .createdAt(saved.getCreatedAt())
                 .build();
+
+        log.info("면담 요청 생성 완료 - retentionId={}", response.retentionId());
+        return response;
     }
 
     @Override
     @Transactional
     public RetentionContactDeleteResponse deleteContact(RetentionContactDeleteDto dto) {
+        log.info(">>> deleteContact called");
+
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
 
-        // 이미 삭제되었는지 확인
         if (contact.getIsDeleted().isDeleted()) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED);
         }
 
-        // 삭제 권한 확인: 작성자 본인 또는 관리자 권한 보유
         boolean isWriter = contact.getWriterId().equals(dto.loginEmpId());
         if (!isWriter) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_FORBIDDEN);
         }
 
-        // 삭제 처리
         contact.markAsDeleted();
+
+        log.info("면담 요청 삭제 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactDeleteResponse.builder()
                 .retentionId(contact.getRetentionId())
@@ -116,23 +117,22 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactResponseUpdateResponse reportResponse(RetentionContactResponseUpdateDto dto) {
-        // 1. 면담 요청 존재 확인
+        log.info(">>> reportResponse called");
+
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
 
-        // 2. 삭제 여부 확인
         if (contact.getIsDeleted().isDeleted()) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED);
         }
 
-        // 3. managerId 일치 확인
         if (!contact.getManagerId().equals(dto.loginEmpId())) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_RESPONSE_FORBIDDEN);
         }
 
-        // 4. 면담 결과 반영
-        LocalDateTime now = LocalDateTime.now();
-        contact.respond(dto.response(), now);
+        contact.respond(dto.response(), LocalDateTime.now());
+
+        log.info("면담 응답 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactResponseUpdateResponse.builder()
                 .retentionId(contact.getRetentionId())
@@ -144,17 +144,18 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactFeedbackUpdateResponse giveFeedback(RetentionContactFeedbackUpdateDto dto) {
-        // 1. 면담 요청 존재 확인
+        log.info(">>> giveFeedback called");
+
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
 
-        // 2. 삭제 여부 확인
         if (contact.getIsDeleted().isDeleted()) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_ALREADY_DELETED);
         }
 
-        // 3. 피드백 반영
         contact.giveFeedback(dto.feedback());
+
+        log.info("면담 피드백 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactFeedbackUpdateResponse.builder()
                 .retentionId(contact.getRetentionId())

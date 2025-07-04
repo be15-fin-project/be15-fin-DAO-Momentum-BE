@@ -9,11 +9,13 @@ import com.dao.momentum.retention.interview.query.dto.response.RetentionContactI
 import com.dao.momentum.retention.interview.query.dto.response.RetentionContactListResultDto;
 import com.dao.momentum.retention.interview.query.mapper.RetentionContactMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetentionContactQueryServiceImpl implements RetentionContactQueryService {
@@ -23,19 +25,24 @@ public class RetentionContactQueryServiceImpl implements RetentionContactQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionContactListResultDto getContactList(RetentionContactListRequestDto req) {
-        return buildContactListResponse(req);
+        log.info(">>> getContactList called");
+        RetentionContactListResultDto result = buildContactListResponse(req);
+        log.info("Contact list fetched: {} items", result.getItems().size());
+        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
     public RetentionContactListResultDto getMyRequestedContactList(Long empId, RetentionContactListRequestDto req) {
-        req.setManagerId(empId); // 로그인한 상급자 ID 고정
-        return buildContactListResponse(req);
+        log.info(">>> getMyRequestedContactList called - empId={}", empId);
+        req.setManagerId(empId);
+        RetentionContactListResultDto result = buildContactListResponse(req);
+        log.info("My requested contact list fetched: {} items", result.getItems().size());
+        return result;
     }
 
     private RetentionContactListResultDto buildContactListResponse(RetentionContactListRequestDto req) {
         long total = mapper.countContacts(req);
-
         List<RetentionContactItemDto> items = mapper.findContacts(req);
         if (items == null) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND);
@@ -56,17 +63,16 @@ public class RetentionContactQueryServiceImpl implements RetentionContactQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionContactDetailDto getContactDetail(Long retentionId, Long requesterEmpId) {
+        log.info(">>> getContactDetail called - retentionId={}, requesterEmpId={}", retentionId, requesterEmpId);
         RetentionContactDetailDto detail = mapper.findContactDetailById(retentionId);
-
         if (detail == null) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND);
         }
 
-        // 플래그 계산
         boolean deletable = detail.getResponse() == null;
         boolean feedbackWritable = detail.getResponse() != null && detail.getFeedback() == null;
 
-        return RetentionContactDetailDto.builder()
+        RetentionContactDetailDto result = RetentionContactDetailDto.builder()
                 .retentionId(detail.getRetentionId())
                 .targetName(detail.getTargetName())
                 .targetNo(detail.getTargetNo())
@@ -82,6 +88,9 @@ public class RetentionContactQueryServiceImpl implements RetentionContactQuerySe
                 .deletable(deletable)
                 .feedbackWritable(feedbackWritable)
                 .build();
-    }
 
+        log.info("Contact detail fetched - retentionId={}, deletable={}, feedbackWritable={}",
+                result.getRetentionId(), result.isDeletable(), result.isFeedbackWritable());
+        return result;
+    }
 }
