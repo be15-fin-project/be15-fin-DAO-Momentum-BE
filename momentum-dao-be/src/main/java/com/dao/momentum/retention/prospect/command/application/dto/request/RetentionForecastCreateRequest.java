@@ -12,7 +12,7 @@ public record RetentionForecastCreateRequest(
         Integer roundNo,
 
         @NotNull(message = "년도는 필수입니다.")
-        @Min(value = 1900, message = "년도는 2000년 이상이어야 합니다.")
+        @Min(value = 1900, message = "년도는 1900년 이상이어야 합니다.")
         @Max(value = 2100, message = "년도는 2100년 이하여야 합니다.")
         @Schema(description = "분석 대상 연도", example = "2025", minimum = "2000", maximum = "2100")
         Integer year,
