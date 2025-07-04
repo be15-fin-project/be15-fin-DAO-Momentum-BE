@@ -9,6 +9,9 @@ import lombok.Setter;
 @Schema(description = "Retention 지원용 원시 데이터 DTO")
 public class RetentionSupportRaw {
 
+    @Schema(description = "근속 전망 Id", example = "31")
+    private Long retentionId;
+
     @Schema(description = "사번", example = "20250001")
     private String empNo;
 
@@ -29,4 +32,5 @@ public class RetentionSupportRaw {
 
     @Schema(description = "평가 회차 번호", example = "2")
     private int roundNo;
+
 }
