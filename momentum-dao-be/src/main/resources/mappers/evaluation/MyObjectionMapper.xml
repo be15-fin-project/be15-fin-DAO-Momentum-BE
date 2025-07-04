@@ -76,6 +76,7 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
+            ep.property_id   AS propertyId,
             ep.name   AS propertyName,
             CASE
                 WHEN es.score >= 95 THEN '탁월'

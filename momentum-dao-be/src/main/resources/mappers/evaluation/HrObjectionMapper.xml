@@ -79,25 +79,25 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionItemDto">
         SELECT
-        o.objection_id                                 AS objectionId,
-        er.result_id                                   AS resultId,
-        e.emp_no                                       AS empNo,
-        e.name                                         AS empName,
-        DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
-        o.reason                                       AS objectionReason,
-        s.status_type                                  AS statusType,
-        o.response                                     AS responseReason
+            o.objection_id                                 AS objectionId,
+            er.result_id                                   AS resultId,
+            e.emp_no                                       AS empNo,
+            e.name                                         AS empName,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
+            o.reason                                       AS objectionReason,
+            s.status_type                                  AS statusType,
+            o.response                                     AS responseReason
         FROM hr_objection o
         JOIN eval_response er
-        ON er.result_id = o.result_id
+            ON er.result_id = o.result_id
         JOIN employee e
-        ON e.emp_id     = er.target_id
+            ON e.emp_id     = er.target_id
         JOIN status s
-        ON s.status_id  = o.status_id
+            ON s.status_id  = o.status_id
         LEFT JOIN hr_weight w
-        ON w.round_id   = er.round_id
+            ON w.round_id   = er.round_id
         LEFT JOIN hr_rate r
-        ON r.round_id   = er.round_id
+            ON r.round_id   = er.round_id
         WHERE o.objection_id = #{objectionId}
     </select>
 
@@ -106,8 +106,9 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
-        ep.name   AS propertyName,
-        es.score  AS score
+            ep.property_id   AS propertyId,
+            ep.name         AS propertyName,
+            es.score        AS score
         FROM eval_score es
         JOIN eval_property ep
         ON ep.property_id = es.property_id
@@ -121,11 +122,11 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
         SELECT
-        r.rate_s AS rateS,
-        r.rate_a AS rateA,
-        r.rate_b AS rateB,
-        r.rate_c AS rateC,
-        r.rate_d AS rateD
+            r.rate_s AS rateS,
+            r.rate_a AS rateA,
+            r.rate_b AS rateB,
+            r.rate_c AS rateC,
+            r.rate_d AS rateD
         FROM eval_response er
         JOIN hr_rate r ON r.round_id = er.round_id
         WHERE er.result_id = #{resultId}
@@ -136,12 +137,12 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
         SELECT
-        w.perform_wt     AS weightPerform,
-        w.team_wt        AS weightTeam,
-        w.attitude_wt    AS weightAttitude,
-        w.growth_wt      AS weightGrowth,
-        w.engagement_wt  AS weightEngagement,
-        w.result_wt      AS weightResult
+            w.perform_wt     AS weightPerform,
+            w.team_wt        AS weightTeam,
+            w.attitude_wt    AS weightAttitude,
+            w.growth_wt      AS weightGrowth,
+            w.engagement_wt  AS weightEngagement,
+            w.result_wt      AS weightResult
         FROM eval_response er
         JOIN hr_weight w ON w.round_id = er.round_id
         WHERE er.result_id = #{resultId}
