@@ -10,9 +10,11 @@ import com.dao.momentum.evaluation.kpi.command.domain.aggregate.Kpi;
 import com.dao.momentum.evaluation.kpi.command.domain.repository.KpiRepository;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class KpiApprovalServiceImpl implements KpiApprovalService {
@@ -23,19 +25,29 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
     @Override
     @Transactional
     public KpiApprovalResponse approveKpi(Long managerId, Long kpiId, KpiApprovalRequest request) {
-        Kpi kpi = kpiRepository.findById(kpiId)
-                .orElseThrow(() -> new KpiException(ErrorCode.KPI_NOT_FOUND));
+        log.info("[KpiApprovalServiceImpl] approveKpi() 호출 시작 - managerId={}, kpiId={}, request={}", managerId, kpiId, request);
 
+        Kpi kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> {
+                    log.error("KPI 정보를 찾을 수 없음 - kpiId={}", kpiId);
+                    return new KpiException(ErrorCode.KPI_NOT_FOUND);
+                });
+
+        // 상태가 'PENDING'이 아닌 경우 처리 불가
         if (!kpi.getStatusId().equals(Status.PENDING.getId())) {
+            log.error("이미 처리된 KPI - kpiId={}, statusId={}", kpiId, kpi.getStatusId());
             throw new KpiException(ErrorCode.KPI_ALREADY_PROCESSED);
         }
 
+        // 반려 사유가 없는 경우
         if (request.isRejectedWithoutReason()) {
+            log.error("반려 사유가 없음 - kpiId={}", kpiId);
             throw new KpiException(ErrorCode.KPI_REJECTION_REASON_REQUIRED);
         }
 
         if (request.getApproved()) {
             kpi.approve(request.getReason()); // 상태 ACCEPTED로 변경
+            log.info("KPI 승인 완료 - kpiId={}, reason={}", kpiId, request.getReason());
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())
@@ -43,6 +55,7 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
                     .build();
         } else {
             kpi.reject(request.getReason()); // 상태 REJECTED, 사유 기록
+            log.info("KPI 반려 완료 - kpiId={}, reason={}", kpiId, request.getReason());
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.REJECTED.name())
@@ -55,21 +68,30 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
     @Override
     @Transactional
     public KpiApprovalResponse approveCancelRequest(Long managerId, Long kpiId, KpiCancelApprovalRequest request) {
+        log.info("[KpiApprovalServiceImpl] approveCancelRequest() 호출 시작 - managerId={}, kpiId={}, request={}", managerId, kpiId, request);
+
         Kpi kpi = kpiRepository.findById(kpiId)
-                .orElseThrow(() -> new KpiException(ErrorCode.KPI_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("KPI 정보를 찾을 수 없음 - kpiId={}", kpiId);
+                    return new KpiException(ErrorCode.KPI_NOT_FOUND);
+                });
 
         // 상태가 'PENDING'이고 삭제 요청이 들어간 것만 취소 승인/반려 가능
         if (!kpi.getStatusId().equals(Status.PENDING.getId()) || !kpi.getIsDeleted().equals(UseStatus.Y)) {
+            log.error("잘못된 KPI 상태 - kpiId={}, statusId={}, isDeleted={}", kpiId, kpi.getStatusId(), kpi.getIsDeleted());
             throw new KpiException(ErrorCode.KPI_INVALID_STATUS);
         }
 
+        // 반려 사유가 없는 경우
         if (request.isRejectedWithoutReason()) {
+            log.error("반려 사유가 없음 - kpiId={}", kpiId);
             throw new KpiException(ErrorCode.KPI_REJECTION_REASON_REQUIRED);
         }
 
         if (request.getApproved()) {
             // 취소 승인: 삭제 상태 유지하면서 상태도 'ACCEPTED' 처리
             kpi.approveCancel(request.getReason()); // → isDeleted = Y, status = ACCEPTED
+            log.info("KPI 취소 승인 완료 - kpiId={}, reason={}", kpiId, request.getReason());
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())
@@ -78,6 +100,7 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
         } else {
             // 취소 반려: 삭제 상태 해제 및 반려 처리
             kpi.rejectCancel(request.getReason()); // → isDeleted = N, status = ACCEPTED, reason = 사유
+            log.info("KPI 취소 반려 완료 - kpiId={}, reason={}", kpiId, request.getReason());
             return KpiApprovalResponse.builder()
                     .kpiId(kpi.getKpiId())
                     .status(Status.ACCEPTED.name())
@@ -85,6 +108,4 @@ public class KpiApprovalServiceImpl implements KpiApprovalService {
                     .build();
         }
     }
-
-
 }

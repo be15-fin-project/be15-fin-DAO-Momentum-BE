@@ -31,13 +31,13 @@ public class EvalFormQueryServiceImpl implements EvalFormQueryService {
             throw new EvalException(ErrorCode.EVALUATION_PROMPT_NOT_FOUND);
         }
 
-        String formName = rawList.get(0).getFormName();
+        String formName = rawList.get(0).formName();
 
         log.info("폼 상세 정보 조회 완료 - formName={}", formName);
 
         // 폼의 프롬프트 항목들을 프로퍼티 ID별로 그룹화
         Map<Integer, List<EvalFormPromptRaw>> groupedByProperty = rawList.stream()
-                .collect(Collectors.groupingBy(EvalFormPromptRaw::getPropertyId, LinkedHashMap::new, Collectors.toList()));
+                .collect(Collectors.groupingBy(EvalFormPromptRaw::propertyId, LinkedHashMap::new, Collectors.toList()));
 
         // 그룹화된 프롬프트들을 FactorDto 형태로 변환
         List<EvalFormDetailResultDto.FactorDto> factorDtos = groupedByProperty.values().stream()
@@ -45,13 +45,13 @@ public class EvalFormQueryServiceImpl implements EvalFormQueryService {
                     EvalFormPromptRaw any = group.get(0);
                     List<EvalFormDetailResultDto.PromptDto> prompts = group.stream()
                             .map(r -> EvalFormDetailResultDto.PromptDto.builder()
-                                    .content(r.getContent())
-                                    .isPositive(Boolean.TRUE.equals(r.getIsPositive()))
+                                    .content(r.content())
+                                    .isPositive(Boolean.TRUE.equals(r.isPositive()))
                                     .build())
                             .collect(Collectors.toList());
 
                     return EvalFormDetailResultDto.FactorDto.builder()
-                            .propertyName(any.getPropertyName())
+                            .propertyName(any.propertyName())
                             .prompts(prompts)
                             .build();
                 })
@@ -62,7 +62,7 @@ public class EvalFormQueryServiceImpl implements EvalFormQueryService {
                 .factors(factorDtos)
                 .build();
 
-        log.info("폼 상세 조회 완료 - formName={}, factorCount={}", result.getFormName(), result.getFactors().size());
+        log.info("폼 상세 조회 완료 - formName={}, factorCount={}", result.formName(), result.factors().size());
         return result;
     }
 }

@@ -29,16 +29,20 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiListResultDto getKpiList(KpiListRequestDto requestDto) {
-        log.info("KPI 목록 요청: {}", requestDto);
-        long total = kpiQueryMapper.getKpiListCount(requestDto);
-        List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
+        log.info("[KpiQueryServiceImpl] getKpiList() 호출 시작 - requestDto={}", requestDto);
 
+        long total = kpiQueryMapper.getKpiListCount(requestDto);
+        log.info("전체 KPI 건수 조회 완료 - total={}", total);
+
+        List<KpiListResponseDto> list = kpiQueryMapper.getKpiList(requestDto);
         if (list == null) {
+            log.error("KPI 목록을 찾을 수 없음 - requestDto={}", requestDto);
             throw new KpiException(ErrorCode.KPI_LIST_NOT_FOUND);
         }
 
         Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
-
+        log.info(" 페이지네이션 정보 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
+                pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
         return new KpiListResultDto(list, pagination);
     }
@@ -47,10 +51,15 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiDetailResponseDto getKpiDetail(Long kpiId) {
+        log.info("[KpiQueryServiceImpl] getKpiDetail() 호출 시작 - kpiId={}", kpiId);
+
         KpiDetailResponseDto detail = kpiQueryMapper.getKpiDetail(kpiId);
         if (detail == null) {
+            log.error("KPI 세부 정보를 찾을 수 없음 - kpiId={}", kpiId);
             throw new KpiException(ErrorCode.KPI_NOT_FOUND);
         }
+
+        log.info("KPI 세부 조회 완료 - kpiId={}", kpiId);
         return detail;
     }
 
@@ -58,18 +67,20 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     @Override
     @Transactional(readOnly = true)
     public KpiEmployeeSummaryResultDto getEmployeeKpiSummaries(KpiEmployeeSummaryRequestDto requestDto) {
+        log.info("[KpiQueryServiceImpl] getEmployeeKpiSummaries() 호출 시작 - requestDto={}", requestDto);
 
-        log.info("사원별 KPI 조회 요청 필터값: empNo={}, deptId={}, year={}, month={}, page={}, size={}",
-                requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getYear(), requestDto.getMonth(), requestDto.getPage(), requestDto.getSize());
         long total = kpiQueryMapper.countEmployeeKpiSummary(requestDto);
-        List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);
+        log.info("사원별 KPI 총 건수 조회 완료 - total={}", total);
 
+        List<KpiEmployeeSummaryResponseDto> list = kpiQueryMapper.getEmployeeKpiSummary(requestDto);
         if (list == null) {
+            log.error("사원별 KPI 목록을 찾을 수 없음 - requestDto={}", requestDto);
             throw new KpiException(ErrorCode.KPI_EMPLOYEE_SUMMARY_NOT_FOUND);
         }
 
         Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
-
+        log.info("페이지네이션 정보 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
+                pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
         return new KpiEmployeeSummaryResultDto(list, pagination);
     }
@@ -87,8 +98,13 @@ public class KpiQueryServiceImpl implements KpiQueryService {
     // 권한 반영
     @Override
     public KpiListResultDto getKpiListWithAccessControl(KpiListRequestDto requestDto, Long empId) {
+        log.info("[KpiQueryServiceImpl] getKpiListWithAccessControl() 호출 시작 - empId={}, requestDto={}", empId, requestDto);
+
         boolean isPrivileged = hasPrivilegedRole();
+        log.info("사용자의 권한 여부 - isPrivileged={}", isPrivileged);
+
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
+        log.info("사원 번호 조회 완료 - empNo={}", empNo);
 
         KpiListRequestDto resolved = isPrivileged
                 ? requestDto
@@ -104,12 +120,17 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
                 .build();
 
+        log.info("최종적으로 결정된 KPI 요청  필터 - resolved={}", resolved);
         return getKpiList(resolved);
     }
+
     // 권한 반영
     @Override
     public KpiListResultDto getKpiListWithControl(KpiListRequestDto requestDto, Long empId) {
+        log.info("[KpiQueryServiceImpl] getKpiListWithControl() 호출 시작 - empId={}, requestDto={}", empId, requestDto);
+
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
+        log.info("사원번호 조회 완료 - empNo={}", empNo);
 
         KpiListRequestDto resolved = KpiListRequestDto.builder()
                 .empNo(empNo)
@@ -123,6 +144,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
                 .build();
 
+        log.info("최종적으로 결정된 KPI 요청 필터 - resolved={}", resolved);
         return getKpiList(resolved);
     }
 
@@ -131,7 +153,4 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> List.of("MASTER", "HR_MANAGER", "BOOKKEEPING", "MANAGER").contains(role));
     }
-
-
-
 }

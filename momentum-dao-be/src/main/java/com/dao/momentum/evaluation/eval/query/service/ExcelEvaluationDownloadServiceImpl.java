@@ -2,12 +2,12 @@ package com.dao.momentum.evaluation.eval.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
-import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationExcelRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationExcelRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationExcelDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationExcelDto;
-import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationExcelRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationExcelDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.OrgEvaluationExcelRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.SelfEvaluationExcelRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.OrgEvaluationExcelDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.PeerEvaluationExcelDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.PeerEvaluationExcelRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.SelfEvaluationExcelDto;
 import com.dao.momentum.evaluation.eval.query.util.OrgEvaluationExcelGenerator;
 import com.dao.momentum.evaluation.eval.query.util.PeerEvaluationExcelGenerator;
 import com.dao.momentum.evaluation.eval.query.mapper.ExcelEvaluationQueryMapper;

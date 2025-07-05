@@ -3,8 +3,11 @@ package com.dao.momentum.evaluation.eval.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.eval.exception.EvalException;
-import com.dao.momentum.evaluation.eval.query.dto.request.*;
-import com.dao.momentum.evaluation.eval.query.dto.response.*;
+import com.dao.momentum.evaluation.eval.query.dto.request.FactorScoreDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.OrgEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.SelfEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.*;
 import com.dao.momentum.evaluation.eval.query.mapper.OrgEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.PeerEvaluationMapper;
 import com.dao.momentum.evaluation.eval.query.mapper.SelfEvaluationMapper;
@@ -40,7 +43,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
         }
 
         log.info("사원 간 평가 조회 완료 - total={}, listSize={}", total, list.size());
-        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+        Pagination pagination = buildPagination(requestDto.page(), requestDto.size(), total);
         return new PeerEvaluationListResultDto(list, pagination);
     }
 
@@ -74,7 +77,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
         long total = orgEvaluationMapper.countOrgEvaluations(requestDto);
         if (total == 0) {
             log.info("조직 평가 결과 없음 - total=0");
-            return new OrgEvaluationListResultDto(List.of(), buildPagination(requestDto.getPage(), requestDto.getSize(), 0));
+            return new OrgEvaluationListResultDto(List.of(), buildPagination(requestDto.page(), requestDto.size(), 0));
         }
 
         List<OrgEvaluationResponseDto> list = orgEvaluationMapper.findOrgEvaluations(requestDto);
@@ -85,7 +88,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
         }
 
         log.info("조직 평가 조회 완료 - total={}, listSize={}", total, list.size());
-        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+        Pagination pagination = buildPagination(requestDto.page(), requestDto.size(), total);
         return new OrgEvaluationListResultDto(list, pagination);
     }
 
@@ -119,7 +122,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
         long total = selfEvaluationMapper.countSelfEvaluations(requestDto);
         if (total == 0) {
             log.info("자가 진단 평가 결과 없음 - total=0");
-            return new SelfEvaluationListResultDto(List.of(), buildPagination(requestDto.getPage(), requestDto.getSize(), 0));
+            return new SelfEvaluationListResultDto(List.of(), buildPagination(requestDto.page(), requestDto.size(), 0));
         }
 
         List<SelfEvaluationResponseDto> list = selfEvaluationMapper.findSelfEvaluations(requestDto);
@@ -130,7 +133,7 @@ public class EvaluationQueryServiceImpl implements EvaluationQueryService {
         }
 
         log.info("자가 진단 평가 조회 완료 - total={}, listSize={}", total, list.size());
-        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+        Pagination pagination = buildPagination(requestDto.page(), requestDto.size(), total);
         return new SelfEvaluationListResultDto(list, pagination);
     }
 

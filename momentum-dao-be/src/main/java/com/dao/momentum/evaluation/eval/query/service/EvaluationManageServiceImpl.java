@@ -32,7 +32,7 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
         long total = evaluationManageMapper.countEvaluationRounds(request);
         if (total == 0) {
             log.info("조회 결과 없음 - total=0");
-            return new EvaluationRoundListResultDto(List.of(), buildPagination(request.getPage(), request.getSize(), 0));
+            return new EvaluationRoundListResultDto(List.of(), buildPagination(request.page(), request.size(), 0));
         }
 
         List<EvaluationRoundResponseDto> rawList = evaluationManageMapper.findEvaluationRounds(request);
@@ -40,21 +40,21 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
 
         List<EvaluationRoundResponseDto> filtered = rawList.stream()
                 .map(dto -> {
-                    EvaluationRoundStatus status = EvaluationRoundStatus.from(dto.getStartAt(), dto.getEndAt(), today);
+                    EvaluationRoundStatus status = EvaluationRoundStatus.from(dto.startAt(), dto.endAt(), today);
                     return EvaluationRoundResponseDto.builder()
-                            .roundId(dto.getRoundId())
-                            .roundNo(dto.getRoundNo())
-                            .startAt(dto.getStartAt())
-                            .endAt(dto.getEndAt())
-                            .participantCount(dto.getParticipantCount())
+                            .roundId(dto.roundId())
+                            .roundNo(dto.roundNo())
+                            .startAt(dto.startAt())
+                            .endAt(dto.endAt())
+                            .participantCount(dto.participantCount())
                             .status(status)
                             .build();
                 })
-                .filter(dto -> request.getStatus() == null || dto.getStatus() == request.getStatus())
+                .filter(dto -> request.status() == null || dto.status() == request.status())
                 .collect(Collectors.toList());
 
         log.info("평가 회차 목록 조회 완료 - total={}, filtered={}", total, filtered.size());
-        return new EvaluationRoundListResultDto(filtered, buildPagination(request.getPage(), request.getSize(), total));
+        return new EvaluationRoundListResultDto(filtered, buildPagination(request.page(), request.size(), total));
     }
 
     @Override
@@ -99,9 +99,9 @@ public class EvaluationManageServiceImpl implements EvaluationManageService {
     @Override
     @Transactional(readOnly = true)
     public List<EvaluationFormPropertyDto> getFormProperties(EvaluationFormPropertyRequestDto request) {
-        log.info("[EvaluationManageServiceImpl] getFormProperties() 호출 시작 - formId={}", request.getFormId());
+        log.info("[EvaluationManageServiceImpl] getFormProperties() 호출 시작 - formId={}", request.formId());
 
-        List<EvaluationFormPropertyDto> result = evaluationManageMapper.findFormProperties(request.getFormId());
+        List<EvaluationFormPropertyDto> result = evaluationManageMapper.findFormProperties(request.formId());
         log.info("평가 양식별 요인 조회 완료 - count={}", result.size());
         return result;
     }

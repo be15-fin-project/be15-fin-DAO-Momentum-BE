@@ -21,29 +21,29 @@ public class EvalResponseServiceImpl implements EvalResponseService {
 
     @Override
     public EvalResponse saveResponse(Long empId, EvalSubmitRequest request, int finalScore) {
-        log.info("[EvalResponseServiceImpl] saveResponse() 호출 - empId={}, formId={}, targetId={}", empId, request.getFormId(), request.getTargetId());
+        log.info("[EvalResponseServiceImpl] saveResponse() 호출 - empId={}, formId={}, targetId={}", empId, request.formId(), request.targetId());
 
         boolean exists;
-        if (request.getTargetId() == null) {
+        if (request.targetId() == null) {
             exists = evalResponseRepository.existsByRoundIdAndFormIdAndEvalIdAndTargetIdIsNull(
-                    request.getRoundId(), request.getFormId(), empId);
+                    request.roundId(), request.formId(), empId);
         } else {
             exists = evalResponseRepository.existsByRoundIdAndFormIdAndEvalIdAndTargetId(
-                    request.getRoundId(), request.getFormId(), empId, request.getTargetId());
+                    request.roundId(), request.formId(), empId, request.targetId());
         }
 
         if (exists) {
-            log.warn("이미 제출된 평가입니다 - empId={}, formId={}, targetId={}", empId, request.getFormId(), request.getTargetId());
+            log.warn("이미 제출된 평가입니다 - empId={}, formId={}, targetId={}", empId, request.formId(), request.targetId());
             throw new EvalException(ErrorCode.EVAL_ALREADY_SUBMITTED);
         }
 
         EvalResponse response = EvalResponse.builder()
-                .roundId(request.getRoundId())
-                .formId(request.getFormId())
+                .roundId(request.roundId())
+                .formId(request.formId())
                 .evalId(empId)
-                .targetId(request.getTargetId())
+                .targetId(request.targetId())
                 .score(finalScore)
-                .reason(request.getReason())
+                .reason(request.reason())
                 .createdAt(LocalDateTime.now())
                 .build();
 

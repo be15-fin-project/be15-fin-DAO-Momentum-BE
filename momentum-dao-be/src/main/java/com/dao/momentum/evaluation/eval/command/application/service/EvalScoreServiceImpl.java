@@ -52,8 +52,8 @@ public class EvalScoreServiceImpl implements EvalScoreService {
             List<EvalScore> scores = factorScores.stream()
                     .map(dto -> EvalScore.builder()
                             .resultId(resultId)
-                            .propertyId(dto.getPropertyId())
-                            .score(dto.getScore())
+                            .propertyId(dto.propertyId())
+                            .score(dto.score())
                             .build())
                     .toList();
 

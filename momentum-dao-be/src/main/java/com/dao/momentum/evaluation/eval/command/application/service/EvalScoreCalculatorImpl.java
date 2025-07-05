@@ -25,10 +25,10 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
     @Override
     public int calculateScore(Long empId, EvalSubmitRequest request) {
         log.info("[EvalScoreCalculatorImpl] calculateScore() 호출 시작 - empId={}, formId={}, roundId={}",
-                empId, request.getFormId(), request.getRoundId());
+                empId, request.formId(), request.roundId());
 
-        Integer formId = request.getFormId();
-        List<EvalFactorScoreDto> factors = request.getFactorScores();
+        Integer formId = request.formId();
+        List<EvalFactorScoreDto> factors = request.factorScores();
 
         if (factors == null || factors.isEmpty()) {
             log.error("유효하지 않은 평가 항목 - empId={}, formId={}", empId, formId);
@@ -39,14 +39,14 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
 
         try {
             if (formId != null && formId == 4) {
-                HrWeight weight = hrWeightRepository.findByRoundId(request.getRoundId())
+                HrWeight weight = hrWeightRepository.findByRoundId(request.roundId())
                         .orElseThrow(() -> {
-                            log.error("HR 가중치 정보를 찾을 수 없습니다 - roundId={}", request.getRoundId());
+                            log.error("HR 가중치 정보를 찾을 수 없습니다 - roundId={}", request.roundId());
                             return new HrException(ErrorCode.HR_WEIGHT_NOT_FOUND);
                         });
 
                 Map<Integer, Integer> scoreMap = factors.stream()
-                        .collect(Collectors.toMap(EvalFactorScoreDto::getPropertyId, EvalFactorScoreDto::getScore));
+                        .collect(Collectors.toMap(EvalFactorScoreDto::propertyId, EvalFactorScoreDto::score));
 
                 result = (
                         scoreMap.getOrDefault(1, 0) * weight.getPerformWt() +
@@ -59,14 +59,14 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
 
             } else {
                 result = factors.stream()
-                        .mapToInt(EvalFactorScoreDto::getScore)
+                        .mapToInt(EvalFactorScoreDto::score)
                         .sum() / factors.size();
             }
 
             log.info("평가 점수 계산 완료 - empId={}, finalScore={}", empId, result);
 
         } catch (Exception e) {
-            log.error("평가 점수 계산 중 오류 발생 - empId={}, formId={}, roundId={}, 에러={}", empId, formId, request.getRoundId(), e.getMessage());
+            log.error("평가 점수 계산 중 오류 발생 - empId={}, formId={}, roundId={}, 에러={}", empId, formId, request.roundId(), e.getMessage());
             throw new EvalException(ErrorCode.EVAL_SCORE_CALCULATION_FAILED);
         }
 

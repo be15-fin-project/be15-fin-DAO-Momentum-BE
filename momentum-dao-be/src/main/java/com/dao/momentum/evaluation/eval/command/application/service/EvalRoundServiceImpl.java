@@ -22,23 +22,23 @@ public class EvalRoundServiceImpl implements EvalRoundService {
     @Transactional
     @Override
     public EvalRound create(EvalRoundCreateDTO dto) {
-        log.info("[EvalRoundServiceImpl] create() 호출 시작 - roundNo={}, startAt={}", dto.getRoundNo(), dto.getStartAt());
+        log.info("[EvalRoundServiceImpl] create() 호출 시작 - roundNo={}, startAt={}", dto.roundNo(), dto.startAt());
 
         // 이미 존재하는 roundNo 체크
-        if (evalRoundRepository.existsByRoundNo(dto.getRoundNo())) {
-            log.error("이미 존재하는 평가 회차 - roundNo={}", dto.getRoundNo());
+        if (evalRoundRepository.existsByRoundNo(dto.roundNo())) {
+            log.error("이미 존재하는 평가 회차 - roundNo={}", dto.roundNo());
             throw new EvalException(ErrorCode.EVAL_ROUND_DUPLICATE);
         }
 
         // 시작일자가 현재 날짜 이전인지 확인
-        if (dto.getStartAt().isBefore(java.time.LocalDate.now())) {
-            log.error("유효하지 않은 시작일자 - roundNo={}, startAt={}", dto.getRoundNo(), dto.getStartAt());
+        if (dto.startAt().isBefore(java.time.LocalDate.now())) {
+            log.error("유효하지 않은 시작일자 - roundNo={}, startAt={}", dto.roundNo(), dto.startAt());
             throw new EvalException(ErrorCode.EVAL_ROUND_INVALID_START_DATE);
         }
 
         EvalRound evalRound = EvalRound.builder()
-                .roundNo(dto.getRoundNo())
-                .startAt(dto.getStartAt())
+                .roundNo(dto.roundNo())
+                .startAt(dto.startAt())
                 .build();
 
         EvalRound saved = evalRoundRepository.save(evalRound);
@@ -50,11 +50,11 @@ public class EvalRoundServiceImpl implements EvalRoundService {
     @Override
     @Transactional
     public EvalRoundUpdateResponse update(Integer roundId, EvalRoundUpdateDTO dto) {
-        log.info("[EvalRoundServiceImpl] update() 호출 시작 - roundId={}, newStartAt={}", roundId, dto.getStartAt());
+        log.info("[EvalRoundServiceImpl] update() 호출 시작 - roundId={}, newStartAt={}", roundId, dto.startAt());
 
         // 시작일자가 현재 날짜보다 내일 이후인지 확인
-        if (dto.getStartAt().isBefore(java.time.LocalDate.now().plusDays(1))) {
-            log.error("유효하지 않은 시작일자 - roundId={}, newStartAt={}", roundId, dto.getStartAt());
+        if (dto.startAt().isBefore(java.time.LocalDate.now().plusDays(1))) {
+            log.error("유효하지 않은 시작일자 - roundId={}, newStartAt={}", roundId, dto.startAt());
             throw new EvalException(ErrorCode.EVAL_ROUND_INVALID_START_DATE);
         }
 
@@ -65,7 +65,7 @@ public class EvalRoundServiceImpl implements EvalRoundService {
                     return new EvalException(ErrorCode.EVAL_ROUND_NOT_FOUND);
                 });
 
-        round.updateRound(dto.getRoundNo(), dto.getStartAt());
+        round.updateRound(dto.roundNo(), dto.startAt());
         log.info("평가 회차 수정 완료 - roundId={}, roundNo={}, startAt={}", round.getRoundId(), round.getRoundNo(), round.getStartAt());
 
         return EvalRoundUpdateResponse.builder()
