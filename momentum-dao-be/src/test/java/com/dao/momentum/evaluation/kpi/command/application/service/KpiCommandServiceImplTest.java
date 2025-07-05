@@ -48,7 +48,7 @@ class KpiCommandServiceImplTest {
     private final Long kpiId = 100L;
     private final String reason = "목표 변경";
 
-    protected Kpi mockKpi(Status status, UseStatus isDeleted, Long ownerId) {
+    protected Kpi mockitKpi(Status status, UseStatus isDeleted, Long ownerId) {
         return Kpi.builder()
                 .kpiId(kpiId)
                 .empId(ownerId)
@@ -111,7 +111,7 @@ class KpiCommandServiceImplTest {
         @Test
         @DisplayName("KPI 취소 성공")
         void cancelKpi_success() {
-            Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.N, empId);
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.N, empId);
             when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
             when(kpiRepository.save(any(Kpi.class))).thenReturn(kpi);
 
@@ -137,7 +137,7 @@ class KpiCommandServiceImplTest {
         @Test
         @DisplayName("본인이 아닌 KPI를 취소하려 하면 예외 발생")
         void cancelKpi_forbidden() {
-            Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.N, 999L);
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.N, 999L);
             when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
             KpiException ex = assertThrows(KpiException.class, () ->
@@ -149,7 +149,7 @@ class KpiCommandServiceImplTest {
         @Test
         @DisplayName("이미 취소된 KPI는 다시 취소할 수 없음")
         void cancelKpi_alreadyDeleted() {
-            Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.Y, empId);
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.Y, empId);
             when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
             KpiException ex = assertThrows(KpiException.class, () ->
@@ -161,7 +161,7 @@ class KpiCommandServiceImplTest {
         @Test
         @DisplayName("승인되지 않은 KPI는 취소할 수 없음")
         void cancelKpi_notAcceptedStatus() {
-            Kpi kpi = mockKpi(Status.PENDING, UseStatus.N, empId);
+            Kpi kpi = mockitKpi(Status.PENDING, UseStatus.N, empId);
             when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
             KpiException ex = assertThrows(KpiException.class, () ->
@@ -170,15 +170,16 @@ class KpiCommandServiceImplTest {
             assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
         }
 
-        private Kpi mockKpi(int progress, Long ownerId) {
-            return Kpi.builder()
-                    .kpiId(kpiId)
-                    .empId(ownerId)
-                    .statusId(Status.ACCEPTED.getId())
-                    .isDeleted(UseStatus.N)
-                    .kpiProgress(progress)
-                    .build();
-        }
+    }
+
+    protected Kpi mockKpi(int progress, Long ownerId) {
+        return Kpi.builder()
+                .kpiId(kpiId)
+                .empId(ownerId)
+                .statusId(Status.ACCEPTED.getId())
+                .isDeleted(UseStatus.N)
+                .kpiProgress(progress)
+                .build();
     }
 
     @Nested
