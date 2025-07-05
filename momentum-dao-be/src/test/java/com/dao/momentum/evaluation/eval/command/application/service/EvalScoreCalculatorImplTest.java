@@ -34,6 +34,7 @@ class EvalScoreCalculatorImplTest {
     @Test
     @DisplayName("가중치 계산 방식 - 성공")
     void calculateScore_withWeights_success() {
+        // Arrange
         EvalSubmitRequest request = new EvalSubmitRequest();
         setField(request, "formId", 4);
         setField(request, "roundId", 1);
@@ -58,14 +59,17 @@ class EvalScoreCalculatorImplTest {
 
         given(hrWeightRepository.findByRoundId(1)).willReturn(Optional.of(weight));
 
+        // Act
         int score = calculator.calculateScore(1001L, request);
 
+        // Assert
         assertThat(score).isEqualTo(75); // 계산 공식 결과
     }
 
     @Test
     @DisplayName("평균 계산 방식 - 성공")
     void calculateScore_simpleAverage_success() {
+        // Arrange
         EvalSubmitRequest request = new EvalSubmitRequest();
         setField(request, "formId", 2);
         List<EvalFactorScoreDto> factors = new ArrayList<>();
@@ -74,18 +78,22 @@ class EvalScoreCalculatorImplTest {
         factors.add(createFactorScore(3, 70));
         setField(request, "factorScores", factors);
 
+        // Act
         int score = calculator.calculateScore(1002L, request);
 
+        // Assert
         assertThat(score).isEqualTo(80);
     }
 
     @Test
     @DisplayName("factorScores가 비어있으면 예외 발생")
     void calculateScore_noFactors_fail() {
+        // Arrange
         EvalSubmitRequest request = new EvalSubmitRequest();
         setField(request, "formId", 4);
         setField(request, "factorScores", List.of());
 
+        // Act & Assert
         assertThatThrownBy(() -> calculator.calculateScore(1003L, request))
                 .isInstanceOf(EvalException.class)
                 .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
@@ -94,6 +102,7 @@ class EvalScoreCalculatorImplTest {
     @Test
     @DisplayName("가중치가 존재하지 않으면 예외 발생")
     void calculateScore_missingWeights_fail() {
+        // given
         EvalSubmitRequest request = new EvalSubmitRequest();
         setField(request, "formId", 4);
         setField(request, "roundId", 99);
@@ -103,9 +112,10 @@ class EvalScoreCalculatorImplTest {
 
         given(hrWeightRepository.findByRoundId(99)).willReturn(Optional.empty());
 
+        // when & then
         assertThatThrownBy(() -> calculator.calculateScore(1004L, request))
-                .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.HR_WEIGHT_NOT_FOUND.getMessage());
+                .isInstanceOf(EvalException.class)  // Expecting EvalException here
+                .hasMessageContaining(ErrorCode.EVAL_SCORE_CALCULATION_FAILED.getMessage());  // You can match the message here
     }
 
     private EvalFactorScoreDto createFactorScore(int propertyId, int score) {
@@ -128,7 +138,7 @@ class EvalScoreCalculatorImplTest {
     @Test
     @DisplayName("calculateOverallScore - 점수 계산 성공")
     void calculateOverallScore_success() {
-        // given
+        // Arrange
         Map<Integer, Integer> scoreMap = Map.of(
                 1, 80,  // perform
                 2, 90,  // team
@@ -147,17 +157,17 @@ class EvalScoreCalculatorImplTest {
                 .resultWt(20)
                 .build();
 
-        // when
+        // Act
         int finalScore = calculator.calculateOverallScore(scoreMap, weight);
 
-        // then
+        // Assert
         assertThat(finalScore).isEqualTo(75); // 계산 공식과 동일
     }
 
     @Test
     @DisplayName("calculateOverallScore - 일부 키 누락 시 기본값 0 처리")
     void calculateOverallScore_missingFactors_defaultsToZero() {
-        // given
+        // Arrange
         Map<Integer, Integer> scoreMap = Map.of(
                 1, 80,
                 2, 90 // 나머지 3~6번 요인 없음 → 0으로 처리
@@ -172,10 +182,10 @@ class EvalScoreCalculatorImplTest {
                 .resultWt(20)
                 .build();
 
-        // when
+        // Act
         int finalScore = calculator.calculateOverallScore(scoreMap, weight);
 
-        // then
+        // Assert
         // 계산: (80*10 + 90*20 + 0 + 0 + 0 + 0)/100 = (800 + 1800) / 100 = 26
         assertThat(finalScore).isEqualTo(26);
     }

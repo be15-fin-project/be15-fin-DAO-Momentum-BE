@@ -32,11 +32,11 @@ class EvalFormQueryServiceImplTest {
         EvalFormPromptRaw raw1 = new EvalFormPromptRaw();
         EvalFormPromptRaw raw2 = new EvalFormPromptRaw();
 
-        // 공통 필드
+        // 공통 필드 설정
         setField(raw1, "formName", "조직 몰입도");
         setField(raw2, "formName", "조직 몰입도");
 
-        // 요인 정보
+        // 요인 정보 설정
         setField(raw1, "propertyId", 1001);
         setField(raw1, "propertyName", "조직 헌신");
         setField(raw1, "promptId", 1);
@@ -49,6 +49,7 @@ class EvalFormQueryServiceImplTest {
         setField(raw2, "content", "업무에 적극적으로 참여한다.");
         setField(raw2, "isPositive", true);
 
+        // mock the behavior of the mapper
         given(evalFormMapper.findFormDetailByFormId(1)).willReturn(List.of(raw1, raw2));
 
         // when
@@ -60,20 +61,21 @@ class EvalFormQueryServiceImplTest {
         assertThat(result.getFactors().get(0).getPrompts().get(0).getContent()).isEqualTo("나는 이 조직의 목표에 동의한다.");
         assertThat(result.getFactors().get(1).getPrompts().get(0).getContent()).isEqualTo("업무에 적극적으로 참여한다.");
 
-        then(evalFormMapper).should().findFormDetailByFormId(1);
+        then(evalFormMapper).should().findFormDetailByFormId(1);  // verify interaction
     }
 
     @Test
     @DisplayName("평가 양식 상세 조회 - 문항 없음으로 예외 발생")
     void getFormDetail_notFound() {
         // given
-        given(evalFormMapper.findFormDetailByFormId(999)).willReturn(List.of());
+        given(evalFormMapper.findFormDetailByFormId(999)).willReturn(List.of());  // mock empty response for non-existent form
 
         // when & then
         assertThatThrownBy(() -> evalFormQueryService.getFormDetail(999, null))
-                .isInstanceOf(EvalException.class)
-                .hasMessageContaining(ErrorCode.EVALUATION_PROMPT_NOT_FOUND.getMessage());
+                .isInstanceOf(EvalException.class)  // Expect EvalException
+                .hasMessageContaining(ErrorCode.EVALUATION_PROMPT_NOT_FOUND.getMessage());  // Check if message matches the error code
     }
+
 
     // 유틸: private 필드 세팅
     private void setField(Object target, String name, Object value) {
