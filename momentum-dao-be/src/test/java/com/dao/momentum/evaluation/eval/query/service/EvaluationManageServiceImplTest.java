@@ -5,6 +5,7 @@ import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvaluationRound
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormPropertyRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTypeDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import com.dao.momentum.evaluation.eval.query.mapper.EvaluationManageMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,12 +36,14 @@ class EvaluationManageServiceImplTest {
     @DisplayName("다면 평가 회차 목록 조회 - 성공 (상태 필터 포함)")
     void getEvaluationRounds_success_withStatusFilter() {
         // given
-        EvaluationRoundListRequestDto requestDto = new EvaluationRoundListRequestDto();
-        ReflectionTestUtils.setField(requestDto, "startDate", LocalDate.of(2025, 7, 1));
-        ReflectionTestUtils.setField(requestDto, "endDate", LocalDate.of(2025, 7, 31));
-        ReflectionTestUtils.setField(requestDto, "status", EvaluationRoundStatus.IN_PROGRESS);
-        ReflectionTestUtils.setField(requestDto, "page", 1);
-        ReflectionTestUtils.setField(requestDto, "size", 10);
+        EvaluationRoundListRequestDto requestDto = EvaluationRoundListRequestDto.builder()
+                .startDate(LocalDate.of(2025, 7, 1))
+                .endDate(LocalDate.of(2025, 7, 31))
+                .status(EvaluationRoundStatus.IN_PROGRESS)
+                .page(1) // Optional, defaults to 1 if not provided
+                .size(10) // Optional, defaults to 10 if not provided
+                .build();
+
 
         EvaluationRoundResponseDto dto = EvaluationRoundResponseDto.builder()
                 .roundId(1)
@@ -58,10 +61,10 @@ class EvaluationManageServiceImplTest {
         EvaluationRoundListResultDto result = evaluationManageService.getEvaluationRounds(requestDto);
 
         // then
-        assertThat(result.getList()).hasSize(1);
-        assertThat(result.getList().get(0).getStatus()).isEqualTo(EvaluationRoundStatus.IN_PROGRESS);
+        assertThat(result.list()).hasSize(1);
+        assertThat(result.list().get(0).status()).isEqualTo(EvaluationRoundStatus.IN_PROGRESS);
 
-        Pagination pagination = result.getPagination();
+        Pagination pagination = result.pagination();
         assertThat(pagination.getCurrentPage()).isEqualTo(1);
         assertThat(pagination.getTotalItems()).isEqualTo(1L);
 
@@ -73,10 +76,13 @@ class EvaluationManageServiceImplTest {
     @DisplayName("다면 평가 회차 목록 조회 - 필터 조건 불일치로 빈 결과 반환")
     void getEvaluationRounds_filteredOut() {
         // given
-        EvaluationRoundListRequestDto requestDto = new EvaluationRoundListRequestDto();
-        ReflectionTestUtils.setField(requestDto, "status", EvaluationRoundStatus.DONE);
-        ReflectionTestUtils.setField(requestDto, "page", 1);
-        ReflectionTestUtils.setField(requestDto, "size", 10);
+        EvaluationRoundListRequestDto requestDto = EvaluationRoundListRequestDto.builder()
+                .startDate(LocalDate.of(2025, 7, 1))
+                .endDate(LocalDate.of(2025, 7, 31))
+                .status(EvaluationRoundStatus.DONE)
+                .page(1)  // Optional, defaults to 1 if not provided
+                .size(10) // Optional, defaults to 10 if not provided
+                .build();
 
         EvaluationRoundResponseDto dto = EvaluationRoundResponseDto.builder()
                 .roundId(1)
@@ -94,17 +100,18 @@ class EvaluationManageServiceImplTest {
         EvaluationRoundListResultDto result = evaluationManageService.getEvaluationRounds(requestDto);
 
         // then
-        assertThat(result.getList()).isEmpty();
-        assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
+        assertThat(result.list()).isEmpty();
+        assertThat(result.pagination().getTotalItems()).isEqualTo(1L);
     }
 
     @Test
     @DisplayName("다면 평가 회차 목록 조회 - 총 개수 0일 경우 빈 목록 반환")
     void getEvaluationRounds_emptyFromStart() {
         // given
-        EvaluationRoundListRequestDto requestDto = new EvaluationRoundListRequestDto();
-        ReflectionTestUtils.setField(requestDto, "page", 1);
-        ReflectionTestUtils.setField(requestDto, "size", 10);
+        EvaluationRoundListRequestDto requestDto = EvaluationRoundListRequestDto.builder()
+                .page(1)   // Set page to 1
+                .size(10)  // Set size to 10
+                .build();
 
         given(evaluationManageMapper.countEvaluationRounds(requestDto)).willReturn(0L);
 
@@ -112,8 +119,8 @@ class EvaluationManageServiceImplTest {
         EvaluationRoundListResultDto result = evaluationManageService.getEvaluationRounds(requestDto);
 
         // then
-        assertThat(result.getList()).isEmpty();
-        assertThat(result.getPagination().getTotalItems()).isEqualTo(0L);
+        assertThat(result.list()).isEmpty();
+        assertThat(result.pagination().getTotalItems()).isEqualTo(0L);
 
         verify(evaluationManageMapper).countEvaluationRounds(requestDto);
         verify(evaluationManageMapper, never()).findEvaluationRounds(any());
@@ -124,8 +131,9 @@ class EvaluationManageServiceImplTest {
     @DisplayName("평가 양식 목록 조회 - 성공 (typeId 필터 포함)")
     void getEvaluationForms_success_withTypeId() {
         // given
-        EvaluationFormListRequestDto request = new EvaluationFormListRequestDto();
-        ReflectionTestUtils.setField(request, "typeId", 2); // ORG
+        EvaluationFormListRequestDto request = EvaluationFormListRequestDto.builder()
+                .typeId(2)
+                .build();
 
         EvaluationFormResponseDto dto = EvaluationFormResponseDto.builder()
                 .formId(5)
@@ -143,8 +151,8 @@ class EvaluationManageServiceImplTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTypeId()).isEqualTo(2);
-        assertThat(result.get(0).getName()).isEqualTo("ORG_COMMITMENT");
+        assertThat(result.get(0).typeId()).isEqualTo(2);
+        assertThat(result.get(0).name()).isEqualTo("ORG_COMMITMENT");
 
         verify(evaluationManageMapper).findEvaluationForms(request);
     }
@@ -153,8 +161,9 @@ class EvaluationManageServiceImplTest {
     @DisplayName("평가 양식 목록 조회 - 결과 없음")
     void getEvaluationForms_empty() {
         // given
-        EvaluationFormListRequestDto request = new EvaluationFormListRequestDto();
-        ReflectionTestUtils.setField(request, "typeId", 99); // 존재하지 않는 typeId
+        EvaluationFormListRequestDto request = EvaluationFormListRequestDto.builder()
+                .typeId(99)
+                .build();
 
         given(evaluationManageMapper.findEvaluationForms(request))
                 .willReturn(List.of());
@@ -183,8 +192,8 @@ class EvaluationManageServiceImplTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getRoundId()).isEqualTo(1L);
-        assertThat(result.get(0).getRoundNo()).isEqualTo("2025-1차");
+        assertThat(result.get(0).roundId()).isEqualTo(1L);
+        assertThat(result.get(0).roundNo()).isEqualTo("2025-1차");
 
         verify(evaluationManageMapper).findSimpleRounds();
     }
@@ -209,22 +218,22 @@ class EvaluationManageServiceImplTest {
         assertThat(result).hasSize(2);
 
         EvaluationTypeTreeResponseDto peerTree = result.stream()
-                .filter(tree -> tree.getTypeId() == 1L)
+                .filter(tree -> tree.typeId() == 1L)
                 .findFirst()
                 .orElseThrow();
 
-        assertThat(peerTree.getTypeName()).isEqualTo("PEER");
-        assertThat(peerTree.getChildren()).hasSize(1);
-        assertThat(peerTree.getChildren().get(0).formId()).isEqualTo(10L);
+        assertThat(peerTree.typeName()).isEqualTo("PEER");
+        assertThat(peerTree.children()).hasSize(1);
+        assertThat(peerTree.children().get(0).formId()).isEqualTo(10L);
 
         EvaluationTypeTreeResponseDto orgTree = result.stream()
-                .filter(tree -> tree.getTypeId() == 2L)
+                .filter(tree -> tree.typeId() == 2L)
                 .findFirst()
                 .orElseThrow();
 
-        assertThat(orgTree.getTypeName()).isEqualTo("ORG");
-        assertThat(orgTree.getChildren()).hasSize(1);
-        assertThat(orgTree.getChildren().get(0).formId()).isEqualTo(20L);
+        assertThat(orgTree.typeName()).isEqualTo("ORG");
+        assertThat(orgTree.children()).hasSize(1);
+        assertThat(orgTree.children().get(0).formId()).isEqualTo(20L);
 
         verify(evaluationManageMapper).findAllEvalTypes();
         verify(evaluationManageMapper).findAllActiveForms();
@@ -234,8 +243,9 @@ class EvaluationManageServiceImplTest {
     @DisplayName("평가 양식별 요인 조회 - 성공")
     void getFormProperties_success() {
         // given
-        EvaluationFormPropertyRequestDto request = new EvaluationFormPropertyRequestDto();
-        ReflectionTestUtils.setField(request, "formId", 5L);
+        EvaluationFormPropertyRequestDto request = EvaluationFormPropertyRequestDto.builder()
+                .formId(5L)
+                .build();
 
         EvaluationFormPropertyDto propDto = EvaluationFormPropertyDto.builder()
                 .propertyId(101L)
@@ -249,8 +259,8 @@ class EvaluationManageServiceImplTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getPropertyId()).isEqualTo(101L);
-        assertThat(result.get(0).getName()).isEqualTo("몰입도");
+        assertThat(result.get(0).propertyId()).isEqualTo(101L);
+        assertThat(result.get(0).name()).isEqualTo("몰입도");
 
         verify(evaluationManageMapper).findFormProperties(5L);
     }
@@ -269,8 +279,8 @@ class EvaluationManageServiceImplTest {
         EvaluationRoundStatusDto result = evaluationManageService.getTodayRoundStatus();
 
         // then
-        assertThat(result.isInProgress()).isTrue();
-        assertThat(result.getRoundId()).isEqualTo(100L);
+        assertThat(result.inProgress()).isTrue();
+        assertThat(result.roundId()).isEqualTo(100L);
 
         verify(evaluationManageMapper).findOngoingRoundIds(today);
     }
@@ -288,8 +298,8 @@ class EvaluationManageServiceImplTest {
         EvaluationRoundStatusDto result = evaluationManageService.getTodayRoundStatus();
 
         // then
-        assertThat(result.isInProgress()).isFalse();
-        assertThat(result.getRoundId()).isNull();
+        assertThat(result.inProgress()).isFalse();
+        assertThat(result.roundId()).isNull();
 
         verify(evaluationManageMapper).findOngoingRoundIds(today);
     }

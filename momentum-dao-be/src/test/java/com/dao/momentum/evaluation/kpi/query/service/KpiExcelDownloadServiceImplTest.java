@@ -78,15 +78,17 @@ class KpiExcelDownloadServiceImplTest {
                 .deptId(10)
                 .build();
 
+        // Mocking the data to be empty
         when(kpiExcelMapper.selectKpisForExcel(requestDto)).thenReturn(List.of());
 
         // when & then
         assertThatThrownBy(() -> service.downloadKpisAsExcel(requestDto))
-                .isInstanceOf(KpiException.class)
-                .hasMessage(ErrorCode.KPI_LIST_NOT_FOUND.getMessage());
+                .isInstanceOf(KpiException.class)  // Expecting KpiException
+                .hasMessage(ErrorCode.KPI_LIST_NOT_FOUND.getMessage());  // Expecting specific error message
 
         verify(kpiExcelMapper).selectKpisForExcel(requestDto);
     }
+
 
     @Test
     @DisplayName("KPI 엑셀 다운로드 - Excel 생성 실패 예외")
