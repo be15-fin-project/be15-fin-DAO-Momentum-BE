@@ -40,7 +40,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
             throw new KpiException(ErrorCode.KPI_LIST_NOT_FOUND);
         }
 
-        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+        Pagination pagination = buildPagination(requestDto.page(), requestDto.size(), total);
         log.info(" 페이지네이션 정보 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
                 pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
@@ -78,7 +78,7 @@ public class KpiQueryServiceImpl implements KpiQueryService {
             throw new KpiException(ErrorCode.KPI_EMPLOYEE_SUMMARY_NOT_FOUND);
         }
 
-        Pagination pagination = buildPagination(requestDto.getPage(), requestDto.getSize(), total);
+        Pagination pagination = buildPagination(requestDto.page(), requestDto.size(), total);
         log.info("페이지네이션 정보 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
                 pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
@@ -110,14 +110,14 @@ public class KpiQueryServiceImpl implements KpiQueryService {
                 ? requestDto
                 : KpiListRequestDto.builder()
                 .empNo(empNo)
-                .deptId(requestDto.getDeptId())
-                .positionId(requestDto.getPositionId())
-                .statusId(requestDto.getStatusId())
-                .startDate(requestDto.getStartDate())
-                .endDate(requestDto.getEndDate())
-                .isDeleted(requestDto.getIsDeleted())
-                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
-                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
+                .deptId(requestDto.deptId())
+                .positionId(requestDto.positionId())
+                .statusId(requestDto.statusId())
+                .startDate(requestDto.startDate())
+                .endDate(requestDto.endDate())
+                .isDeleted(requestDto.isDeleted())
+                .page(requestDto.page() != null ? requestDto.page() : 1)
+                .size(requestDto.size() != null ? requestDto.size() : 10)
                 .build();
 
         log.info("최종적으로 결정된 KPI 요청  필터 - resolved={}", resolved);
@@ -134,14 +134,14 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
         KpiListRequestDto resolved = KpiListRequestDto.builder()
                 .empNo(empNo)
-                .deptId(requestDto.getDeptId())
-                .positionId(requestDto.getPositionId())
-                .statusId(requestDto.getStatusId())
-                .startDate(requestDto.getStartDate())
-                .endDate(requestDto.getEndDate())
-                .isDeleted(requestDto.getIsDeleted())
-                .page(requestDto.getPage() != null ? requestDto.getPage() : 1)
-                .size(requestDto.getSize() != null ? requestDto.getSize() : 10)
+                .deptId(requestDto.deptId())
+                .positionId(requestDto.positionId())
+                .statusId(requestDto.statusId())
+                .startDate(requestDto.startDate())
+                .endDate(requestDto.endDate())
+                .isDeleted(requestDto.isDeleted())
+                .page(requestDto.page() != null ? requestDto.page() : 1)
+                .size(requestDto.size() != null ? requestDto.size() : 10)
                 .build();
 
         log.info("최종적으로 결정된 KPI 요청 필터 - resolved={}", resolved);

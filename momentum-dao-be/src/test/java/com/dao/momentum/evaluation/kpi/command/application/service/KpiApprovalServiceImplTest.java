@@ -75,9 +75,9 @@ class KpiApprovalServiceImplTest {
             KpiApprovalRequest req = new KpiApprovalRequest(true, null);
             KpiApprovalResponse res = service.approveKpi(managerId, kpiId, req);
 
-            assertThat(res.getKpiId()).isEqualTo(kpiId);
-            assertThat(res.getStatus()).isEqualTo(Status.ACCEPTED.name());
-            assertThat(res.getMessage()).contains("승인");
+            assertThat(res.kpiId()).isEqualTo(kpiId);
+            assertThat(res.status()).isEqualTo(Status.ACCEPTED.name());
+            assertThat(res.message()).contains("승인");
         }
 
         @Test
@@ -89,9 +89,9 @@ class KpiApprovalServiceImplTest {
             KpiApprovalRequest req = new KpiApprovalRequest(false, "목표 불명확");
             KpiApprovalResponse res = service.approveKpi(managerId, kpiId, req);
 
-            assertThat(res.getKpiId()).isEqualTo(kpiId);
-            assertThat(res.getStatus()).isEqualTo(Status.REJECTED.name());
-            assertThat(res.getMessage()).contains("반려");
+            assertThat(res.kpiId()).isEqualTo(kpiId);
+            assertThat(res.status()).isEqualTo(Status.REJECTED.name());
+            assertThat(res.message()).contains("반려");
         }
 
         @Test
@@ -136,9 +136,9 @@ class KpiApprovalServiceImplTest {
             KpiCancelApprovalRequest req = new KpiCancelApprovalRequest(true, null);
             KpiApprovalResponse res = service.approveCancelRequest(managerId, kpiId, req);
 
-            assertThat(res.getKpiId()).isEqualTo(kpiId);
-            assertThat(res.getStatus()).isEqualTo(Status.ACCEPTED.name());
-            assertThat(res.getMessage()).contains("취소가 승인");
+            assertThat(res.kpiId()).isEqualTo(kpiId);
+            assertThat(res.status()).isEqualTo(Status.ACCEPTED.name());
+            assertThat(res.message()).contains("취소가 승인");
         }
 
         @Test
@@ -150,9 +150,9 @@ class KpiApprovalServiceImplTest {
             KpiCancelApprovalRequest req = new KpiCancelApprovalRequest(false, "사유 입력됨");
             KpiApprovalResponse res = service.approveCancelRequest(managerId, kpiId, req);
 
-            assertThat(res.getKpiId()).isEqualTo(kpiId);
-            assertThat(res.getStatus()).isEqualTo(Status.ACCEPTED.name());
-            assertThat(res.getMessage()).contains("취소가 반려");
+            assertThat(res.kpiId()).isEqualTo(kpiId);
+            assertThat(res.status()).isEqualTo(Status.ACCEPTED.name());
+            assertThat(res.message()).contains("취소가 반려");
         }
 
         @Test

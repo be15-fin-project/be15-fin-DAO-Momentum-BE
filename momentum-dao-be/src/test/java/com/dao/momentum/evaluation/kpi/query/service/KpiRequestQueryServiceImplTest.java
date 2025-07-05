@@ -68,8 +68,8 @@ class KpiRequestQueryServiceImplTest {
 
         // then
         assertNotNull(result);
-        assertEquals(1, result.getContent().size());
-        assertEquals(1, result.getPagination().getTotalItems());
+        assertEquals(1, result.content().size());
+        assertEquals(1, result.pagination().getTotalItems());
 
         verify(kpiRequestMapper, times(1)).countKpiRequests(any());
         verify(kpiRequestMapper, times(1)).findKpiRequests(any());

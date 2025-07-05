@@ -113,7 +113,7 @@
         </if>
 
         ORDER BY k.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
     <select id="countKpiRequests" resultType="int">

@@ -77,7 +77,7 @@ public class KpiCommandServiceImpl implements KpiCommandService {
     @Override
     @Transactional
     public KpiProgressUpdateResponse updateProgress(Long empId, Long kpiId, KpiProgressUpdateRequest request) {
-        log.info("[KpiCommandServiceImpl] updateProgress() 호출 시작 - empId={}, kpiId={}, progress={}", empId, kpiId, request.getProgress());
+        log.info("[KpiCommandServiceImpl] updateProgress() 호출 시작 - empId={}, kpiId={}, progress={}", empId, kpiId, request.progress());
 
         Kpi kpi = kpiRepository.findById(kpiId)
                 .orElseThrow(() -> {
@@ -90,12 +90,12 @@ public class KpiCommandServiceImpl implements KpiCommandService {
             throw new KpiException(ErrorCode.KPI_REQUEST_FORBIDDEN);
         }
 
-        if (request.getProgress() < 0 || request.getProgress() > 100) {
-            log.error("잘못된 진척도 값 - kpiId={}, progress={}", kpiId, request.getProgress());
+        if (request.progress() < 0 || request.progress() > 100) {
+            log.error("잘못된 진척도 값 - kpiId={}, progress={}", kpiId, request.progress());
             throw new KpiException(ErrorCode.KPI_EDIT_FORBIDDEN);
         }
 
-        kpi.updateProgress(request.getProgress());
+        kpi.updateProgress(request.progress());
         log.info("KPI 진척도 업데이트 완료 - kpiId={}, newProgress={}", kpiId, kpi.getKpiProgress());
 
         return KpiProgressUpdateResponse.builder()

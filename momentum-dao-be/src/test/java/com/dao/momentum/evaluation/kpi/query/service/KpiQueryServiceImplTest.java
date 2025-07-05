@@ -43,8 +43,8 @@ class KpiQueryServiceImplTest {
         KpiListResultDto result = kpiQueryService.getKpiList(requestDto);
 
         assertNotNull(result);
-        assertEquals(1, result.getPagination().getTotalItems());
-        assertEquals(1, result.getContent().size());
+        assertEquals(1, result.pagination().getTotalItems());
+        assertEquals(1, result.content().size());
     }
 
     @Test
@@ -79,7 +79,7 @@ class KpiQueryServiceImplTest {
         KpiDetailResponseDto result = kpiQueryService.getKpiDetail(kpiId);
 
         assertNotNull(result);
-        assertEquals(101L, result.getKpiId());
+        assertEquals(101L, result.kpiId());
     }
 
     @Test
@@ -112,8 +112,8 @@ class KpiQueryServiceImplTest {
         KpiEmployeeSummaryResultDto result = kpiQueryService.getEmployeeKpiSummaries(requestDto);
 
         assertNotNull(result);
-        assertEquals(1, result.getPagination().getTotalItems());
-        assertEquals(1, result.getContent().size());
+        assertEquals(1, result.pagination().getTotalItems());
+        assertEquals(1, result.content().size());
     }
 
     @Test

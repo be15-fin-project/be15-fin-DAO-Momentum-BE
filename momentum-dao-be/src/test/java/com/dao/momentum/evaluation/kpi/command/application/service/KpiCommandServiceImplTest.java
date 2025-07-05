@@ -58,15 +58,16 @@ class KpiCommandServiceImplTest {
     }
 
     private KpiCreateRequest createRequest() {
-        KpiCreateRequest request = new KpiCreateRequest();
-        setField(request, "goal", "분기 매출 10억 달성");
-        setField(request, "goalValue", 1_000_000_000);
-        setField(request, "kpiProgress", 0);
-        setField(request, "progress25", "계약 건수 5건");
-        setField(request, "progress50", "계약 건수 10건");
-        setField(request, "progress75", "계약 건수 15건");
-        setField(request, "progress100", "계약 건수 20건");
-        setField(request, "deadline", LocalDate.of(2025, 12, 31));
+        KpiCreateRequest request = KpiCreateRequest.builder()
+                .goal("분기 매출 10억 달성")
+                .goalValue(1_000_000_000)
+                .kpiProgress(0)
+                .progress25("계약 건수 5건")
+                .progress50("계약 건수 10건")
+                .progress75("계약 건수 15건")
+                .progress100("계약 건수 20건")
+                .deadline(LocalDate.of(2025, 12, 31))
+                .build();
         return request;
     }
 
@@ -93,8 +94,8 @@ class KpiCommandServiceImplTest {
         KpiCreateResponse response = service.createKpi(empId, dto);
 
         assertThat(response).isNotNull();
-        assertThat(response.getKpiId()).isEqualTo(kpiId);
-        assertThat(response.getMessage()).contains("성공적으로 생성");
+        assertThat(response.kpiId()).isEqualTo(kpiId);
+        assertThat(response.message()).contains("성공적으로 생성");
         verify(kpiRepository).save(any(Kpi.class));
     }
 
@@ -108,8 +109,8 @@ class KpiCommandServiceImplTest {
         CancelKpiResponse response = service.cancelKpi(empId, kpiId, reason);
 
         assertThat(response).isNotNull();
-        assertThat(response.getKpiId()).isEqualTo(kpiId);
-        assertThat(response.getMessage()).contains("성공적으로 취소");
+        assertThat(response.kpiId()).isEqualTo(kpiId);
+        assertThat(response.message()).contains("성공적으로 취소");
         verify(kpiRepository).save(kpi);
     }
 
@@ -176,14 +177,15 @@ class KpiCommandServiceImplTest {
         Kpi kpi = mockKpi(30, empId);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(75);
+        KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                .progress(75)
+                .build();
 
         KpiProgressUpdateResponse res = service.updateProgress(empId, kpiId, req);
 
-        assertEquals(kpiId, res.getKpiId());
-        assertEquals(75, res.getProgress());
-        assertEquals("KPI 진척도가 성공적으로 업데이트되었습니다.", res.getMessage()); // ✔️ 핵심 수정
+        assertEquals(kpiId, res.kpiId());
+        assertEquals(75, res.progress());
+        assertEquals("KPI 진척도가 성공적으로 업데이트되었습니다.", res.message()); // ✔️ 핵심 수정
     }
 
     @Test
@@ -192,8 +194,9 @@ class KpiCommandServiceImplTest {
         Kpi kpi = mockKpi(0, empId);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(-10);
+        KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                .progress(-10)
+                .build();
 
         KpiException ex = assertThrows(KpiException.class, () ->
                 service.updateProgress(empId, kpiId, req)
@@ -207,8 +210,9 @@ class KpiCommandServiceImplTest {
         Kpi kpi = mockKpi(0, empId);
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(150);
+        KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                .progress(150)
+                .build();
 
         KpiException ex = assertThrows(KpiException.class, () ->
                 service.updateProgress(empId, kpiId, req)
@@ -222,8 +226,9 @@ class KpiCommandServiceImplTest {
         Kpi kpi = mockKpi(2, 999L); // 다른 사원이 소유
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(50);
+        KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                .progress(50)
+                .build();
 
         KpiException ex = assertThrows(KpiException.class, () ->
                 service.updateProgress(empId, kpiId, req)
@@ -236,8 +241,9 @@ class KpiCommandServiceImplTest {
     void updateProgress_notFound() {
         when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(60);
+        KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                .progress(60)
+                .build();
 
         KpiException ex = assertThrows(KpiException.class, () ->
                 service.updateProgress(empId, kpiId, req)

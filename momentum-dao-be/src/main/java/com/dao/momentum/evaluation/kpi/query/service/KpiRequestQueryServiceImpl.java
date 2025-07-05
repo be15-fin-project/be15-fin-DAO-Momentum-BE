@@ -30,13 +30,13 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
         // 요청 조건 업데이트
         KpiRequestListRequestDto updatedDto = KpiRequestListRequestDto.builder()
                 .requesterEmpId(requesterEmpId)
-                .statusId(requestDto.getStatusId())
-                .completed(requestDto.getCompleted())
-                .empNo(requestDto.getEmpNo())
-                .startDate(requestDto.getStartDate())
-                .endDate(requestDto.getEndDate())
-                .page(requestDto.getPage())
-                .size(requestDto.getSize())
+                .statusId(requestDto.statusId())
+                .completed(requestDto.completed())
+                .empNo(requestDto.empNo())
+                .startDate(requestDto.startDate())
+                .endDate(requestDto.endDate())
+                .page(requestDto.page())
+                .size(requestDto.size())
                 .build();
 
         log.info("KPI 요청 목록 조회 조건 업데이트 완료 - updatedDto={}", updatedDto);
@@ -55,9 +55,9 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
         }
 
         // 3) 페이지네이션 계산
-        int totalPage = (int) Math.ceil((double) total / requestDto.getSize());
+        int totalPage = (int) Math.ceil((double) total / requestDto.size());
         Pagination pagination = Pagination.builder()
-                .currentPage(requestDto.getPage())
+                .currentPage(requestDto.page())
                 .totalPage(totalPage)
                 .totalItems(total)
                 .build();

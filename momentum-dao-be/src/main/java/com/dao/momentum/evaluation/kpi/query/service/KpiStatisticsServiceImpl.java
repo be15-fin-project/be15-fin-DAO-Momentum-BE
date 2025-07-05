@@ -48,18 +48,18 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     @Override
     @Transactional(readOnly = true)
     public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
-        int year = (requestDto.getYear() != null) ? requestDto.getYear() : LocalDate.now().getYear();
+        int year = (requestDto.year() != null) ? requestDto.year() : LocalDate.now().getYear();
 
         // 요청 DTO 업데이트
         KpiTimeseriesRequestDto updatedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empNo(requestDto.getEmpNo())
-                .deptId(requestDto.getDeptId())
-                .positionId(requestDto.getPositionId())
+                .empNo(requestDto.empNo())
+                .deptId(requestDto.deptId())
+                .positionId(requestDto.positionId())
                 .build();
 
         log.info("KPI 시계열 통계 요청 DTO - year={}, empNo={}, deptId={}, positionId={}",
-                requestDto.getYear(), requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getPositionId());
+                requestDto.year(), requestDto.empNo(), requestDto.deptId(), requestDto.positionId());
 
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
 
@@ -80,15 +80,15 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         boolean isPrivileged = hasPrivilegedRole();
         log.info("사용자의 권한 여부 - isPrivileged={}", isPrivileged);
 
-        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
+        String empNo = isPrivileged ? dto.empNo() : employeeRepository.findEmpNoByEmpId(empId);
 
         KpiStatisticsRequestDto resolvedDto = isPrivileged
                 ? dto
                 : KpiStatisticsRequestDto.builder()
-                .year(dto.getYear())
-                .month(dto.getMonth())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .year(dto.year())
+                .month(dto.month())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .empNo(empNo)
                 .build();
 
@@ -102,21 +102,21 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         log.info("[KpiStatisticsServiceImpl] getTimeseriesWithAccessControl() 호출 시작 - empId={}, dto={}", empId, dto);
 
         boolean isPrivileged = hasPrivilegedRole();
-        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
-        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
+        int year = (dto.year() != null) ? dto.year() : LocalDate.now().getYear();
+        String empNo = isPrivileged ? dto.empNo() : employeeRepository.findEmpNoByEmpId(empId);
 
         KpiTimeseriesRequestDto resolvedDto = isPrivileged
                 ? KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empNo(dto.getEmpNo())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .empNo(dto.empNo())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build()
                 : KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build();
 
         log.info("최종적으로 결정된 KPI 시계열 통계 요청 필터 - resolvedDto={}", resolvedDto);
@@ -131,10 +131,10 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiStatisticsRequestDto resolvedDto = KpiStatisticsRequestDto.builder()
-                .year(dto.getYear())
-                .month(dto.getMonth())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .year(dto.year())
+                .month(dto.month())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .empNo(empNo)
                 .build();
 
@@ -147,14 +147,14 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     public KpiTimeseriesResponseDto getTimeseriesWithControl(KpiTimeseriesRequestDto dto, Long empId) {
         log.info("[KpiStatisticsServiceImpl] getTimeseriesWithControl() 호출 시작 - empId={}, dto={}", empId, dto);
 
-        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
+        int year = (dto.year() != null) ? dto.year() : LocalDate.now().getYear();
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiTimeseriesRequestDto resolvedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build();
 
         log.info("최종적으로 결정된 KPI 시계열 통계 요청 필터 - resolvedDto={}", resolvedDto);

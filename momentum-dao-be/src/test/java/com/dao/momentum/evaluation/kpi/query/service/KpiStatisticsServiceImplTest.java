@@ -53,7 +53,7 @@ class KpiStatisticsServiceImplTest {
         KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
 
         assertThat(result).isNotNull();
-        assertThat(result.getTotalKpiCount()).isEqualTo(12);
+        assertThat(result.totalKpiCount()).isEqualTo(12);
     }
 
     @Test
@@ -86,8 +86,8 @@ class KpiStatisticsServiceImplTest {
 
         KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
 
-        assertThat(result.getYear()).isEqualTo(2025);
-        assertThat(result.getMonthlyStats()).hasSize(2);
+        assertThat(result.year()).isEqualTo(2025);
+        assertThat(result.monthlyStats()).hasSize(2);
     }
 
     @Test
@@ -119,7 +119,7 @@ class KpiStatisticsServiceImplTest {
         );
 
         assertThat(result).isNotNull();
-        assertThat(result.getTotalKpiCount()).isEqualTo(6);
+        assertThat(result.totalKpiCount()).isEqualTo(6);
     }
 
     @Test
@@ -135,7 +135,7 @@ class KpiStatisticsServiceImplTest {
                 100L
         );
 
-        assertThat(result.getMonthlyStats()).hasSize(1);
+        assertThat(result.monthlyStats()).hasSize(1);
     }
 
     @Test
@@ -151,7 +151,7 @@ class KpiStatisticsServiceImplTest {
 
         KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithAccessControl(dto, 101L);
 
-        assertThat(result.getTotalKpiCount()).isEqualTo(3);
+        assertThat(result.totalKpiCount()).isEqualTo(3);
     }
 
     @Test
@@ -168,7 +168,7 @@ class KpiStatisticsServiceImplTest {
 
         KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(dto, 101L);
 
-        assertThat(result.getMonthlyStats()).hasSize(1);
+        assertThat(result.monthlyStats()).hasSize(1);
     }
 
     private void setSecurityContextWithRoles(String... roles) {
