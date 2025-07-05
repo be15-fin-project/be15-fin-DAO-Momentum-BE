@@ -21,32 +21,32 @@ public class HrRateServiceImpl implements HrRateService {
     @Override
     @Transactional
     public void create(int roundId, HrRateCreateDTO dto) {
-        log.info("[HrRateServiceImpl] create() 호출 시작 - roundId={}, dto={}", roundId, dto);
+        log.info("[HrRateServiceImpl] create() 호출 시작 - roundId={}, 요청 파라미터={}", roundId, dto);
 
         // Rate 합이 100인지 검증
-        validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+        validateRateSum(dto.rateS(), dto.rateA(), dto.rateB(), dto.rateC(), dto.rateD());
 
         HrRate rate = HrRate.builder()
                 .roundId(roundId)
-                .rateS(dto.getRateS())
-                .rateA(dto.getRateA())
-                .rateB(dto.getRateB())
-                .rateC(dto.getRateC())
-                .rateD(dto.getRateD())
+                .rateS(dto.rateS())
+                .rateA(dto.rateA())
+                .rateB(dto.rateB())
+                .rateC(dto.rateC())
+                .rateD(dto.rateD())
                 .build();
 
         hrRateRepository.save(rate);
         log.info("HR Rate 생성 완료 - roundId={}, rateS={}, rateA={}, rateB={}, rateC={}, rateD={}",
-                roundId, dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+                roundId, dto.rateS(), dto.rateA(), dto.rateB(), dto.rateC(), dto.rateD());
     }
 
     @Override
     @Transactional
     public void update(Integer roundId, HrRateUpdateDTO dto) {
-        log.info("[HrRateServiceImpl] update() 호출 시작 - roundId={}, dto={}", roundId, dto);
+        log.info("[HrRateServiceImpl] update() 호출 시작 - roundId={}, 요청 파라미터={}", roundId, dto);
 
         // Rate 합이 100인지 검증
-        validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+        validateRateSum(dto.rateS(), dto.rateA(), dto.rateB(), dto.rateC(), dto.rateD());
 
         HrRate rate = hrRateRepository.findByRoundId(roundId)
                 .orElseThrow(() -> {
@@ -54,11 +54,9 @@ public class HrRateServiceImpl implements HrRateService {
                     return new HrException(ErrorCode.HR_RATE_NOT_FOUND);
                 });
 
-        rate.update(dto.getRateS(), dto.getRateA(), dto.getRateB(),
-                dto.getRateC(), dto.getRateD());
-
+        rate.update(dto.rateS(), dto.rateA(), dto.rateB(), dto.rateC(), dto.rateD());
         log.info("HR Rate 수정 완료 - roundId={}, rateS={}, rateA={}, rateB={}, rateC={}, rateD={}",
-                roundId, dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
+                roundId, dto.rateS(), dto.rateA(), dto.rateB(), dto.rateC(), dto.rateD());
     }
 
     private void validateRateSum(int s, int a, int b, int c, int d) {
@@ -73,11 +71,10 @@ public class HrRateServiceImpl implements HrRateService {
     @Override
     @Transactional
     public void deleteByRoundId(int roundId) {
-        log.info("[HrRateServiceImpl] deleteByRoundId() 호출 시작 - roundId={}", roundId);
+        log.info("[HrRateServiceImpl] deleteByRoundId() 호출 시작 - roundId={}, 요청 파라미터={}", roundId, roundId);
 
         hrRateRepository.deleteByRoundId(roundId);
 
         log.info("HR Rate 삭제 완료 - roundId={}", roundId);
     }
-
 }

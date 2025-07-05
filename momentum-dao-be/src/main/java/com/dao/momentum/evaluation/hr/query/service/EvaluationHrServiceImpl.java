@@ -25,7 +25,8 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
     @Override
     @Transactional(readOnly = true)
     public HrEvaluationListResultDto getHrEvaluations(long empId, MyHrEvaluationListRequestDto req) {
-        log.info("[EvaluationHrServiceImpl] getHrEvaluations() 호출 시작 - empId={}, req={}", empId, req);
+        log.info("[EvaluationHrServiceImpl] getHrEvaluations() 호출 시작 - empId={}, 요청 파라미터={}, 요청한 사용자 ID={}",
+                empId, req, empId);
 
         // 1) 평가 내역 조회
         List<HrEvaluationItemDto> items = mapper.findHrEvaluations(empId, req);
@@ -52,7 +53,7 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
         log.info("요인 점수 조회 완료 - factorScores.size={}", factorScores.size());
 
         // 4) 페이지네이션 정보 생성
-        Pagination pagination = buildPagination(req.getPage(), req.getSize(), total);
+        Pagination pagination = buildPagination(req.page(), total);
         log.info("페이지네이션 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
                 pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
@@ -71,7 +72,8 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
     @Override
     @Transactional(readOnly = true)
     public HrEvaluationDetailResultDto getHrEvaluationDetail(Long empId, Long resultId) {
-        log.info("[EvaluationHrServiceImpl] getHrEvaluationDetail() 호출 시작 - empId={}, resultId={}", empId, resultId);
+        log.info("[EvaluationHrServiceImpl] getHrEvaluationDetail() 호출 시작 - empId={}, resultId={}, 요청 파라미터={}, 요청한 사용자 ID={}",
+                empId, resultId, resultId, empId);
 
         // 1. 기본 정보 조회
         HrEvaluationDetailDto content = mapper.findEvaluationContent(resultId, empId);
@@ -119,7 +121,7 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
 
     // 평가 기준 정보를 조회하는 메서드 (최근 회차 기준으로 가져옴)
     public HrEvaluationCriteriaDto getEvaluationCriteria(Integer roundNo) {
-        log.info("[EvaluationHrServiceImpl] getEvaluationCriteria() 호출 시작 - roundNo={}", roundNo);
+        log.info("[EvaluationHrServiceImpl] getEvaluationCriteria() 호출 시작 - roundNo={}, 요청 파라미터={}", roundNo, roundNo);
 
         // 회차 번호가 주어지지 않으면 최신 회차로 설정
         int targetRoundNo = (roundNo != null) ? roundNo : mapper.findLatestRoundNo();
@@ -148,8 +150,8 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
     }
 
     // 페이지네이션 정보를 생성하는 메서드
-    private Pagination buildPagination(int page, int size, long total) {
-        int totalPage = (int) Math.ceil((double) total / size);
+    private Pagination buildPagination(int page, long total) {
+        int totalPage = (int) Math.ceil((double) total / 10); // 기본 페이지 사이즈 10으로 설정
         return Pagination.builder()
                 .currentPage(page)
                 .totalPage(totalPage)

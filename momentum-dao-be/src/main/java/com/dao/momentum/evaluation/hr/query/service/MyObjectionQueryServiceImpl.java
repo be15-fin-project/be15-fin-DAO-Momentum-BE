@@ -25,11 +25,11 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     // 사원의 이의 제기 목록을 조회하는 메서드
     @Override
     public MyObjectionListResultDto getMyObjections(Long empId, MyObjectionListRequestDto req) {
-        log.info("[MyObjectionQueryServiceImpl] getMyObjections() 호출 시작 - empId={}, req={}", empId, req);
+        log.info("[MyObjectionQueryServiceImpl] getMyObjections() 호출 - empId={}, req={}", empId, req);
 
         // 1) 전체 건수 조회
         long total = mapper.countMyObjections(empId, req);
-        log.info("사원의 이의 제기 총 건수 조회 완료 - total={}", total);
+        log.info("사원의 이의 제기 총 건수 조회 - total={}", total);
 
         // 2) 이의 제기 목록 조회
         List<MyObjectionRaw> rawList = mapper.findMyObjections(empId, req);
@@ -37,30 +37,25 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
             log.error("이의 제기 목록을 찾을 수 없음 - empId={}, req={}", empId, req);
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
-        log.info("이의 제기 목록 조회 완료 - rawList.size={}", rawList.size());
 
         // 3) 목록 처리 및 DTO 변환
         List<MyObjectionItemDto> content = rawList.stream()
                 .map(raw -> MyObjectionItemDto.builder()
-                        .objectionId(raw.getObjectionId())
-                        .resultId(raw.getResultId())
-                        .statusId(raw.getStatusId())
-                        .roundNo(raw.getRoundNo())
-                        .statusType(raw.getStatusType())
-                        .createdAt(raw.getCreatedAt())
-                        .overallGrade(toGrade(raw.getOverallScore()))
+                        .objectionId(raw.objectionId())
+                        .resultId(raw.resultId())
+                        .statusId(raw.statusId())
+                        .roundNo(raw.roundNo())
+                        .statusType(raw.statusType())
+                        .createdAt(raw.createdAt())
+                        .overallGrade(toGrade(raw.overallScore()))
                         .build())
                 .collect(Collectors.toList());
+        log.info("이의 제기 목록 처리 완료 - 목록 항목 수={}", content.size());
 
         // 4) 페이지네이션 정보 생성
-        int totalPage = (int) Math.ceil((double) total / req.getSize());
-        Pagination pagination = Pagination.builder()
-                .currentPage(req.getPage())
-                .totalItems(total)
-                .totalPage(totalPage)
-                .build();
-        log.info("페이지네이션 정보 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
-                pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
+        Pagination pagination = buildPagination(req.page(), total);
+
+        log.info("페이지네이션 생성 완료 - currentPage={}, totalItems={}", pagination.getCurrentPage(), pagination.getTotalItems());
 
         return new MyObjectionListResultDto(content, pagination);
     }
@@ -77,29 +72,41 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
     // 이의 제기 상세 내역을 조회하는 메서드
     @Override
     public ObjectionDetailResultDto getObjectionDetail(Long objectionId) {
-        log.info("[MyObjectionQueryServiceImpl] getObjectionDetail() 호출 시작 - objectionId={}", objectionId);
+        log.info("[MyObjectionQueryServiceImpl] getObjectionDetail() 호출 - objectionId={}", objectionId);
 
         // 1) 기본 상세 정보 조회
         ObjectionItemDto base = mapper.findObjectionDetail(objectionId);
         if (base == null) {
-            log.error("이의 제기 상세 정보를 찾을 수 없음 - objectionId={}", objectionId);
+            log.error("이의제기 상세 정보를 찾을 수 없음 - objectionId={}", objectionId);
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
-        log.info("이의 제기 기본 정보 조회 완료 - objectionId={}", objectionId);
+        log.info("이의제기 기본 정보 조회 완료 - objectionId={}", objectionId);
 
-        Long resultId = base.getResultId();
-        log.info("결과 ID 조회 완료 - resultId={}", resultId);
+        Long resultId = base.resultId();
+        log.info("결과 ID 조회 - resultId={}", resultId);
 
         // 2) 요인별 점수 조회
         List<FactorScoreDto> scores = mapper.findFactorScores(resultId);
-        log.info("요인별 점수 조회 완료 - resultId={}, scores.size={}", resultId, scores.size());
+        if (scores == null || scores.isEmpty()) {
+            log.error("요인별 점수를 찾을 수 없음 - resultId={}", resultId);
+            throw new HrException(ErrorCode.FACTOR_SCORES_NOT_FOUND);
+        }
+        log.info("요인별 점수 조회 완료 - resultId={}", resultId);
 
         // 3) 가중치 정보 조회
         WeightInfo weightInfo = mapper.findWeightInfo(resultId);
+        if (weightInfo == null) {
+            log.error("가중치 정보를 찾을 수 없음 - resultId={}", resultId);
+            throw new HrException(ErrorCode.WEIGHT_INFO_NOT_FOUND);
+        }
         log.info("가중치 정보 조회 완료 - resultId={}", resultId);
 
         // 4) 등급 비율 정보 조회
         RateInfo rateInfo = mapper.findRateInfo(resultId);
+        if (rateInfo == null) {
+            log.error("등급 비율 정보를 찾을 수 없음 - resultId={}", resultId);
+            throw new HrException(ErrorCode.RATE_INFO_NOT_FOUND);
+        }
         log.info("등급 비율 정보 조회 완료 - resultId={}", resultId);
 
         // 5) 상세 내역 조립 후 반환
@@ -109,9 +116,18 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
                 .weightInfo(weightInfo)
                 .rateInfo(rateInfo)
                 .build();
-        log.info("이의 제기 상세 조회 완료 - objectionId={}", objectionId);
+        log.info("이의제기 상세 조회 완료 - objectionId={}", objectionId);
 
         return result;
     }
 
+    // 페이지네이션 정보를 생성하는 메서드
+    private Pagination buildPagination(int page, long total) {
+        int totalPage = (int) Math.ceil((double) total / 10); // 기본 페이지 사이즈 10으로 설정
+        return Pagination.builder()
+                .currentPage(page)
+                .totalPage(totalPage)
+                .totalItems(total)
+                .build();
+    }
 }

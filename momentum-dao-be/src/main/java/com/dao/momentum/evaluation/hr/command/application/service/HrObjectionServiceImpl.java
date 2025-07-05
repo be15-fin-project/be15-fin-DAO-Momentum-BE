@@ -1,16 +1,18 @@
 package com.dao.momentum.evaluation.hr.command.application.service;
 
+
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionDeleteResponse;
+
 import com.dao.momentum.evaluation.hr.command.application.dto.request.HrObjectionCreateDto;
 import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionCreateResponse;
-import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionDeleteResponse;
 import com.dao.momentum.evaluation.hr.command.domain.aggregate.HrObjection;
 import com.dao.momentum.evaluation.hr.command.domain.repository.HrObjectionRepository;
 import com.dao.momentum.evaluation.hr.exception.HrException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -26,17 +28,18 @@ public class HrObjectionServiceImpl implements HrObjectionService {
     @Override
     @Transactional
     public HrObjectionCreateResponse create(HrObjectionCreateDto dto, Long empId) {
-        log.info("[HrObjectionServiceImpl] create() 호출 시작 - empId={}, resultId={}", empId, dto.getResultId());
+        log.info("[HrObjectionServiceImpl] create() 호출 시작 - empId={}, resultId={}, 요청 파라미터={}",
+                empId, dto.resultId(), dto);
 
         // 1. 중복 제출 방지
-        if (objectionRepository.existsByResultId(dto.getResultId())) {
-            log.error("이미 제출된 이의 제기 - resultId={}", dto.getResultId());
+        if (objectionRepository.existsByResultId(dto.resultId())) {
+            log.error("이미 제출된 이의 제기 - resultId={}", dto.resultId());
             throw new HrException(ErrorCode.ALREADY_SUBMITTED_OBJECTION);
         }
 
         // 2. 평가 결과 존재 확인
-        if (!objectionRepository.existsEvaluation(dto.getResultId())) {
-            log.error("존재하지 않는 평가 결과 - resultId={}", dto.getResultId());
+        if (!objectionRepository.existsEvaluation(dto.resultId())) {
+            log.error("존재하지 않는 평가 결과 - resultId={}", dto.resultId());
             throw new HrException(ErrorCode.EVALUATION_NOT_FOUND);
         }
 
@@ -44,7 +47,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
         HrObjection objection = HrObjection.create(dto, DEFAULT_STATUS_ID);
         HrObjection saved = objectionRepository.save(objection);
 
-        log.info("이의 제기 저장 완료 - objectionId={}, resultId={}, writerId={}", saved.getObjectionId(), dto.getResultId(), empId);
+        log.info("이의 제기 저장 완료 - objectionId={}, resultId={}, writerId={}, 저장 시각={}",
+                saved.getObjectionId(), dto.resultId(), empId, LocalDateTime.now());
 
         return HrObjectionCreateResponse.builder()
                 .objectionId(saved.getObjectionId())
@@ -57,7 +61,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
     @Override
     @Transactional
     public HrObjectionDeleteResponse deleteById(Long objectionId, Long empId) {
-        log.info("[HrObjectionServiceImpl] deleteById() 호출 시작 - objectionId={}, empId={}", objectionId, empId);
+        log.info("[HrObjectionServiceImpl] deleteById() 호출 시작 - objectionId={}, empId={}, 요청 파라미터={}",
+                objectionId, empId, objectionId);
 
         HrObjection objection = objectionRepository.findById(objectionId)
                 .orElseThrow(() -> {
@@ -76,7 +81,7 @@ public class HrObjectionServiceImpl implements HrObjectionService {
         }
 
         objection.markAsDeleted();
-        log.info("이의 제기 삭제 완료 - objectionId={}", objectionId);
+        log.info("이의 제기 삭제 완료 - objectionId={}, 삭제 시각={}", objectionId, LocalDateTime.now());
 
         return HrObjectionDeleteResponse.builder()
                 .objectionId(objectionId)
@@ -87,7 +92,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
     @Override
     @Transactional
     public void approve(Long objectionId, String reason) {
-        log.info("[HrObjectionServiceImpl] approve() 호출 시작 - objectionId={}", objectionId);
+        log.info("[HrObjectionServiceImpl] approve() 호출 시작 - objectionId={}, 요청 파라미터={{}}",
+                objectionId, reason);
 
         HrObjection objection = objectionRepository.findById(objectionId)
                 .orElseThrow(() -> {
@@ -102,7 +108,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
     @Override
     @Transactional
     public void reject(Long objectionId, String rejectReason) {
-        log.info("[HrObjectionServiceImpl] reject() 호출 시작 - objectionId={}", objectionId);
+        log.info("[HrObjectionServiceImpl] reject() 호출 시작 - objectionId={}, 요청 파라미터={{}}",
+                objectionId, rejectReason);
 
         HrObjection objection = objectionRepository.findById(objectionId)
                 .orElseThrow(() -> {
@@ -117,7 +124,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
     @Override
     @Transactional
     public Long getResultIdByObjectionId(Long objectionId) {
-        log.info("[HrObjectionServiceImpl] getResultIdByObjectionId() 호출 시작 - objectionId={}", objectionId);
+        log.info("[HrObjectionServiceImpl] getResultIdByObjectionId() 호출 시작 - objectionId={}, 요청 파라미터={}",
+                objectionId, objectionId);
 
         Long resultId = objectionRepository.findResultIdByObjectionId(objectionId)
                 .orElseThrow(() -> {

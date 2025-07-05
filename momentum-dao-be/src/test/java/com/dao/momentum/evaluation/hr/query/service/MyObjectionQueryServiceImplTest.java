@@ -32,26 +32,29 @@ class MyObjectionQueryServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        req = new MyObjectionListRequestDto();
-        req.setPage(1);
-        req.setSize(10);
+        req = MyObjectionListRequestDto.builder()
+                .page(1)
+                .size(10)
+                .build();
     }
 
     @Test
     @DisplayName("정상: total>0 rawList 반환 시 MyObjectionListResultDto 생성")
     void getMyObjections_success() {
         long total = 2L;
-        MyObjectionRaw raw1 = new MyObjectionRaw();
-        raw1.setObjectionId(101L);
-        raw1.setCreatedAt("2025-06-22 17:00:00");
-        raw1.setOverallScore(95);
-        raw1.setStatusType("PENDING");
+        MyObjectionRaw raw1 = MyObjectionRaw.builder()
+                .objectionId(101L)
+                .createdAt("2025-06-22 17:00:00")
+                .overallScore(95)
+                .statusType("PENDING")
+                .build();
 
-        MyObjectionRaw raw2 = new MyObjectionRaw();
-        raw2.setObjectionId(102L);
-        raw2.setCreatedAt("2025-06-21 15:30:00");
-        raw2.setOverallScore(82);
-        raw2.setStatusType("APPROVED");
+        MyObjectionRaw raw2 = MyObjectionRaw.builder()
+                .objectionId(102L)
+                .createdAt("025-06-21 15:30:00")
+                .overallScore(82)
+                .statusType("APPROVED")
+                .build();
 
         List<MyObjectionRaw> rawList = List.of(raw1, raw2);
 
@@ -76,7 +79,7 @@ class MyObjectionQueryServiceImplTest {
         Pagination p = result.getPagination();
         assertThat(p.getCurrentPage()).isEqualTo(1);
         assertThat(p.getTotalItems()).isEqualTo(total);
-        assertThat(p.getTotalPage()).isEqualTo((int) Math.ceil((double) total / req.getSize()));
+        assertThat(p.getTotalPage()).isEqualTo((int) Math.ceil((double) total / req.size()));
     }
 
     @Test

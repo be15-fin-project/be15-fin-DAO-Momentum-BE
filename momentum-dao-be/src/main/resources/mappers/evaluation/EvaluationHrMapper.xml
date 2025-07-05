@@ -83,7 +83,7 @@
         ON o.result_id = g.result_id
         AND o.is_deleted = 'N'
         ORDER BY g.created_at DESC
-        LIMIT #{req.offset}, #{req.size}
+        LIMIT #{req.getOffset}, #{req.size}
 
     </select>
 

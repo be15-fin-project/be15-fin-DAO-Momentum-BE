@@ -21,35 +21,36 @@ public class HrWeightServiceImpl implements HrWeightService {
     @Override
     @Transactional
     public void create(int roundId, HrWeightCreateDTO dto) {
-        log.info("[HrWeightServiceImpl] create() 호출 시작 - roundId={}, dto={}", roundId, dto);
+        log.info("[HrWeightServiceImpl] create() 호출 시작 - roundId={}, dto={}, 요청 파라미터={}", roundId, dto, dto);
 
         // 가중치 합 검증
-        validateWeightSum(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
-                dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+        validateWeightSum(dto.performWt(), dto.teamWt(), dto.attitudeWt(),
+                dto.growthWt(), dto.engagementWt(), dto.resultWt());
 
         HrWeight weight = HrWeight.builder()
                 .roundId(roundId)
-                .performWt(dto.getPerformWt())
-                .teamWt(dto.getTeamWt())
-                .attitudeWt(dto.getAttitudeWt())
-                .growthWt(dto.getGrowthWt())
-                .engagementWt(dto.getEngagementWt())
-                .resultWt(dto.getResultWt())
+                .performWt(dto.performWt())
+                .teamWt(dto.teamWt())
+                .attitudeWt(dto.attitudeWt())
+                .growthWt(dto.growthWt())
+                .engagementWt(dto.engagementWt())
+                .resultWt(dto.resultWt())
                 .build();
 
         hrWeightRepository.save(weight);
         log.info("HR Weight 생성 완료 - roundId={}, performWt={}, teamWt={}, attitudeWt={}, growthWt={}, engagementWt={}, resultWt={}",
-                roundId, dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(), dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+                roundId, dto.performWt(), dto.teamWt(), dto.attitudeWt(), dto.growthWt(), dto.engagementWt(), dto.resultWt());
     }
 
     @Override
     @Transactional
     public void update(Integer roundId, HrWeightUpdateDTO dto) {
-        log.info("[HrWeightServiceImpl] update() 호출 시작 - roundId={}, dto={}", roundId, dto);
+        log.info("[HrWeightServiceImpl] update() 호출 시작 - roundId={}, dto={}, 요청 파라미터={}",
+                roundId, dto, dto);
 
         // 가중치 합 검증
-        validateWeightSum(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
-                dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+        validateWeightSum(dto.performWt(), dto.teamWt(), dto.attitudeWt(),
+                dto.growthWt(), dto.engagementWt(), dto.resultWt());
 
         HrWeight weight = hrWeightRepository.findByRoundId(roundId)
                 .orElseThrow(() -> {
@@ -57,11 +58,11 @@ public class HrWeightServiceImpl implements HrWeightService {
                     return new HrException(ErrorCode.HR_WEIGHT_NOT_FOUND);
                 });
 
-        weight.update(dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(),
-                dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+        weight.update(dto.performWt(), dto.teamWt(), dto.attitudeWt(),
+                dto.growthWt(), dto.engagementWt(), dto.resultWt());
 
         log.info("HR Weight 수정 완료 - roundId={}, performWt={}, teamWt={}, attitudeWt={}, growthWt={}, engagementWt={}, resultWt={}",
-                roundId, dto.getPerformWt(), dto.getTeamWt(), dto.getAttitudeWt(), dto.getGrowthWt(), dto.getEngagementWt(), dto.getResultWt());
+                roundId, dto.performWt(), dto.teamWt(), dto.attitudeWt(), dto.growthWt(), dto.engagementWt(), dto.resultWt());
     }
 
     private void validateWeightSum(int perform, int team, int attitude,
@@ -78,7 +79,7 @@ public class HrWeightServiceImpl implements HrWeightService {
     @Override
     @Transactional
     public void deleteByRoundId(int roundId) {
-        log.info("[HrWeightServiceImpl] deleteByRoundId() 호출 시작 - roundId={}", roundId);
+        log.info("[HrWeightServiceImpl] deleteByRoundId() 호출 시작 - roundId={}, 요청 파라미터={}", roundId, roundId);
 
         hrWeightRepository.deleteByRoundId(roundId);
         log.info("HR Weight 삭제 완료 - roundId={}", roundId);

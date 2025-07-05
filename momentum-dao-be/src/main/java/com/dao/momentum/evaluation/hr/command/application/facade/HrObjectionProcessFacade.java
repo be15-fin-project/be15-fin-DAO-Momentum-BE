@@ -32,7 +32,7 @@ public class HrObjectionProcessFacade {
 
     @Transactional
     public HrObjectionProcessResponseDto processObjection(Long empId, HrObjectionProcessRequestDto request) {
-        Long objectionId = request.getObjectionId();
+        Long objectionId = request.objectionId();
         log.info("[HrObjectionProcessFacade] processObjection() 호출 시작 - empId={}, objectionId={}", empId, objectionId);
 
         // Step 0. objectionId → resultId
@@ -47,10 +47,10 @@ public class HrObjectionProcessFacade {
         }
         log.info("평가자 본인 인증 완료 - empId={}, evaluatorEmpId={}", empId, evaluatorEmpId);
 
-        if (Boolean.FALSE.equals(request.getApproved())) {
+        if (Boolean.FALSE.equals(request.approved())) {
             // 반려 처리
-            log.info("이의제기 반려 처리 - objectionId={}, rejectReason={}", objectionId, request.getRejectReason());
-            hrObjectionService.reject(objectionId, request.getRejectReason());
+            log.info("이의제기 반려 처리 - objectionId={}, rejectReason={}", objectionId, request.rejectReason());
+            hrObjectionService.reject(objectionId, request.rejectReason());
             return HrObjectionProcessResponseDto.builder()
                     .objectionId(objectionId)
                     .result("반려")
@@ -63,12 +63,14 @@ public class HrObjectionProcessFacade {
         log.info("resultId={}에 해당하는 roundId={}", resultId, roundId);
 
         // Step 3: 요인별 점수 저장
-        Map<Integer, Integer> scoreMap = request.getFactorScores().stream()
-                .collect(Collectors.toMap(EvalFactorScoreDto::getPropertyId, EvalFactorScoreDto::getScore));
+        Map<Integer, Integer> scoreMap = request.factorScores().stream()
+                .collect(Collectors.toMap(EvalFactorScoreDto::propertyId, EvalFactorScoreDto::score));
 
-        log.info("요인별 점수 저장 - resultId={}, scoreMap={}", resultId, scoreMap);
+        log.info("요인별 점수 저장 시작 - resultId={}, scoreMap={}", resultId, scoreMap);
 
         evalScoreService.deleteByResultId(resultId);
+        log.info("기존 점수 삭제 완료 - resultId={}", resultId);
+
         scoreMap.forEach((propertyId, score) -> {
             evalScoreService.save(EvalFactorScoreDto.toEntity(resultId, propertyId, score));
             log.info("점수 저장 완료 - resultId={}, propertyId={}, score={}", resultId, propertyId, score);
@@ -83,11 +85,11 @@ public class HrObjectionProcessFacade {
         log.info("가중치 기반 종합 점수 계산 완료 - finalScore={}", finalScore);
 
         // Step 5: 평가 결과 반영
-        evalResponseService.updateFinalScoreAndReason(resultId, finalScore, request.getRejectReason());
+        evalResponseService.updateFinalScoreAndReason(resultId, finalScore, request.rejectReason());
         log.info("평가 결과 반영 완료 - resultId={}, finalScore={}", resultId, finalScore);
 
         // Step 6: 이의제기 승인 처리
-        hrObjectionService.approve(objectionId, request.getRejectReason());
+        hrObjectionService.approve(objectionId, request.rejectReason());
         log.info("이의제기 승인 처리 완료 - objectionId={}", objectionId);
 
         return HrObjectionProcessResponseDto.builder()

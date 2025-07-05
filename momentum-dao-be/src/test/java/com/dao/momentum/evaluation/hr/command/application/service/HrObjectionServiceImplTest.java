@@ -38,8 +38,8 @@ class HrObjectionServiceImplTest {
                 .build();
         Long empId = 1001L;
 
-        given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(false);
-        given(objectionRepository.existsEvaluation(dto.getResultId())).willReturn(true);
+        given(objectionRepository.existsByResultId(dto.resultId())).willReturn(false);
+        given(objectionRepository.existsEvaluation(dto.resultId())).willReturn(true);
 
         HrObjection saved = HrObjection.builder()
                 .objectionId(10L)
@@ -61,7 +61,7 @@ class HrObjectionServiceImplTest {
                 .build();
         Long empId = 1001L;
 
-        given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(true);
+        given(objectionRepository.existsByResultId(dto.resultId())).willReturn(true);
 
         assertThatThrownBy(() -> service.create(dto, empId))
                 .isInstanceOf(HrException.class)
@@ -77,8 +77,8 @@ class HrObjectionServiceImplTest {
                 .build();
         Long empId = 1001L;
 
-        given(objectionRepository.existsByResultId(dto.getResultId())).willReturn(false);
-        given(objectionRepository.existsEvaluation(dto.getResultId())).willReturn(false);
+        given(objectionRepository.existsByResultId(dto.resultId())).willReturn(false);
+        given(objectionRepository.existsEvaluation(dto.resultId())).willReturn(false);
 
         assertThatThrownBy(() -> service.create(dto, empId))
                 .isInstanceOf(HrException.class)
@@ -104,8 +104,8 @@ class HrObjectionServiceImplTest {
         HrObjectionDeleteResponse response = service.deleteById(objectionId, empId);
 
         assertThat(response).isNotNull();
-        assertThat(response.getObjectionId()).isEqualTo(objectionId);
-        assertThat(response.getMessage()).contains("성공적으로 삭제");
+        assertThat(response.objectionId()).isEqualTo(objectionId);
+        assertThat(response.message()).contains("성공적으로 삭제");
         assertThat(objection.getIsDeleted()).isEqualTo(UseStatus.Y);
     }
 

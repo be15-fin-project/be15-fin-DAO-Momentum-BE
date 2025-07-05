@@ -29,10 +29,13 @@ class EvaluationHrServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        req = new MyHrEvaluationListRequestDto();
-        req.setPage(1);
-        req.setSize(10);
+        req = new MyHrEvaluationListRequestDto(
+                null,  // roundId (예시로 null을 전달)
+                null,  // startDate (예시로 null을 전달)
+                null,  // endDate (예시로 null을 전달)
+                1,     // page
+                10     // size
+        );
     }
 
     @Test
@@ -51,9 +54,9 @@ class EvaluationHrServiceImplTest {
 
         HrEvaluationListResultDto result = service.getHrEvaluations(1L, req);
 
-        assertThat(result.getItems()).hasSize(1);
-        assertThat(result.getItems().get(0).getResultId()).isEqualTo(1001L);
-        assertThat(result.getPagination().getTotalItems()).isEqualTo(1L);
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.items().get(0).resultId()).isEqualTo(1001L);
+        assertThat(result.pagination().getTotalItems()).isEqualTo(1L);
     }
 
     @Test
@@ -83,10 +86,10 @@ class EvaluationHrServiceImplTest {
 
         HrEvaluationDetailResultDto result = service.getHrEvaluationDetail(empId, resultId);
 
-        assertThat(result.getContent().getResultId()).isEqualTo(resultId);
-        assertThat(result.getFactorScores()).hasSize(1);
-        assertThat(result.getRateInfo().getRateS()).isEqualTo(10);
-        assertThat(result.getWeightInfo().getWeightPerform()).isEqualTo(25);
+        assertThat(result.content().resultId()).isEqualTo(resultId);
+        assertThat(result.factorScores()).hasSize(1);
+        assertThat(result.rateInfo().getRateS()).isEqualTo(10);
+        assertThat(result.weightInfo().getWeightPerform()).isEqualTo(25);
     }
 
     @Test
@@ -117,7 +120,7 @@ class EvaluationHrServiceImplTest {
 
         HrEvaluationCriteriaDto result = service.getEvaluationCriteria(null);
 
-        assertThat(result.getRateInfo().getRateA()).isEqualTo(25);
-        assertThat(result.getWeightInfo().getWeightResult()).isEqualTo(10);
+        assertThat(result.rateInfo().getRateA()).isEqualTo(25);
+        assertThat(result.weightInfo().getWeightResult()).isEqualTo(10);
     }
 }
