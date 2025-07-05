@@ -1,6 +1,5 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
-import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
@@ -29,6 +28,10 @@ class EvaluationHrServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // This will initialize the mocks in this class
+        MockitoAnnotations.openMocks(this);
+
+        // Initialize the request DTO
         req = new MyHrEvaluationListRequestDto(
                 null,  // roundId (예시로 null을 전달)
                 null,  // startDate (예시로 null을 전달)
@@ -48,12 +51,15 @@ class EvaluationHrServiceImplTest {
                 .evaluatedAt(LocalDateTime.now())
                 .build();
 
+        // Setup mock behavior
         given(mapper.findHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(List.of(item));
         given(mapper.countHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(1L);
         given(mapper.findFactorScores(1001L)).willReturn(List.of()); // 검증 대상 아님
 
+        // Call service method
         HrEvaluationListResultDto result = service.getHrEvaluations(1L, req);
 
+        // Validate results
         assertThat(result.items()).hasSize(1);
         assertThat(result.items().get(0).resultId()).isEqualTo(1001L);
         assertThat(result.pagination().getTotalItems()).isEqualTo(1L);
@@ -79,36 +85,41 @@ class EvaluationHrServiceImplTest {
                 .weightGrowth(10).weightEngagement(15).weightResult(15).build();
         FactorScoreDto score = FactorScoreDto.builder().propertyName("태도").score("B").build();
 
+        // Setup mock behavior
         given(mapper.findEvaluationContent(resultId, empId)).willReturn(content);
         given(mapper.findRateInfo(resultId)).willReturn(rate);
         given(mapper.findWeightInfo(resultId)).willReturn(weight);
         given(mapper.findFactorScores(resultId)).willReturn(List.of(score));
 
+        // Call service method
         HrEvaluationDetailResultDto result = service.getHrEvaluationDetail(empId, resultId);
 
+        // Validate results
         assertThat(result.content().resultId()).isEqualTo(resultId);
         assertThat(result.factorScores()).hasSize(1);
-        assertThat(result.rateInfo().getRateS()).isEqualTo(10);
-        assertThat(result.weightInfo().getWeightPerform()).isEqualTo(25);
+        assertThat(result.rateInfo().rateS()).isEqualTo(10);
+        assertThat(result.weightInfo().weightPerform()).isEqualTo(25);
     }
 
     @Test
     @DisplayName("getHrEvaluationDetail: 조회 결과 없으면 예외 발생")
     void getHrEvaluationDetail_notFound_throws() {
+        // Setup mock behavior
         given(mapper.findEvaluationContent(1001L, 1L)).willReturn(null);
 
+        // Call service method and validate exception
         assertThatThrownBy(() -> service.getHrEvaluationDetail(1L, 1001L))
                 .isInstanceOf(HrException.class)
                 .satisfies(e -> {
                     HrException ex = (HrException) e;
                     assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.HR_EVALUATION_NOT_FOUND);
                 });
-
     }
 
     @Test
     @DisplayName("getEvaluationCriteria: 회차 없는 경우 최신 회차로 조회")
     void getEvaluationCriteria_nullRoundNo_returnsLatest() {
+        // Setup mock behavior
         given(mapper.findLatestRoundNo()).willReturn(5);
         given(mapper.findRateInfoByRoundNo(5)).willReturn(
                 RateInfo.builder().rateS(10).rateA(25).rateB(30).rateC(20).rateD(15).build()
@@ -118,9 +129,11 @@ class EvaluationHrServiceImplTest {
                         .weightGrowth(20).weightEngagement(10).weightResult(10).build()
         );
 
+        // Call service method
         HrEvaluationCriteriaDto result = service.getEvaluationCriteria(null);
 
-        assertThat(result.rateInfo().getRateA()).isEqualTo(25);
-        assertThat(result.weightInfo().getWeightResult()).isEqualTo(10);
+        // Validate results
+        assertThat(result.rateInfo().rateA()).isEqualTo(25);
+        assertThat(result.weightInfo().weightResult()).isEqualTo(10);
     }
 }

@@ -43,9 +43,9 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
         // 3) 각 평가별 요인 점수 조회 및 합치기
         List<FactorScoreDto> factorScores = new ArrayList<>();
         for (HrEvaluationItemDto item : items) {
-            List<FactorScoreDto> itemFactorScores = mapper.findFactorScores(item.getResultId());
+            List<FactorScoreDto> itemFactorScores = mapper.findFactorScores(item.resultId());
             if (itemFactorScores == null) {
-                log.error("요인 점수를 찾을 수 없음 - resultId={}", item.getResultId());
+                log.error("요인 점수를 찾을 수 없음 - resultId={}", item.resultId());
                 throw new HrException(ErrorCode.FACTOR_SCORES_NOT_FOUND);
             }
             factorScores.addAll(itemFactorScores);

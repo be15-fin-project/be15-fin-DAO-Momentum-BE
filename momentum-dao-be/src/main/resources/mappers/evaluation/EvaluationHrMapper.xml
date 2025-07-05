@@ -71,12 +71,12 @@
         )
         SELECT
             g.round_no      AS round_no,
+            g.result_id     AS resultId,
             g.overall_grade AS overall_grade,
             g.created_at    AS evaluated_at,
-            g.result_id     AS result_id,
             CASE
-                WHEN o.objection_id IS NOT NULL THEN TRUE
-                ELSE FALSE
+            WHEN o.objection_id IS NOT NULL THEN TRUE
+            ELSE FALSE
             END            AS objectionSubmitted
         FROM graded g
         LEFT JOIN hr_objection o
@@ -86,6 +86,7 @@
         LIMIT #{req.getOffset}, #{req.size}
 
     </select>
+
 
     <!-- 2) 전체 건수 조회 -->
     <select id="countHrEvaluations"

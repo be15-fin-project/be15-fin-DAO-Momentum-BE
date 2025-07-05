@@ -63,20 +63,20 @@ class MyObjectionQueryServiceImplTest {
 
         MyObjectionListResultDto result = service.getMyObjections(1L, req);
 
-        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.content()).hasSize(2);
 
-        MyObjectionItemDto item1 = result.getContent().get(0);
-        assertThat(item1.getObjectionId()).isEqualTo(101L);
-        assertThat(item1.getCreatedAt()).isEqualTo("2025-06-22 17:00:00");
-        assertThat(item1.getOverallGrade()).isEqualTo("S");
-        assertThat(item1.getStatusType()).isEqualTo("PENDING");
+        MyObjectionItemDto item1 = result.content().get(0);
+        assertThat(item1.objectionId()).isEqualTo(101L);
+        assertThat(item1.createdAt()).isEqualTo("2025-06-22 17:00:00");
+        assertThat(item1.overallGrade()).isEqualTo("S");
+        assertThat(item1.statusType()).isEqualTo("PENDING");
 
-        MyObjectionItemDto item2 = result.getContent().get(1);
-        assertThat(item2.getObjectionId()).isEqualTo(102L);
-        assertThat(item2.getOverallGrade()).isEqualTo("B");
-        assertThat(item2.getStatusType()).isEqualTo("APPROVED");
+        MyObjectionItemDto item2 = result.content().get(1);
+        assertThat(item2.objectionId()).isEqualTo(102L);
+        assertThat(item2.overallGrade()).isEqualTo("B");
+        assertThat(item2.statusType()).isEqualTo("APPROVED");
 
-        Pagination p = result.getPagination();
+        Pagination p = result.pagination();
         assertThat(p.getCurrentPage()).isEqualTo(1);
         assertThat(p.getTotalItems()).isEqualTo(total);
         assertThat(p.getTotalPage()).isEqualTo((int) Math.ceil((double) total / req.size()));
@@ -141,22 +141,22 @@ class MyObjectionQueryServiceImplTest {
         ObjectionDetailResultDto dto = service.getObjectionDetail(5001L);
 
         // itemDto 확인
-        ObjectionItemDto got = dto.getItemDto();
-        assertThat(got.getObjectionId()).isEqualTo(5001L);
-        assertThat(got.getResultId()).isEqualTo(2001L);
+        ObjectionItemDto got = dto.itemDto();
+        assertThat(got.objectionId()).isEqualTo(5001L);
+        assertThat(got.resultId()).isEqualTo(2001L);
 
         // 요인별 점수
-        assertThat(dto.getFactorScores()).hasSize(2);
-        assertThat(dto.getFactorScores().get(0).getPropertyName()).isEqualTo("커뮤니케이션");
-        assertThat(dto.getFactorScores().get(0).getScore()).isEqualTo("A");
+        assertThat(dto.factorScores()).hasSize(2);
+        assertThat(dto.factorScores().get(0).propertyName()).isEqualTo("커뮤니케이션");
+        assertThat(dto.factorScores().get(0).score()).isEqualTo("A");
 
         // 가중치
-        assertThat(dto.getWeightInfo().getWeightPerform()).isEqualTo(20);
-        assertThat(dto.getWeightInfo().getWeightResult()).isEqualTo(5);
+        assertThat(dto.weightInfo().weightPerform()).isEqualTo(20);
+        assertThat(dto.weightInfo().weightResult()).isEqualTo(5);
 
         // 등급 비율
-        assertThat(dto.getRateInfo().getRateS()).isEqualTo(5);
-        assertThat(dto.getRateInfo().getRateB()).isEqualTo(35);
+        assertThat(dto.rateInfo().rateS()).isEqualTo(5);
+        assertThat(dto.rateInfo().rateB()).isEqualTo(35);
     }
 
 

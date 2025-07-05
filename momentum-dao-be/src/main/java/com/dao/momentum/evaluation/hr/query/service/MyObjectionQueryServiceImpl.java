@@ -33,7 +33,7 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
 
         // 2) 이의 제기 목록 조회
         List<MyObjectionRaw> rawList = mapper.findMyObjections(empId, req);
-        if (rawList == null || rawList.isEmpty()) {
+        if (rawList == null) {
             log.error("이의 제기 목록을 찾을 수 없음 - empId={}, req={}", empId, req);
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }

@@ -65,9 +65,9 @@ public class HrObjectionQueryServiceImpl implements HrObjectionQueryService {
             log.error("이의제기 상세 정보를 찾을 수 없음 - objectionId={}", objectionId);
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
-        log.info("이의제기 상세 정보 조회 완료 - 결과 ID: {}", base.getResultId());
+        log.info("이의제기 상세 정보 조회 완료 - 결과 ID: {}", base.resultId());
 
-        Long resultId = base.getResultId();
+        Long resultId = base.resultId();
 
         // 요인별 점수 조회
         List<FactorScoreDto> scores = mapper.findFactorScores(resultId);

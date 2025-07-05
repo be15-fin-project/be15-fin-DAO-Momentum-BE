@@ -65,10 +65,10 @@ class HrObjectionQueryServiceImplTest {
             HrObjectionListResultDto result = service.getObjections(1L, req);
 
             // then
-            assertThat(result.getList())
+            assertThat(result.list())
                     .hasSize(2)
                     .containsExactly(dto1, dto2);
-            assertThat(result.getPagination().getTotalPage()).isEqualTo(1);  // 페이지는 1이어야 함
+            assertThat(result.pagination().getTotalPage()).isEqualTo(1);  // 페이지는 1이어야 함
         }
 
         @Test
@@ -83,9 +83,9 @@ class HrObjectionQueryServiceImplTest {
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.getList()).isEmpty();
-            assertThat(result.getPagination().getTotalItems()).isZero();
-            assertThat(result.getPagination().getTotalPage()).isZero();
+            assertThat(result.list()).isEmpty();
+            assertThat(result.pagination().getTotalItems()).isZero();
+            assertThat(result.pagination().getTotalPage()).isZero();
         }
 
         private HrObjectionItemDto createHrObjectionItemDto(Long objectionId, Integer roundNo, String employeeName) {
@@ -123,10 +123,10 @@ class HrObjectionQueryServiceImplTest {
             ObjectionDetailResultDto result = service.getObjectionDetail(objectionId);
 
             // then
-            assertThat(result.getItemDto()).isEqualTo(itemDto);
-            assertThat(result.getFactorScores()).hasSize(2);
-            assertThat(result.getWeightInfo()).isEqualTo(weightInfo);
-            assertThat(result.getRateInfo()).isEqualTo(rateInfo);
+            assertThat(result.itemDto()).isEqualTo(itemDto);
+            assertThat(result.factorScores()).hasSize(2);
+            assertThat(result.weightInfo()).isEqualTo(weightInfo);
+            assertThat(result.rateInfo()).isEqualTo(rateInfo);
         }
 
         @Test
