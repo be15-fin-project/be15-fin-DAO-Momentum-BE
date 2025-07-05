@@ -143,6 +143,12 @@ public enum ErrorCode {
     HR_OBJECTION_CANNOT_MODIFY("40032", "이미 처리된 이의제기는 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_NOT_FOUND2("40033", "reult id searching failed", HttpStatus.NOT_FOUND),
     HR_EVALUATION_FORBIDDEN("40034", "인사 평가 처리 권한이 없습니다.", HttpStatus.NOT_FOUND),
+    HR_EVALUATIONS_NOT_FOUND("1001", "HR 평가 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RATE_INFO_NOT_FOUND("1003", "등급 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    WEIGHT_INFO_NOT_FOUND("1004", "가중치 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FACTOR_SCORES_NOT_FOUND("1005", "요인 점수를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_ROUND_NO("1006", "유효하지 않은 회차 번호입니다.", HttpStatus.BAD_REQUEST),
+    NO_EVALUATION_ROUND_FOUND("1007", "사용 가능한 평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),

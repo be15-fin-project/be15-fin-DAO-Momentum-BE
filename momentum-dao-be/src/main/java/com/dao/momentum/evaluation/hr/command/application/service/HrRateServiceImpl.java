@@ -7,9 +7,11 @@ import com.dao.momentum.evaluation.hr.command.domain.aggregate.HrRate;
 import com.dao.momentum.evaluation.hr.command.domain.repository.HrRateRepository;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HrRateServiceImpl implements HrRateService {
@@ -19,6 +21,9 @@ public class HrRateServiceImpl implements HrRateService {
     @Override
     @Transactional
     public void create(int roundId, HrRateCreateDTO dto) {
+        log.info("[HrRateServiceImpl] create() 호출 시작 - roundId={}, dto={}", roundId, dto);
+
+        // Rate 합이 100인지 검증
         validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
 
         HrRate rate = HrRate.builder()
@@ -31,31 +36,48 @@ public class HrRateServiceImpl implements HrRateService {
                 .build();
 
         hrRateRepository.save(rate);
+        log.info("HR Rate 생성 완료 - roundId={}, rateS={}, rateA={}, rateB={}, rateC={}, rateD={}",
+                roundId, dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
     }
 
     @Override
     @Transactional
     public void update(Integer roundId, HrRateUpdateDTO dto) {
+        log.info("[HrRateServiceImpl] update() 호출 시작 - roundId={}, dto={}", roundId, dto);
+
+        // Rate 합이 100인지 검증
         validateRateSum(dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
 
         HrRate rate = hrRateRepository.findByRoundId(roundId)
-                .orElseThrow(() -> new HrException(ErrorCode.HR_RATE_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("HR Rate 정보 없음 - roundId={}", roundId);
+                    return new HrException(ErrorCode.HR_RATE_NOT_FOUND);
+                });
 
         rate.update(dto.getRateS(), dto.getRateA(), dto.getRateB(),
                 dto.getRateC(), dto.getRateD());
+
+        log.info("HR Rate 수정 완료 - roundId={}, rateS={}, rateA={}, rateB={}, rateC={}, rateD={}",
+                roundId, dto.getRateS(), dto.getRateA(), dto.getRateB(), dto.getRateC(), dto.getRateD());
     }
 
     private void validateRateSum(int s, int a, int b, int c, int d) {
         int total = s + a + b + c + d;
         if (total != 100) {
+            log.error("HR Rate 합계가 100이 아님 - rateS={}, rateA={}, rateB={}, rateC={}, rateD={}, total={}", s, a, b, c, d, total);
             throw new HrException(ErrorCode.HR_RATE_INVALID_SUM);
         }
+        log.info("HR Rate 합계 검증 완료 - total={}", total);
     }
 
     @Override
     @Transactional
     public void deleteByRoundId(int roundId) {
+        log.info("[HrRateServiceImpl] deleteByRoundId() 호출 시작 - roundId={}", roundId);
+
         hrRateRepository.deleteByRoundId(roundId);
+
+        log.info("HR Rate 삭제 완료 - roundId={}", roundId);
     }
 
 }
