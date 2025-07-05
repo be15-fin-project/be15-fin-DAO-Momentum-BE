@@ -27,34 +27,38 @@ public class RetentionRoundQueryServiceImpl implements RetentionRoundQueryServic
     @Override
     @Transactional(readOnly = true)
     public RetentionRoundListResultDto getRetentionRounds(RetentionRoundSearchRequestDto req) {
-        log.info(">>> getRetentionRounds called");
+        log.info("API 호출 시작 - getRetentionRounds, 요청 파라미터: page={}, size={}", req.page(), req.size());
 
+        // 회차 목록 조회
         List<RetentionRoundRawDto> rawList = mapper.findRetentionRounds(req);
         if (rawList == null) {
+            log.error("회차 목록 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.RETENTION_ROUND_NOT_FOUND);
         }
+
         long total = mapper.countRetentionRounds(req);
 
+        // 응답 리스트 변환
         List<RetentionRoundListResponseDto> resultList = rawList.stream()
                 .map(raw -> RetentionRoundListResponseDto.builder()
-                        .roundId(raw.getRoundId())
-                        .roundNo(raw.getRoundNo())
-                        .year(raw.getYear())
-                        .month(raw.getMonth())
-                        .periodStart(String.valueOf(raw.getStartDate()))
-                        .periodEnd(String.valueOf(raw.getEndDate()))
-                        .status(determineStatus(raw.getStartDate(), raw.getEndDate()))
-                        .participantCount(raw.getParticipantCount())
+                        .roundId(raw.roundId())
+                        .roundNo(raw.roundNo())
+                        .year(raw.year())
+                        .month(raw.month())
+                        .periodStart(String.valueOf(raw.startDate()))
+                        .periodEnd(String.valueOf(raw.endDate()))
+                        .participantCount(raw.participantCount())
                         .build())
                 .collect(Collectors.toList());
 
+        // 페이징 정보 생성
         Pagination pagination = Pagination.builder()
-                .currentPage(req.getPage())
+                .currentPage(req.page())
                 .totalItems(total)
-                .totalPage((int) Math.ceil((double) total / req.getSize()))
+                .totalPage((int) Math.ceil((double) total / req.size()))
                 .build();
 
-        log.info("Retention round list fetched - count={}, page={}", resultList.size(), req.getPage());
+        log.info("회차 목록 조회 완료 - 총 개수: {}, 요청 페이지: {}", resultList.size(), req.page());
 
         return RetentionRoundListResultDto.builder()
                 .content(resultList)

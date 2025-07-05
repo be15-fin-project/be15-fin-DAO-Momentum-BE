@@ -36,7 +36,8 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactResponse createContact(RetentionContactCreateDto dto) {
-        log.info(">>> createContact called");
+        log.info("API 호출 시작 - createContact, 요청 파라미터: targetId={}, managerId={}, writerId={}, reason={}",
+                dto.targetId(), dto.managerId(), dto.writerId(), dto.reason());
 
         if (dto.targetId().equals(dto.managerId())) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER);
@@ -83,14 +84,15 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .createdAt(saved.getCreatedAt())
                 .build();
 
-        log.info("면담 요청 생성 완료 - retentionId={}", response.retentionId());
+        log.info("API 호출 성공 - createContact, 생성 완료 - retentionId={}", response.retentionId());
         return response;
     }
 
     @Override
     @Transactional
     public RetentionContactDeleteResponse deleteContact(RetentionContactDeleteDto dto) {
-        log.info(">>> deleteContact called");
+        log.info("API 호출 시작 - deleteContact, 요청 파라미터: retentionId={}, loginEmpId={}",
+                dto.retentionId(), dto.loginEmpId());
 
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
@@ -106,7 +108,7 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
 
         contact.markAsDeleted();
 
-        log.info("면담 요청 삭제 완료 - retentionId={}", contact.getRetentionId());
+        log.info("API 호출 성공 - deleteContact, 삭제 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactDeleteResponse.builder()
                 .retentionId(contact.getRetentionId())
@@ -117,7 +119,8 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactResponseUpdateResponse reportResponse(RetentionContactResponseUpdateDto dto) {
-        log.info(">>> reportResponse called");
+        log.info("API 호출 시작 - reportResponse, 요청 파라미터: retentionId={}, loginEmpId={}, response={}",
+                dto.retentionId(), dto.loginEmpId(), dto.response());
 
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
@@ -132,7 +135,7 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
 
         contact.respond(dto.response(), LocalDateTime.now());
 
-        log.info("면담 응답 완료 - retentionId={}", contact.getRetentionId());
+        log.info("API 호출 성공 - reportResponse, 응답 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactResponseUpdateResponse.builder()
                 .retentionId(contact.getRetentionId())
@@ -144,7 +147,8 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     @Override
     @Transactional
     public RetentionContactFeedbackUpdateResponse giveFeedback(RetentionContactFeedbackUpdateDto dto) {
-        log.info(">>> giveFeedback called");
+        log.info("API 호출 시작 - giveFeedback, 요청 파라미터: retentionId={}, feedback={}",
+                dto.retentionId(), dto.feedback());
 
         RetentionContact contact = repository.findById(dto.retentionId())
                 .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_NOT_FOUND));
@@ -155,7 +159,7 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
 
         contact.giveFeedback(dto.feedback());
 
-        log.info("면담 피드백 완료 - retentionId={}", contact.getRetentionId());
+        log.info("API 호출 성공 - giveFeedback, 피드백 완료 - retentionId={}", contact.getRetentionId());
 
         return RetentionContactFeedbackUpdateResponse.builder()
                 .retentionId(contact.getRetentionId())

@@ -53,7 +53,7 @@
                 AND rc.created_at &lt;= #{req.endDate}
             </if>
         ORDER BY rc.created_at DESC
-        LIMIT #{req.size} OFFSET #{req.offset}
+        LIMIT #{req.size} OFFSET #{req.getOffset}
     </select>
 
     <select id="countContacts" resultType="int">

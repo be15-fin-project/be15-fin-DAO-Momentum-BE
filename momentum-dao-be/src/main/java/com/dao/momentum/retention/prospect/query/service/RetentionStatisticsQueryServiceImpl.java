@@ -27,73 +27,77 @@ public class RetentionStatisticsQueryServiceImpl implements RetentionStatisticsQ
     @Override
     @Transactional(readOnly = true)
     public RetentionAverageScoreDto getAverageScore(RetentionStatisticsRequestDto req) {
-        log.info(">>> getAverageScore called");
+        log.info("API 호출 시작 - getAverageScore, 요청 파라미터: roundId={}", req.roundId());
 
         RetentionAverageScoreDto raw = mapper.findAverageRetentionScore(req);
         if (raw == null) {
+            log.error("평균 근속 지수 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
         RetentionAverageScoreDto result = RetentionAverageScoreDto.builder()
-                .averageScore(raw.getAverageScore())
-                .totalEmpCount(raw.getTotalEmpCount())
-                .stabilitySafeRatio(raw.getStabilitySafeRatio())
-                .stabilityRiskRatio(raw.getStabilityRiskRatio())
+                .averageScore(raw.averageScore())
+                .totalEmpCount(raw.totalEmpCount())
+                .stabilitySafeRatio(raw.stabilitySafeRatio())
+                .stabilityRiskRatio(raw.stabilityRiskRatio())
                 .build();
 
-        log.info("평균 근속 지수 조회 완료 - avgScore={}, empCount={}", result.getAverageScore(), result.getTotalEmpCount());
+        log.info("평균 근속 지수 조회 완료 - avgScore={}, empCount={}", result.averageScore(), result.totalEmpCount());
         return result;
     }
 
     @Override
     @Transactional(readOnly = true)
     public StabilityDistributionByDeptDto getOverallStabilityDistribution(RetentionInsightRequestDto req) {
-        log.info(">>> getOverallStabilityDistribution called");
+        log.info("API 호출 시작 - getOverallStabilityDistribution, 요청 파라미터: roundId={}", req.roundId());
 
         validateRoundId(req);
 
         StabilityDistributionByDeptDto result = mapper.findInsightDistribution(req);
         if (result == null) {
+            log.error("전체 안정성 분포 조회 실패 - 데이터 없음, roundId={}", req.roundId());
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        log.info("전체 안정성 분포 조회 완료 - roundId={}", req.getRoundId());
+        log.info("전체 안정성 분포 조회 완료 - roundId={}", req.roundId());
         return result;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<StabilityDistributionByDeptDto> getStabilityDistributionByDept(RetentionInsightRequestDto req) {
-        log.info(">>> getStabilityDistributionByDept called");
+        log.info("API 호출 시작 - getStabilityDistributionByDept, 요청 파라미터: roundId={}", req.roundId());
 
         validateRoundId(req);
 
         List<StabilityDistributionByDeptDto> results = mapper.findInsightDistributionList(req);
         if (results == null) {
+            log.error("부서별 안정성 분포 조회 실패 - 데이터 없음, roundId={}", req.roundId());
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        log.info("부서별 안정성 분포 조회 완료 - count={}, roundId={}", results.size(), req.getRoundId());
+        log.info("부서별 안정성 분포 조회 완료 - count={}, roundId={}", results.size(), req.roundId());
         return results;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<RetentionMonthlyStatDto> getMonthlyRetentionStats(RetentionTimeseriesRequestDto req) {
-        log.info(">>> getMonthlyRetentionStats called");
+        log.info("API 호출 시작 - getMonthlyRetentionStats, 요청 파라미터: year={}", req.year());
 
-        if (req.getYear() == null) {
-            req.setYear(LocalDate.now().getYear());
+        if (req.year() == null) {
+            req = RetentionTimeseriesRequestDto.builder().year(LocalDate.now().getYear()).build();
         }
 
         List<RetentionMonthlyStatDto> results = mapper.findMonthlyRetentionStats(req);
 
-        log.info("시계열 통계 조회 완료 - year={}, count={}", req.getYear(), results.size());
+        log.info("시계열 통계 조회 완료 - year={}, count={}", req.year(), results.size());
         return results;
     }
 
     private void validateRoundId(RetentionInsightRequestDto req) {
-        if (req.getRoundId() == null) {
+        if (req.roundId() == null) {
+            log.error("잘못된 요청 - roundId 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.INVALID_REQUEST);
         }
     }

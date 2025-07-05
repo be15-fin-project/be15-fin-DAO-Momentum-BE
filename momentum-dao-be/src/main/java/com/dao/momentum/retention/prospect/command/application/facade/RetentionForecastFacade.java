@@ -36,24 +36,30 @@ public class RetentionForecastFacade {
 
     @Transactional
     public RetentionForecastCreateResponse createNewForecast(RetentionForecastCreateRequest request) {
-        log.info(">>> createNewForecast called - year={}, month={}, roundNo(optional)={}",
+        log.info("API 호출 시작 - createNewForecast, 요청 파라미터: year={}, month={}, roundNo(optional)={}",
                 request.year(), request.month(), request.roundNo());
 
+        // 회차 존재 여부 체크
         boolean exists = roundRepository.existsByYearAndMonth(request.year(), request.month());
         if (exists) {
+            log.error("회차 이미 존재 - year={}, month={}", request.year(), request.month());
             throw new ProspectException(ErrorCode.RETENTION_ROUND_ALREADY_EXIST);
         }
 
+        // 회차 번호 계산
         int roundNo = request.roundNo() != null
                 ? request.roundNo()
                 : roundRepository.findMaxRoundNo().orElse(0) + 1;
 
+        // 회차 생성
         RetentionRound round = roundService.create(request.year(), request.month(), roundNo);
         log.info("회차 생성 완료 - roundId={}, roundNo={}", round.getRoundId(), roundNo);
 
+        // 재직 중인 사원 조회
         List<Employee> employees = employeeRepository.findByStatus(Status.EMPLOYED);
         log.info("재직 중인 사원 수: {}", employees.size());
 
+        // 근속 지원 정보 계산 및 저장
         List<RetentionSupport> supports = employees.stream()
                 .map(emp -> {
                     var dto = calculator.calculate(emp);
@@ -63,10 +69,12 @@ public class RetentionForecastFacade {
         supportService.saveAll(supports);
         log.info("근속 지원 저장 완료 - count={}", supports.size());
 
+        // 근속 인사이트 생성 및 저장
         List<RetentionInsight> insights = insightService.generateInsights(round.getRoundId(), supports);
         insightService.saveAll(insights);
         log.info("근속 인사이트 저장 완료 - count={}", insights.size());
 
+        // 응답 생성
         RetentionForecastCreateResponse response = RetentionForecastCreateResponse.builder()
                 .roundId(round.getRoundId())
                 .roundNo(roundNo)

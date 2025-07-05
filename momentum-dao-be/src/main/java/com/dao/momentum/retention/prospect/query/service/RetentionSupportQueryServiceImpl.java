@@ -27,36 +27,41 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionForecastResponseDto getRetentionForecasts(RetentionForecastRequestDto req) {
-        log.info(">>> getRetentionForecasts called");
+        log.info("API 호출 시작 - getRetentionForecasts, 요청 파라미터: roundNo={}, stabilityType={}, page={}, size={}",
+                req.roundNo(), req.stabilityType(), req.page(), req.size());
 
-        Integer roundNo = (req.getRoundNo() != null) ? req.getRoundNo() : mapper.findLatestRoundNo();
+        Integer roundNo = (req.roundNo() != null) ? req.roundNo() : mapper.findLatestRoundNo();
+        log.info("회차 조회 완료 - roundNo={}", roundNo);
 
+        // 근속 전망 조회
         List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundNo);
         long total = mapper.countRetentionForecasts(req, roundNo);
 
-        if (rawList == null) {
+        if (rawList == null || rawList.isEmpty()) {
+            log.error("근속 전망 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
+        // 필터링 후, DTO 생성
         List<RetentionForecastItemDto> filtered = rawList.stream()
                 .map(raw -> RetentionForecastItemDto.builder()
-                        .retentionId(raw.getRetentionId())
-                        .empNo(raw.getEmpNo())
-                        .empName(raw.getEmpName())
-                        .deptName(raw.getDeptName())
-                        .positionName(raw.getPositionName())
-                        .retentionGrade(convertScoreToGrade(raw.getRetentionScore()))
-                        .stabilityType(convertScoreToStabilityType(raw.getRetentionScore()))
-                        .summaryComment(raw.getSummaryComment())
-                        .roundNo(raw.getRoundNo())
+                        .retentionId(raw.retentionId())
+                        .empNo(raw.empNo())
+                        .empName(raw.empName())
+                        .deptName(raw.deptName())
+                        .positionName(raw.positionName())
+                        .retentionGrade(convertScoreToGrade(raw.retentionScore()))
+                        .stabilityType(convertScoreToStabilityType(raw.retentionScore()))
+                        .summaryComment(raw.summaryComment())
+                        .roundNo(raw.roundNo())
                         .build())
-                .filter(dto -> req.getStabilityType() == null || dto.getStabilityType() == req.getStabilityType())
+                .filter(dto -> req.stabilityType() == null || dto.stabilityType() == req.stabilityType())
                 .toList();
 
         Pagination pagination = Pagination.builder()
-                .currentPage(req.getPage())
+                .currentPage(req.page())
                 .totalItems(total)
-                .totalPage((int) Math.ceil((double) total / req.getSize()))
+                .totalPage((int) Math.ceil((double) total / req.size()))
                 .build();
 
         log.info("근속 전망 결과 조회 완료 - roundNo={}, filteredCount={}", roundNo, filtered.size());
@@ -70,15 +75,17 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionSupportDetailDto getSupportDetail(Long retentionId) {
-        log.info(">>> getSupportDetail called - retentionId={}", retentionId);
+        log.info("API 호출 시작 - getSupportDetail, 요청 파라미터: retentionId={}", retentionId);
 
+        // 근속 지원 상세 조회
         RetentionSupportDetailDto detail = mapper.findSupportDetail(retentionId);
 
         if (detail == null) {
+            log.error("근속 상세 조회 실패 - 데이터 없음, retentionId={}", retentionId);
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        log.info("근속 상세 조회 완료 - empNo={}, name={}", detail.getEmpNo(), detail.getEmpName());
+        log.info("근속 상세 조회 완료 - empNo={}, name={}", detail.empNo(), detail.empName());
 
         return detail;
     }

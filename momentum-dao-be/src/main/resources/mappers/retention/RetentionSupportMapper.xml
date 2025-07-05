@@ -19,8 +19,8 @@
         </if>
         SELECT
             rs.retention_id AS retentionId,
-            e.name AS empName,
             e.emp_no AS empNo,
+            e.name AS empName,
             d.name AS deptName,
             p.name AS positionName,
             rs.retention_score,
@@ -58,7 +58,7 @@
 
         ORDER BY rs.retention_score DESC
         LIMIT #{req.size}
-        OFFSET #{req.offset}
+        OFFSET #{req.getOffset}
     </select>
 
     <!-- 총 개수 조회 -->
@@ -118,12 +118,12 @@
 
         SELECT
         -- 본인 정보
+            rr.round_no AS roundNo,
             e.emp_id AS empId,
             e.emp_no AS empNo,
             e.name AS empName,
             d.name AS deptName,
             p.name AS positionName,
-            rr.round_no AS roundNo,
 
             -- 상급자 정보 (부서장 우선, 없으면 같은 부서의 MANAGER 중 emp_id 가장 낮은 사람)
             COALESCE(dh.emp_id, tm.emp_id) AS managerId,

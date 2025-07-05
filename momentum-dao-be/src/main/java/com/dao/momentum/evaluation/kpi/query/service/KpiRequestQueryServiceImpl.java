@@ -49,7 +49,7 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
         List<KpiRequestListResponseDto> list = kpiRequestMapper.findKpiRequests(updatedDto);
 
         // 요청 목록이 없으면 예외 처리
-        if (list == null || list.isEmpty()) {
+        if (list == null) {
             log.error("KPI 요청 목록을 찾을 수 없음 - updatedDto={}", updatedDto);
             throw new KpiException(ErrorCode.KPI_REQUEST_NOT_FOUND);
         }

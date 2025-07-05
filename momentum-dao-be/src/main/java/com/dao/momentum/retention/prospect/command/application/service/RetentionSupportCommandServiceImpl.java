@@ -17,8 +17,12 @@ public class RetentionSupportCommandServiceImpl implements RetentionSupportComma
 
     @Override
     public void saveAll(List<RetentionSupport> supports) {
-        log.info(">>> saveAll called - count={}", supports.size());
+        log.info("API 호출 시작 - saveAll, 요청 파라미터: supportsCount={}", supports.size());
+
+        // 데이터 저장 시작
         supportRepository.saveAllSupports(supports);
-        log.info("근속 지원 저장 완료 - savedCount={}", supports.size());
+
+        // 저장 완료 후 로그
+        log.info("API 호출 성공 - saveAll, 근속 지원 저장 완료 - savedCount={}", supports.size());
     }
 }
