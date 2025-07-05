@@ -37,7 +37,7 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundNo);
         long total = mapper.countRetentionForecasts(req, roundNo);
 
-        if (rawList == null || rawList.isEmpty()) {
+        if (rawList == null) {
             log.error("근속 전망 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }

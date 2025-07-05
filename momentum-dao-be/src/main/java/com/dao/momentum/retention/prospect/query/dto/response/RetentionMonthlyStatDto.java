@@ -6,6 +6,9 @@ import lombok.Builder;
 @Builder
 @Schema(description = "월별 근속 지수 통계 DTO")
 public record RetentionMonthlyStatDto(
+        @Schema(description = "년도", example = "2025")
+        int year,
+
         @Schema(description = "월", example = "3")
         int month,
 

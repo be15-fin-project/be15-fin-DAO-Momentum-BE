@@ -39,136 +39,151 @@ class KpiStatisticsServiceImplTest {
         SecurityContextHolder.clearContext();
     }
 
-    @Test
-    @DisplayName("KPI 통계 정상 조회")
-    void getStatistics_success() {
-        KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
-                .year(2025).month(6).deptId(101L).build();
+    @Nested
+    @DisplayName("KPI 통계 조회 관련 테스트")
+    class KpiStatisticsTests {
 
-        KpiStatisticsResponseDto mockResponse = KpiStatisticsResponseDto.builder()
-                .totalKpiCount(12).completedKpiCount(5).averageProgress(66.6).build();
+        @Test
+        @DisplayName("KPI 통계 정상 조회")
+        void getStatistics_success() {
+            KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
+                    .year(2025).month(6).deptId(101L).build();
 
-        when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(mockResponse);
+            KpiStatisticsResponseDto mockResponse = KpiStatisticsResponseDto.builder()
+                    .totalKpiCount(12).completedKpiCount(5).averageProgress(66.6).build();
 
-        KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
+            when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(mockResponse);
 
-        assertThat(result).isNotNull();
-        assertThat(result.totalKpiCount()).isEqualTo(12);
+            KpiStatisticsResponseDto result = kpiStatisticsService.getStatistics(requestDto);
+
+            assertThat(result).isNotNull();
+            assertThat(result.totalKpiCount()).isEqualTo(12);
+        }
+
+        @Test
+        @DisplayName("KPI 통계 조회 실패 - 결과 없음")
+        void getStatistics_nullResponse_throwsException() {
+            KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
+                    .year(2025).month(6).build();
+
+            when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(null);
+
+            KpiException ex = assertThrows(KpiException.class, () -> {
+                kpiStatisticsService.getStatistics(requestDto);
+            });
+
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN_ERROR);
+        }
     }
 
-    @Test
-    @DisplayName("KPI 통계 조회 실패 - 결과 없음")
-    void getStatistics_nullResponse_throwsException() {
-        KpiStatisticsRequestDto requestDto = KpiStatisticsRequestDto.builder()
-                .year(2025).month(6).build();
+    @Nested
+    @DisplayName("KPI 시계열 통계 조회 관련 테스트")
+    class KpiTimeseriesTests {
 
-        when(kpiStatisticsMapper.getMonthlyStatistics(requestDto)).thenReturn(null);
+        @Test
+        @DisplayName("시계열 KPI 통계 조회 - 정상 케이스")
+        void getTimeseriesStatistics_success() {
+            KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
+                    .year(2025).empNo("20250001").build();
 
-        KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getStatistics(requestDto);
-        });
+            List<KpiTimeseriesMonthlyDto> mockList = List.of(
+                    KpiTimeseriesMonthlyDto.builder().month(1).totalKpiCount(10).completedKpiCount(4).averageProgress(64.0).build(),
+                    KpiTimeseriesMonthlyDto.builder().month(2).totalKpiCount(12).completedKpiCount(6).averageProgress(71.5).build()
+            );
 
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNKNOWN_ERROR);
+            when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(mockList);
+
+            KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
+
+            assertThat(result.year()).isEqualTo(2025);
+            assertThat(result.monthlyStats()).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("시계열 KPI 통계 조회 실패 - 결과 없음")
+        void getTimeseriesStatistics_null_throwsException() {
+            KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
+                    .year(2025).empNo("20250001").build();
+
+            when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(null);
+
+            KpiException ex = assertThrows(KpiException.class, () -> {
+                kpiStatisticsService.getTimeseriesStatistics(requestDto);
+            });
+
+            assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.STATISTICS_NOT_FOUND);
+        }
     }
 
-    @Test
-    @DisplayName("시계열 KPI 통계 조회 - 정상 케이스")
-    void getTimeseriesStatistics_success() {
-        KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
-                .year(2025).empNo("20250001").build();
+    @Nested
+    @DisplayName("KPI 통계 조회 - 사용자별 권한 테스트")
+    class KpiStatisticsWithControlTests {
 
-        List<KpiTimeseriesMonthlyDto> mockList = List.of(
-                KpiTimeseriesMonthlyDto.builder().month(1).totalKpiCount(10).completedKpiCount(4).averageProgress(64.0).build(),
-                KpiTimeseriesMonthlyDto.builder().month(2).totalKpiCount(12).completedKpiCount(6).averageProgress(71.5).build()
-        );
+        @Test
+        @DisplayName("자신 KPI 통계 조회 - 일반 사용자")
+        void getStatisticsWithControl_user() {
+            when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(mockList);
+            when(kpiStatisticsMapper.getMonthlyStatistics(any()))
+                    .thenReturn(KpiStatisticsResponseDto.builder().totalKpiCount(6).completedKpiCount(4).averageProgress(70.0).build());
 
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesStatistics(requestDto);
+            KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithControl(
+                    KpiStatisticsRequestDto.builder().year(2025).month(6).build(),
+                    100L
+            );
 
-        assertThat(result.year()).isEqualTo(2025);
-        assertThat(result.monthlyStats()).hasSize(2);
-    }
+            assertThat(result).isNotNull();
+            assertThat(result.totalKpiCount()).isEqualTo(6);
+        }
 
-    @Test
-    @DisplayName("시계열 KPI 통계 조회 실패 - 결과 없음")
-    void getTimeseriesStatistics_null_throwsException() {
-        KpiTimeseriesRequestDto requestDto = KpiTimeseriesRequestDto.builder()
-                .year(2025).empNo("20250001").build();
+        @Test
+        @DisplayName("자신 KPI 시계열 통계 조회 - 일반 사용자")
+        void getTimeseriesWithControl_user() {
+            when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(any())).thenReturn(null);
+            when(kpiStatisticsMapper.getTimeseriesStatistics(any()))
+                    .thenReturn(List.of(KpiTimeseriesMonthlyDto.builder().month(5).totalKpiCount(5).completedKpiCount(4).averageProgress(80.0).build()));
 
-        KpiException ex = assertThrows(KpiException.class, () -> {
-            kpiStatisticsService.getTimeseriesStatistics(requestDto);
-        });
+            KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithControl(
+                    KpiTimeseriesRequestDto.builder().year(2025).build(),
+                    100L
+            );
 
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.STATISTICS_NOT_FOUND);
-    }
+            assertThat(result.monthlyStats()).hasSize(1);
+        }
 
-    @Test
-    @DisplayName("자신 KPI 통계 조회 - 일반 사용자")
-    void getStatisticsWithControl_user() {
-        when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
+        @Test
+        @DisplayName("권한 있는 사용자 KPI 통계 조회")
+        void getStatisticsWithAccessControl_privileged() {
+            setSecurityContextWithRoles("MASTER");
 
-        when(kpiStatisticsMapper.getMonthlyStatistics(any()))
-                .thenReturn(KpiStatisticsResponseDto.builder().totalKpiCount(6).completedKpiCount(4).averageProgress(70.0).build());
+            KpiStatisticsRequestDto dto = KpiStatisticsRequestDto.builder()
+                    .year(2025).month(6).empNo("20250099").build();
 
-        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithControl(
-                KpiStatisticsRequestDto.builder().year(2025).month(6).build(),
-                100L
-        );
+            when(kpiStatisticsMapper.getMonthlyStatistics(any()))
+                    .thenReturn(KpiStatisticsResponseDto.builder().totalKpiCount(3).completedKpiCount(2).averageProgress(50.0).build());
 
-        assertThat(result).isNotNull();
-        assertThat(result.totalKpiCount()).isEqualTo(6);
-    }
+            KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithAccessControl(dto, 101L);
 
-    @Test
-    @DisplayName("자신 KPI 시계열 통계 조회 - 일반 사용자")
-    void getTimeseriesWithControl_user() {
-        when(employeeRepository.findEmpNoByEmpId(100L)).thenReturn("20250001");
+            assertThat(result.totalKpiCount()).isEqualTo(3);
+        }
 
-        when(kpiStatisticsMapper.getTimeseriesStatistics(any()))
-                .thenReturn(List.of(KpiTimeseriesMonthlyDto.builder().month(5).totalKpiCount(5).completedKpiCount(4).averageProgress(80.0).build()));
+        @Test
+        @DisplayName("권한 없는 사용자 KPI 시계열 조회 - empId 기준")
+        void getTimeseriesWithAccessControl_unprivileged() {
+            setSecurityContextWithRoles("EMPLOYEE");
 
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithControl(
-                KpiTimeseriesRequestDto.builder().year(2025).build(),
-                100L
-        );
+            when(employeeRepository.findEmpNoByEmpId(101L)).thenReturn("20250077");
+            when(kpiStatisticsMapper.getTimeseriesStatistics(any()))
+                    .thenReturn(List.of(KpiTimeseriesMonthlyDto.builder().month(6).totalKpiCount(5).completedKpiCount(3).averageProgress(60.0).build()));
 
-        assertThat(result.monthlyStats()).hasSize(1);
-    }
+            KpiTimeseriesRequestDto dto = KpiTimeseriesRequestDto.builder()
+                    .year(2025).deptId(10L).positionId(2).build();
 
-    @Test
-    @DisplayName("권한 있는 사용자 KPI 통계 조회")
-    void getStatisticsWithAccessControl_privileged() {
-        setSecurityContextWithRoles("MASTER");
+            KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(dto, 101L);
 
-        KpiStatisticsRequestDto dto = KpiStatisticsRequestDto.builder()
-                .year(2025).month(6).empNo("20250099").build();
-
-        when(kpiStatisticsMapper.getMonthlyStatistics(any()))
-                .thenReturn(KpiStatisticsResponseDto.builder().totalKpiCount(3).completedKpiCount(2).averageProgress(50.0).build());
-
-        KpiStatisticsResponseDto result = kpiStatisticsService.getStatisticsWithAccessControl(dto, 101L);
-
-        assertThat(result.totalKpiCount()).isEqualTo(3);
-    }
-
-    @Test
-    @DisplayName("권한 없는 사용자 KPI 시계열 조회 - empId 기준")
-    void getTimeseriesWithAccessControl_unprivileged() {
-        setSecurityContextWithRoles("EMPLOYEE");
-
-        when(employeeRepository.findEmpNoByEmpId(101L)).thenReturn("20250077");
-        when(kpiStatisticsMapper.getTimeseriesStatistics(any()))
-                .thenReturn(List.of(KpiTimeseriesMonthlyDto.builder().month(6).totalKpiCount(5).completedKpiCount(3).averageProgress(60.0).build()));
-
-        KpiTimeseriesRequestDto dto = KpiTimeseriesRequestDto.builder()
-                .year(2025).deptId(10L).positionId(2).build();
-
-        KpiTimeseriesResponseDto result = kpiStatisticsService.getTimeseriesWithAccessControl(dto, 101L);
-
-        assertThat(result.monthlyStats()).hasSize(1);
+            assertThat(result.monthlyStats()).hasSize(1);
+        }
     }
 
     private void setSecurityContextWithRoles(String... roles) {

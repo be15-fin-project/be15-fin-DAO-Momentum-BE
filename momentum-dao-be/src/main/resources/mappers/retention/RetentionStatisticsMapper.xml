@@ -213,6 +213,7 @@
         </if>
 
         SELECT
+            r.year AS year,
             r.month AS month,
             ROUND(AVG(rs.retention_score), 2) AS averageScore,
             ROUND(STDDEV(rs.retention_score), 2) AS stdDeviation

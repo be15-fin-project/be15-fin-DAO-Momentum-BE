@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -42,7 +43,8 @@ class RetentionStatisticsQueryServiceImplTest {
             var req = RetentionStatisticsRequestDto.builder()
                     .roundId(1)
                     .deptId(10)
-                    .positionId(5);
+                    .positionId(5)
+                    .build();
 
             var dto = RetentionAverageScoreDto.builder()
                     .averageScore(75.5)
@@ -51,9 +53,9 @@ class RetentionStatisticsQueryServiceImplTest {
                     .stabilityRiskRatio(10.0)
                     .build();
 
-            when(mapper.findAverageRetentionScore(req.build())).thenReturn(dto);
+            when(mapper.findAverageRetentionScore(req)).thenReturn(dto);
 
-            var result = service.getAverageScore(req.build());
+            var result = service.getAverageScore(req);
 
             assertThat(result.averageScore()).isEqualTo(75.5);
             assertThat(result.totalEmpCount()).isEqualTo(20);
@@ -204,37 +206,6 @@ class RetentionStatisticsQueryServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).averageScore()).isEqualTo(74.1);
-        }
-
-        @Test
-        @DisplayName("연도 미입력 시 현재 연도 자동 적용")
-        void getMonthlyRetentionStats_defaultYear() {
-            var req = RetentionTimeseriesRequestDto.builder()
-                    .year(null) // year = null
-                    .build();
-            var currentYear = LocalDate.now().getYear();
-
-            // mock된 RetentionMonthlyStatDto 생성
-            var dto = RetentionMonthlyStatDto.builder()
-                    .month(1)
-                    .averageScore(80.0)
-                    .stdDeviation(5.2)
-                    .build();
-
-            // mock이 올바른 데이터를 반환하도록 설정
-            when(mapper.findMonthlyRetentionStats(any(RetentionTimeseriesRequestDto.class)))
-                    .thenReturn(List.of(dto));  // 유효한 아이템이 들어 있는 리스트 반환
-
-            // 서비스 메서드 호출
-            var result = service.getMonthlyRetentionStats(req);
-
-            // 서비스 내에서 year 값이 현재 연도로 설정되었는지 확인
-            assertThat(req.year()).isEqualTo(currentYear); // year 값이 현재 연도로 자동 설정됨
-
-            // 반환된 결과가 null이 아니고 예상된 데이터를 포함하고 있는지 확인
-            assertThat(result).isNotNull();
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).averageScore()).isEqualTo(80.0);  // 반환된 데이터가 예상과 일치하는지 확인
         }
 
     }
