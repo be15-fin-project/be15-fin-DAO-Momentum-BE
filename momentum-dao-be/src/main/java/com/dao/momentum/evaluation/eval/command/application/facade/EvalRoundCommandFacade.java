@@ -37,7 +37,7 @@ public class EvalRoundCommandFacade {
 
     @Transactional
     public EvalRoundCreateResponse createEvalRound(EvalRoundCreateRequest request) {
-        log.info("[EvalRoundCommandFacade] createEvalRound() 호출 시작 - roundNo={}, startAt={}", request.getRoundNo(), request.getStartAt());
+        log.info("[EvalRoundCommandFacade] createEvalRound() 호출 시작 - roundNo={}, startAt={}", request.roundNo(), request.startAt());
 
         try {
             var roundDto = request.toRoundDto();
@@ -72,7 +72,7 @@ public class EvalRoundCommandFacade {
             return EvalRoundCreateResponse.from(round);
 
         } catch (Exception e) {
-            log.error("평가 회차 등록 실패 - roundNo={}, startAt={}, 에러={}", request.getRoundNo(), request.getStartAt(), e.getMessage());
+            log.error("평가 회차 등록 실패 - roundNo={}, startAt={}, 에러={}", request.roundNo(), request.startAt(), e.getMessage());
             throw new EvalException(ErrorCode.EVAL_ROUND_CREATION_FAILED);
         }
     }
@@ -85,15 +85,15 @@ public class EvalRoundCommandFacade {
             var roundDto = request.toRoundDto(roundId);
             EvalRoundUpdateResponse round = evalRoundService.update(roundId, roundDto);
 
-            log.info("평가 회차 수정 완료 - roundId={}", round.getRoundId());
+            log.info("평가 회차 수정 완료 - roundId={}", round.roundId());
 
-            hrWeightService.update(round.getRoundId(), request.toWeightDto());
-            hrRateService.update(round.getRoundId(), request.toRateDto());
+            hrWeightService.update(round.roundId(), request.toWeightDto());
+            hrRateService.update(round.roundId(), request.toRateDto());
 
-            log.info("HR 가중치 및 비율 정보 수정 완료 - roundId={}", round.getRoundId());
+            log.info("HR 가중치 및 비율 정보 수정 완료 - roundId={}", round.roundId());
 
             return EvalRoundUpdateResponse.builder()
-                    .roundId(round.getRoundId())
+                    .roundId(round.roundId())
                     .message("평가 회차가 성공적으로 수정되었습니다.")
                     .build();
 

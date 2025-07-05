@@ -33,7 +33,7 @@
                 AND r.start_at &lt;= #{endDate}
             </if>
         ORDER BY r.start_at DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
     <!-- 다면 평가 회차 총 개수 조회 -->
@@ -70,7 +70,7 @@
         ORDER BY ef.form_id ASC
     </select>
     <!-- 평가 타입 목록 -->
-    <select id="findAllEvalTypes" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTypeDto">
+    <select id="findAllEvalTypes" resultType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTypeDto">
         SELECT
             et.type_id      AS typeId,
             et.name         AS typeName,

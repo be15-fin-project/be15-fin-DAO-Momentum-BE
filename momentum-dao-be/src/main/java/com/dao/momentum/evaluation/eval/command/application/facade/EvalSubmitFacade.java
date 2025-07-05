@@ -24,7 +24,7 @@ public class EvalSubmitFacade {
 
     @Transactional
     public EvalSubmitResponse submit(Long empId, EvalSubmitRequest request) {
-        log.info("[EvalSubmitFacade] submit() 호출 시작 - evaluatorEmpId={}, formId={}", empId, request.getFormId());
+        log.info("[EvalSubmitFacade] submit() 호출 시작 - evaluatorEmpId={}, formId={}", empId, request.formId());
 
         try {
             // 평가 점수 계산
@@ -36,8 +36,8 @@ public class EvalSubmitFacade {
             log.info("저장된 평가 결과 - resultId={}, evaluatorEmpId={}", response.getResultId(), empId);
 
             // 평가 항목 점수 저장
-            evalScoreService.saveFactorScores(response.getResultId(), request.getFactorScores());
-            log.info("평가 항목 점수 저장 완료 - resultId={}, factorScoresCount={}", response.getResultId(), request.getFactorScores().size());
+            evalScoreService.saveFactorScores(response.getResultId(), request.factorScores());
+            log.info("평가 항목 점수 저장 완료 - resultId={}, factorScoresCount={}", response.getResultId(), request.factorScores().size());
 
             log.info("평가 제출 완료 - resultId={}, finalScore={}", response.getResultId(), finalScore);
 
@@ -47,7 +47,7 @@ public class EvalSubmitFacade {
                     .build();
 
         } catch (Exception e) {
-            log.error("[EvalSubmitFacade] 평가 제출 실패 - evaluatorEmpId={}, formId={}, 에러={}", empId, request.getFormId(), e.getMessage());
+            log.error("[EvalSubmitFacade] 평가 제출 실패 - evaluatorEmpId={}, formId={}, 에러={}", empId, request.formId(), e.getMessage());
             throw new EvalException(ErrorCode.EVAL_SUBMIT_FAILED);
         }
     }

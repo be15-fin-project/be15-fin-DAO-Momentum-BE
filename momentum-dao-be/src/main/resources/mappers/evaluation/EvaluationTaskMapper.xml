@@ -616,7 +616,7 @@
     </select>
 
     <!-- 모든 재직 중인 사원 조회 -->
-    <select id="findAllActiveEmployees" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EmployeeSimpleDto">
+    <select id="findAllActiveEmployees" resultType="com.dao.momentum.evaluation.eval.query.dto.request.EmployeeSimpleDto">
         SELECT
             e.emp_id     AS empId,
             e.emp_no     AS empNo,
@@ -629,7 +629,7 @@
     </select>
 
     <!-- 사용자 권한 조회 -->
-    <select id="findEvaluatorRole" resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto">
+    <select id="findEvaluatorRole" resultType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluatorRoleDto">
         SELECT
         e.emp_id     AS empId,
         e.dept_id    AS deptId,
