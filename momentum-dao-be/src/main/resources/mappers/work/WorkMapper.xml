@@ -35,6 +35,18 @@
     </select>
 
     <select id="getWorks" resultType="com.dao.momentum.work.query.dto.response.WorkDTO">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             work.work_id,
             work.emp_id,
@@ -93,8 +105,9 @@
         </if>
 
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
+
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
@@ -108,6 +121,18 @@
     </select>
 
     <select id="countWorks" resultType="java.lang.Long">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             COUNT(work.work_id)
         FROM work AS work
@@ -150,7 +175,7 @@
         </if>
 
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
