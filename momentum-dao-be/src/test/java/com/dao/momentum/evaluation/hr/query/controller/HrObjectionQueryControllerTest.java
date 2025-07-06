@@ -37,7 +37,7 @@ class HrObjectionQueryControllerTest {
 
     @Test
     @DisplayName("인사 평가 이의제기 목록 조회 성공")
-    @WithMockUser(username = "1", roles = "MANAGER")
+    @WithMockUser(username = "1", roles = "MANAGER")  // username = empId
     void listObjections_success() throws Exception {
         // given
         HrObjectionItemDto item = HrObjectionItemDto.builder()
@@ -57,7 +57,7 @@ class HrObjectionQueryControllerTest {
                 .build();
 
         HrObjectionListResultDto resultDto = new HrObjectionListResultDto(List.of(item), pagination);
-        given(service.getObjections(any(HrObjectionListRequestDto.class))).willReturn(resultDto);
+        given(service.getObjections(any(Long.class), any(HrObjectionListRequestDto.class))).willReturn(resultDto);
 
         // when & then
         mockMvc.perform(get("/hr-objections/requests")
@@ -82,7 +82,7 @@ class HrObjectionQueryControllerTest {
 
     @Test
     @DisplayName("이의제기 상세 조회 성공")
-    @WithMockUser(username = "1", roles = "MANAGER")
+    @WithMockUser(username = "1", roles = "MANAGER")  // username = empId
     void getObjectionDetail_success() throws Exception {
         // given
         Long objectionId = 5001L;

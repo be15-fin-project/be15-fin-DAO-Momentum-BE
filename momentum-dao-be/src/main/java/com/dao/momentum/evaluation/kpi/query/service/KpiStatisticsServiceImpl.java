@@ -20,7 +20,6 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-
 @Service
 @RequiredArgsConstructor
 public class KpiStatisticsServiceImpl implements KpiStatisticsService {
@@ -28,113 +27,137 @@ public class KpiStatisticsServiceImpl implements KpiStatisticsService {
     private final KpiStatisticsMapper kpiStatisticsMapper;
     private final EmployeeRepository employeeRepository;
 
+    // KPI 전체 조회
     @Override
     @Transactional(readOnly = true)
     public KpiStatisticsResponseDto getStatistics(KpiStatisticsRequestDto requestDto) {
+        log.info("[KpiStatisticsServiceImpl] getStatistics() 호출 시작 - requestDto={}", requestDto);
+
         KpiStatisticsResponseDto result = kpiStatisticsMapper.getMonthlyStatistics(requestDto);
 
         if (result == null) {
+            log.error("KPI 통계 조회 실패 - requestDto={}", requestDto);
             throw new KpiException(ErrorCode.UNKNOWN_ERROR);
         }
 
+        log.info("KPI 통계 조회 완료 - result={}", result);
         return result;
     }
 
+    // KPI 시계열 통계 조회
     @Override
     @Transactional(readOnly = true)
     public KpiTimeseriesResponseDto getTimeseriesStatistics(KpiTimeseriesRequestDto requestDto) {
-        int year = (requestDto.getYear() != null) ? requestDto.getYear() : LocalDate.now().getYear();
+        int year = (requestDto.year() != null) ? requestDto.year() : LocalDate.now().getYear();
 
+        // 요청 DTO 업데이트
         KpiTimeseriesRequestDto updatedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empNo(requestDto.getEmpNo())
-                .deptId(requestDto.getDeptId())
-                .positionId(requestDto.getPositionId())
+                .empNo(requestDto.empNo())
+                .deptId(requestDto.deptId())
+                .positionId(requestDto.positionId())
                 .build();
 
+        log.info("KPI 시계열 통계 요청 DTO - year={}, empNo={}, deptId={}, positionId={}",
+                requestDto.year(), requestDto.empNo(), requestDto.deptId(), requestDto.positionId());
+
         List<KpiTimeseriesMonthlyDto> stats = kpiStatisticsMapper.getTimeseriesStatistics(updatedDto);
-        log.info("KPI 통계 요청 DTO: year={}, empNo={}, deptId={}, positionId={}",
-                requestDto.getYear(), requestDto.getEmpNo(), requestDto.getDeptId(), requestDto.getPositionId());
 
         if (stats == null) {
+            log.error("KPI 시계열 통계 조회 실패 - requestDto={}", requestDto);
             throw new KpiException(ErrorCode.STATISTICS_NOT_FOUND);
         }
 
+        log.info("KPI 시계열 통계 조회 완료 - year={}, stats.size={}", year, stats.size());
         return new KpiTimeseriesResponseDto(year, stats);
     }
 
     // 권한 반영된 단일 통계 조회
     @Override
     public KpiStatisticsResponseDto getStatisticsWithAccessControl(KpiStatisticsRequestDto dto, Long empId) {
+        log.info("[KpiStatisticsServiceImpl] getStatisticsWithAccessControl() 호출 시작 - empId={}, dto={}", empId, dto);
+
         boolean isPrivileged = hasPrivilegedRole();
-        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
+        log.info("사용자의 권한 여부 - isPrivileged={}", isPrivileged);
+
+        String empNo = isPrivileged ? dto.empNo() : employeeRepository.findEmpNoByEmpId(empId);
 
         KpiStatisticsRequestDto resolvedDto = isPrivileged
                 ? dto
                 : KpiStatisticsRequestDto.builder()
-                .year(dto.getYear())
-                .month(dto.getMonth())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .year(dto.year())
+                .month(dto.month())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .empNo(empNo)
                 .build();
 
+        log.info("최종적으로 결정된 KPI 통계 요청 필터 - resolvedDto={}", resolvedDto);
         return getStatistics(resolvedDto);
     }
 
     // 권한 반영된 시계열 통계 조회
     @Override
     public KpiTimeseriesResponseDto getTimeseriesWithAccessControl(KpiTimeseriesRequestDto dto, Long empId) {
+        log.info("[KpiStatisticsServiceImpl] getTimeseriesWithAccessControl() 호출 시작 - empId={}, dto={}", empId, dto);
+
         boolean isPrivileged = hasPrivilegedRole();
-        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
-        String empNo = isPrivileged ? dto.getEmpNo() : employeeRepository.findEmpNoByEmpId(empId);
+        int year = (dto.year() != null) ? dto.year() : LocalDate.now().getYear();
+        String empNo = isPrivileged ? dto.empNo() : employeeRepository.findEmpNoByEmpId(empId);
 
         KpiTimeseriesRequestDto resolvedDto = isPrivileged
                 ? KpiTimeseriesRequestDto.builder()
                 .year(year)
-                .empNo(dto.getEmpNo())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .empNo(dto.empNo())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build()
                 : KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build();
 
+        log.info("최종적으로 결정된 KPI 시계열 통계 요청 필터 - resolvedDto={}", resolvedDto);
         return getTimeseriesStatistics(resolvedDto);
     }
 
     // 자신의 단일 통계 조회
     @Override
     public KpiStatisticsResponseDto getStatisticsWithControl(KpiStatisticsRequestDto dto, Long empId) {
+        log.info("[KpiStatisticsServiceImpl] getStatisticsWithControl() 호출 시작 - empId={}, dto={}", empId, dto);
+
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiStatisticsRequestDto resolvedDto = KpiStatisticsRequestDto.builder()
-                .year(dto.getYear())
-                .month(dto.getMonth())
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .year(dto.year())
+                .month(dto.month())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .empNo(empNo)
                 .build();
 
+        log.info("최종적으로 결정된 KPI 통계 요청 필터 - resolvedDto={}", resolvedDto);
         return getStatistics(resolvedDto);
     }
 
     // 자신의 시계열 통계 조회
     @Override
     public KpiTimeseriesResponseDto getTimeseriesWithControl(KpiTimeseriesRequestDto dto, Long empId) {
-        int year = (dto.getYear() != null) ? dto.getYear() : LocalDate.now().getYear();
+        log.info("[KpiStatisticsServiceImpl] getTimeseriesWithControl() 호출 시작 - empId={}, dto={}", empId, dto);
+
+        int year = (dto.year() != null) ? dto.year() : LocalDate.now().getYear();
         String empNo = employeeRepository.findEmpNoByEmpId(empId);
 
         KpiTimeseriesRequestDto resolvedDto = KpiTimeseriesRequestDto.builder()
                 .year(year)
                 .empNo(empNo)
-                .deptId(dto.getDeptId())
-                .positionId(dto.getPositionId())
+                .deptId(dto.deptId())
+                .positionId(dto.positionId())
                 .build();
 
+        log.info("최종적으로 결정된 KPI 시계열 통계 요청 필터 - resolvedDto={}", resolvedDto);
         return getTimeseriesStatistics(resolvedDto);
     }
 

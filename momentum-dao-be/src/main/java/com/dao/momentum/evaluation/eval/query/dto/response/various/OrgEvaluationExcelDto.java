@@ -1,4 +1,4 @@
-package com.dao.momentum.evaluation.eval.query.dto.response;
+package com.dao.momentum.evaluation.eval.query.dto.response.various;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;

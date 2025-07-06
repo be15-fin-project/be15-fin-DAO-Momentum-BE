@@ -3,8 +3,8 @@ package com.dao.momentum.evaluation.eval.query.mapper;
 import java.util.List;
 
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EmployeeSimpleDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.EvaluatorRoleDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EmployeeSimpleDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluatorRoleDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto;

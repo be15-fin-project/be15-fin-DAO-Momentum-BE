@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.eval.command.domain.repository.EvalScoreRepos
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -28,65 +29,130 @@ class EvalScoreServiceImplTest {
         service = new EvalScoreServiceImpl(evalScoreRepository);
     }
 
-    @Test
-    @DisplayName("평가 요소 점수 저장 - 성공")
-    void saveFactorScores_success() {
-        // given
-        Long resultId = 100L;
-        List<EvalFactorScoreDto> factorScores = List.of(
-                createDto(1, 85),
-                createDto(2, 90)
-        );
+    @Nested
+    @DisplayName("평가 요소 점수 저장 (Save Factor Scores)")
+    class SaveFactorScores {
 
-        // when
-        service.saveFactorScores(resultId, factorScores);
+        @Test
+        @DisplayName("평가 요소 점수 저장 - 성공")
+        void saveFactorScores_success() {
+            Long resultId = 100L;
+            List<EvalFactorScoreDto> factorScores = List.of(
+                    createDto(1, 85),
+                    createDto(2, 90)
+            );
 
-        // then
-        then(evalScoreRepository).should(times(1)).saveAll(anyList());
+            service.saveFactorScores(resultId, factorScores);
+
+            then(evalScoreRepository).should(times(1)).saveAll(anyList());
+        }
+
+        @Test
+        @DisplayName("resultId가 null이면 예외 발생")
+        void saveFactorScores_fail_nullResultId() {
+            List<EvalFactorScoreDto> factorScores = List.of(createDto(1, 80));
+
+            assertThatThrownBy(() -> service.saveFactorScores(null, factorScores))
+                    .isInstanceOf(EvalException.class)
+                    .hasMessageContaining(ErrorCode.INVALID_RESULT_REQUEST.getMessage());
+        }
+
+        @Test
+        @DisplayName("factorScores가 null이면 예외 발생")
+        void saveFactorScores_fail_nullFactors() {
+            Long resultId = 100L;
+
+            assertThatThrownBy(() -> service.saveFactorScores(resultId, null))
+                    .isInstanceOf(EvalException.class)
+                    .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
+        }
+
+        @Test
+        @DisplayName("factorScores가 비어있으면 예외 발생")
+        void saveFactorScores_fail_emptyFactors() {
+            Long resultId = 100L;
+
+            assertThatThrownBy(() -> service.saveFactorScores(resultId, new ArrayList<>()))
+                    .isInstanceOf(EvalException.class)
+                    .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
+        }
     }
 
-    @Test
-    @DisplayName("resultId가 null이면 예외 발생")
-    void saveFactorScores_fail_nullResultId() {
-        // given
-        List<EvalFactorScoreDto> factorScores = List.of(createDto(1, 80));
+    @Nested
+    @DisplayName("단일 점수 저장 (Save Single Score)")
+    class SaveSingleScore {
 
-        // when & then
-        assertThatThrownBy(() -> service.saveFactorScores(null, factorScores))
-                .isInstanceOf(EvalException.class)
-                .hasMessageContaining(ErrorCode.INVALID_RESULT_REQUEST.getMessage());
+        @Test
+        @DisplayName("단일 EvalScore 저장 - 성공")
+        void save_singleScore_success() {
+            EvalScore score = EvalScore.builder()
+                    .resultId(100L)
+                    .propertyId(1)
+                    .score(90)
+                    .build();
+
+            service.save(score);
+
+            then(evalScoreRepository).should(times(1)).save(score);
+        }
     }
 
-    @Test
-    @DisplayName("factorScores가 null이면 예외 발생")
-    void saveFactorScores_fail_nullFactors() {
-        // given
-        Long resultId = 100L;
+    @Nested
+    @DisplayName("점수 갱신 (Update Scores)")
+    class UpdateScores {
 
-        // when & then
-        assertThatThrownBy(() -> service.saveFactorScores(resultId, null))
-                .isInstanceOf(EvalException.class)
-                .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
+        @Test
+        @DisplayName("모든 점수 삭제 후 다시 저장 - updateScores 성공")
+        void updateScores_success() {
+            Long resultId = 123L;
+            var scoreMap = Map.of(
+                    1, 80,
+                    2, 90
+            );
+
+            service.updateScores(resultId, scoreMap);
+
+            then(evalScoreRepository).should(times(1)).deleteByResultId(resultId);
+            then(evalScoreRepository).should(times(2)).save(any(EvalScore.class)); // 2개 점수 저장
+        }
     }
 
-    @Test
-    @DisplayName("factorScores가 비어있으면 예외 발생")
-    void saveFactorScores_fail_emptyFactors() {
-        // given
-        Long resultId = 100L;
+    @Nested
+    @DisplayName("점수 삭제 (Delete Scores by ResultId)")
+    class DeleteScores {
 
-        // when & then
-        assertThatThrownBy(() -> service.saveFactorScores(resultId, new ArrayList<>()))
-                .isInstanceOf(EvalException.class)
-                .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
+        @Test
+        @DisplayName("결과 ID로 점수 전체 삭제 - 성공")
+        void deleteByResultId_success() {
+            Long resultId = 321L;
+
+            service.deleteByResultId(resultId);
+
+            then(evalScoreRepository).should().deleteByResultId(resultId);
+        }
+    }
+
+    @Nested
+    @DisplayName("일괄 점수 저장 (Save All Scores)")
+    class SaveAllScores {
+
+        @Test
+        @DisplayName("여러 점수 리스트 저장 - saveAllScores 성공")
+        void saveAll_scores_success() {
+            List<EvalScore> scores = List.of(
+                    EvalScore.builder().resultId(1L).propertyId(1).score(80).build(),
+                    EvalScore.builder().resultId(1L).propertyId(2).score(70).build()
+            );
+
+            service.saveAll(scores);
+
+            then(evalScoreRepository).should().saveAll(scores);
+        }
     }
 
     // util
     private EvalFactorScoreDto createDto(int propertyId, int score) {
-        EvalFactorScoreDto dto = new EvalFactorScoreDto();
-        setField(dto, "propertyId", propertyId);
-        setField(dto, "score", score);
-        return dto;
+        return new EvalFactorScoreDto(propertyId, score);
     }
 
     private void setField(Object target, String fieldName, Object value) {
@@ -98,69 +164,4 @@ class EvalScoreServiceImplTest {
             throw new RuntimeException("리플렉션 주입 실패: " + fieldName, e);
         }
     }
-
-    @Test
-    @DisplayName("단일 EvalScore 저장 - 성공")
-    void save_singleScore_success() {
-        // given
-        EvalScore score = EvalScore.builder()
-                .resultId(100L)
-                .propertyId(1)
-                .score(90)
-                .build();
-
-        // when
-        service.save(score);
-
-        // then
-        then(evalScoreRepository).should(times(1)).save(score);
-    }
-
-    @Test
-    @DisplayName("모든 점수 삭제 후 다시 저장 - updateScores 성공")
-    void updateScores_success() {
-        // given
-        Long resultId = 123L;
-        var scoreMap = Map.of(
-                1, 80,
-                2, 90
-        );
-
-        // when
-        service.updateScores(resultId, scoreMap);
-
-        // then
-        then(evalScoreRepository).should(times(1)).deleteByResultId(resultId);
-        then(evalScoreRepository).should(times(2)).save(any(EvalScore.class)); // 2개 점수 저장
-    }
-
-    @Test
-    @DisplayName("결과 ID로 점수 전체 삭제 - 성공")
-    void deleteByResultId_success() {
-        // given
-        Long resultId = 321L;
-
-        // when
-        service.deleteByResultId(resultId);
-
-        // then
-        then(evalScoreRepository).should().deleteByResultId(resultId);
-    }
-
-    @Test
-    @DisplayName("여러 점수 리스트 저장 - saveAllSupports 성공")
-    void saveAll_scores_success() {
-        // given
-        List<EvalScore> scores = List.of(
-                EvalScore.builder().resultId(1L).propertyId(1).score(80).build(),
-                EvalScore.builder().resultId(1L).propertyId(2).score(70).build()
-        );
-
-        // when
-        service.saveAll(scores);
-
-        // then
-        then(evalScoreRepository).should().saveAll(scores);
-    }
-
 }

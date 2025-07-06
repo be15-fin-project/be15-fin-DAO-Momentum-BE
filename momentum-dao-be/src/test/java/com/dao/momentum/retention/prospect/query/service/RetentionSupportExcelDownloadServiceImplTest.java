@@ -4,6 +4,7 @@ import com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportExc
 import com.dao.momentum.retention.prospect.query.mapper.RetentionSupportExcelMapper;
 import com.dao.momentum.retention.prospect.query.util.ExcelGenerator;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -23,48 +24,53 @@ class RetentionSupportExcelDownloadServiceImplTest {
     @InjectMocks
     private RetentionSupportExcelDownloadServiceImpl service;
 
-    @Test
-    @DisplayName("근속지원 엑셀 다운로드 - 정상 조회 및 생성 성공")
-    void downloadExcel_success() {
-        // given
-        Long roundId = 1L;
-        Long deptId = 2L;
-        Long positionId = 3L;
-        String stabilityType = "STABLE";
+    @Nested
+    @DisplayName("근속지원 엑셀 다운로드")
+    class DownloadExcelTests {
 
-        List<RetentionSupportExcelDto> mockData = List.of(
-                RetentionSupportExcelDto.builder()
-                        .employeeNo("EMP001")
-                        .employeeName("홍길동")
-                        .roundNo("2024-03")
-                        .deptName("인사팀")
-                        .positionName("대리")
-                        .retentionScore(82.5)
-                        .jobSatisfaction(80.0)
-                        .compensationSatisfaction(75.0)
-                        .relationSatisfaction(78.0)
-                        .growthSatisfaction(70.0)
-                        .tenure(3.5)
-                        .wlbSatisfaction(85.0)
-                        .build()
-        );
+        @Test
+        @DisplayName("정상 조회 및 생성 성공")
+        void downloadExcel_success() {
+            // given
+            Long roundId = 1L;
+            Long deptId = 2L;
+            Long positionId = 3L;
+            String stabilityType = "STABLE";
 
-        byte[] dummyExcel = "dummy-excel-content".getBytes();
+            List<RetentionSupportExcelDto> mockData = List.of(
+                    RetentionSupportExcelDto.builder()
+                            .employeeNo("EMP001")
+                            .employeeName("홍길동")
+                            .roundNo("2024-03")
+                            .deptName("인사팀")
+                            .positionName("대리")
+                            .retentionScore(82.5)
+                            .jobSatisfaction(80.0)
+                            .compensationSatisfaction(75.0)
+                            .relationSatisfaction(78.0)
+                            .growthSatisfaction(70.0)
+                            .tenure(3.5)
+                            .wlbSatisfaction(85.0)
+                            .build()
+            );
 
-        // ExcelGenerator가 static 유틸이라 가정하고 mockStatic 사용
-        try (MockedStatic<ExcelGenerator> mockedStatic = mockStatic(ExcelGenerator.class)) {
-            // mock mapper + static util
-            when(excelMapper.selectSupportListForExcel(roundId, deptId, positionId, stabilityType))
-                    .thenReturn(mockData);
-            mockedStatic.when(() -> ExcelGenerator.generate(mockData)).thenReturn(dummyExcel);
+            byte[] dummyExcel = "dummy-excel-content".getBytes();
 
-            // when
-            byte[] result = service.downloadExcel(roundId, deptId, positionId, stabilityType);
+            // ExcelGenerator가 static 유틸이라 가정하고 mockStatic 사용
+            try (MockedStatic<ExcelGenerator> mockedStatic = mockStatic(ExcelGenerator.class)) {
+                // mock mapper + static util
+                when(excelMapper.selectSupportListForExcel(roundId, deptId, positionId, stabilityType))
+                        .thenReturn(mockData);
+                mockedStatic.when(() -> ExcelGenerator.generate(mockData)).thenReturn(dummyExcel);
 
-            // then
-            assertThat(result).isEqualTo(dummyExcel);
-            verify(excelMapper).selectSupportListForExcel(roundId, deptId, positionId, stabilityType);
-            mockedStatic.verify(() -> ExcelGenerator.generate(mockData));
+                // when
+                byte[] result = service.downloadExcel(roundId, deptId, positionId, stabilityType);
+
+                // then
+                assertThat(result).isEqualTo(dummyExcel);
+                verify(excelMapper).selectSupportListForExcel(roundId, deptId, positionId, stabilityType);
+                mockedStatic.verify(() -> ExcelGenerator.generate(mockData));
+            }
         }
     }
 }

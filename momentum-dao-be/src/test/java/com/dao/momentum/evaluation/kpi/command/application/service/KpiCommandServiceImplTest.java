@@ -48,7 +48,7 @@ class KpiCommandServiceImplTest {
     private final Long kpiId = 100L;
     private final String reason = "목표 변경";
 
-    private Kpi mockKpi(Status status, UseStatus isDeleted, Long ownerId) {
+    protected Kpi mockitKpi(Status status, UseStatus isDeleted, Long ownerId) {
         return Kpi.builder()
                 .kpiId(kpiId)
                 .empId(ownerId)
@@ -58,15 +58,16 @@ class KpiCommandServiceImplTest {
     }
 
     private KpiCreateRequest createRequest() {
-        KpiCreateRequest request = new KpiCreateRequest();
-        setField(request, "goal", "분기 매출 10억 달성");
-        setField(request, "goalValue", 1_000_000_000);
-        setField(request, "kpiProgress", 0);
-        setField(request, "progress25", "계약 건수 5건");
-        setField(request, "progress50", "계약 건수 10건");
-        setField(request, "progress75", "계약 건수 15건");
-        setField(request, "progress100", "계약 건수 20건");
-        setField(request, "deadline", LocalDate.of(2025, 12, 31));
+        KpiCreateRequest request = KpiCreateRequest.builder()
+                .goal("분기 매출 10억 달성")
+                .goalValue(1_000_000_000)
+                .kpiProgress(0)
+                .progress25("계약 건수 5건")
+                .progress50("계약 건수 10건")
+                .progress75("계약 건수 15건")
+                .progress100("계약 건수 20건")
+                .deadline(LocalDate.of(2025, 12, 31))
+                .build();
         return request;
     }
 
@@ -80,87 +81,98 @@ class KpiCommandServiceImplTest {
         }
     }
 
-    @Test
-    @DisplayName("KPI 생성 성공")
-    void createKpi_success() {
-        KpiCreateRequest request = createRequest();
-        KpiCreateDTO dto = request.toDTO();
-        Kpi saved = mock(Kpi.class);
+    @Nested
+    @DisplayName("KPI 생성 관련 테스트")
+    class CreateKpiTests {
 
-        when(saved.getKpiId()).thenReturn(kpiId);
-        when(kpiRepository.save(any(Kpi.class))).thenReturn(saved);
+        @Test
+        @DisplayName("KPI 생성 성공")
+        void createKpi_success() {
+            KpiCreateRequest request = createRequest();
+            KpiCreateDTO dto = request.toDTO();
+            Kpi saved = mock(Kpi.class);
 
-        KpiCreateResponse response = service.createKpi(empId, dto);
+            when(saved.getKpiId()).thenReturn(kpiId);
+            when(kpiRepository.save(any(Kpi.class))).thenReturn(saved);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getKpiId()).isEqualTo(kpiId);
-        assertThat(response.getMessage()).contains("성공적으로 생성");
-        verify(kpiRepository).save(any(Kpi.class));
+            KpiCreateResponse response = service.createKpi(empId, dto);
+
+            assertThat(response).isNotNull();
+            assertThat(response.kpiId()).isEqualTo(kpiId);
+            assertThat(response.message()).contains("성공적으로 생성");
+            verify(kpiRepository).save(any(Kpi.class));
+        }
     }
 
-    @Test
-    @DisplayName("KPI 취소 성공")
-    void cancelKpi_success() {
-        Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.N, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
-        when(kpiRepository.save(any(Kpi.class))).thenReturn(kpi);
+    @Nested
+    @DisplayName("KPI 취소 관련 테스트")
+    class CancelKpiTests {
 
-        CancelKpiResponse response = service.cancelKpi(empId, kpiId, reason);
+        @Test
+        @DisplayName("KPI 취소 성공")
+        void cancelKpi_success() {
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.N, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+            when(kpiRepository.save(any(Kpi.class))).thenReturn(kpi);
 
-        assertThat(response).isNotNull();
-        assertThat(response.getKpiId()).isEqualTo(kpiId);
-        assertThat(response.getMessage()).contains("성공적으로 취소");
-        verify(kpiRepository).save(kpi);
+            CancelKpiResponse response = service.cancelKpi(empId, kpiId, reason);
+
+            assertThat(response).isNotNull();
+            assertThat(response.kpiId()).isEqualTo(kpiId);
+            assertThat(response.message()).contains("성공적으로 취소");
+            verify(kpiRepository).save(kpi);
+        }
+
+        @Test
+        @DisplayName("KPI가 존재하지 않으면 예외 발생")
+        void cancelKpi_kpiNotFound() {
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.cancelKpi(empId, kpiId, reason)
+            );
+            assertEquals(ErrorCode.KPI_NOT_FOUND, ex.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("본인이 아닌 KPI를 취소하려 하면 예외 발생")
+        void cancelKpi_forbidden() {
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.N, 999L);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.cancelKpi(empId, kpiId, reason)
+            );
+            assertEquals(ErrorCode.KPI_REQUEST_FORBIDDEN, ex.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("이미 취소된 KPI는 다시 취소할 수 없음")
+        void cancelKpi_alreadyDeleted() {
+            Kpi kpi = mockitKpi(Status.ACCEPTED, UseStatus.Y, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.cancelKpi(empId, kpiId, reason)
+            );
+            assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
+        }
+
+        @Test
+        @DisplayName("승인되지 않은 KPI는 취소할 수 없음")
+        void cancelKpi_notAcceptedStatus() {
+            Kpi kpi = mockitKpi(Status.PENDING, UseStatus.N, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.cancelKpi(empId, kpiId, reason)
+            );
+            assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
+        }
+
     }
 
-    @Test
-    @DisplayName("KPI가 존재하지 않으면 예외 발생")
-    void cancelKpi_kpiNotFound() {
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
-
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.cancelKpi(empId, kpiId, reason)
-        );
-        assertEquals(ErrorCode.KPI_NOT_FOUND, ex.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("본인이 아닌 KPI를 취소하려 하면 예외 발생")
-    void cancelKpi_forbidden() {
-        Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.N, 999L);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
-
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.cancelKpi(empId, kpiId, reason)
-        );
-        assertEquals(ErrorCode.KPI_REQUEST_FORBIDDEN, ex.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("이미 취소된 KPI는 다시 취소할 수 없음")
-    void cancelKpi_alreadyDeleted() {
-        Kpi kpi = mockKpi(Status.ACCEPTED, UseStatus.Y, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
-
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.cancelKpi(empId, kpiId, reason)
-        );
-        assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
-    }
-
-    @Test
-    @DisplayName("승인되지 않은 KPI는 취소할 수 없음")
-    void cancelKpi_notAcceptedStatus() {
-        Kpi kpi = mockKpi(Status.PENDING, UseStatus.N, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
-
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.cancelKpi(empId, kpiId, reason)
-        );
-        assertEquals(ErrorCode.KPI_INVALID_STATUS, ex.getErrorCode());
-    }
-
-    private Kpi mockKpi(int progress, Long ownerId) {
+    protected Kpi mockKpi(int progress, Long ownerId) {
         return Kpi.builder()
                 .kpiId(kpiId)
                 .empId(ownerId)
@@ -170,78 +182,87 @@ class KpiCommandServiceImplTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("진척도 수정 성공")
-    void updateProgress_success() {
-        Kpi kpi = mockKpi(30, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+    @Nested
+    @DisplayName("진척도 수정 관련 테스트")
+    class UpdateProgressTests {
+        @Test
+        @DisplayName("진척도 수정 성공")
+        void updateProgress_success() {
+            Kpi kpi = mockKpi(30, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(75);
+            KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                    .progress(75)
+                    .build();
 
-        KpiProgressUpdateResponse res = service.updateProgress(empId, kpiId, req);
+            KpiProgressUpdateResponse res = service.updateProgress(empId, kpiId, req);
 
-        assertEquals(kpiId, res.getKpiId());
-        assertEquals(75, res.getProgress());
-        assertEquals("KPI 진척도가 성공적으로 업데이트되었습니다.", res.getMessage()); // ✔️ 핵심 수정
-    }
+            assertEquals(kpiId, res.kpiId());
+            assertEquals(75, res.progress());
+            assertEquals("KPI 진척도가 성공적으로 업데이트되었습니다.", res.message()); // ✔️ 핵심 수정
+        }
 
-    @Test
-    @DisplayName("음수 진척도 예외")
-    void updateProgress_negative() {
-        Kpi kpi = mockKpi(0, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+        @Test
+        @DisplayName("음수 진척도 예외")
+        void updateProgress_negative() {
+            Kpi kpi = mockKpi(0, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(-10);
+            KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                    .progress(-10)
+                    .build();
 
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.updateProgress(empId, kpiId, req)
-        );
-        assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
-    }
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.updateProgress(empId, kpiId, req)
+            );
+            assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
+        }
 
-    @Test
-    @DisplayName("100 초과 진척도 예외")
-    void updateProgress_over100() {
-        Kpi kpi = mockKpi(0, empId);
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+        @Test
+        @DisplayName("100 초과 진척도 예외")
+        void updateProgress_over100() {
+            Kpi kpi = mockKpi(0, empId);
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(150);
+            KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                    .progress(150)
+                    .build();
 
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.updateProgress(empId, kpiId, req)
-        );
-        assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
-    }
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.updateProgress(empId, kpiId, req)
+            );
+            assertEquals(ErrorCode.KPI_EDIT_FORBIDDEN, ex.getErrorCode());
+        }
 
-    @Test
-    @DisplayName("다른 사원이 수정 시도시 예외")
-    void updateProgress_forbidden() {
-        Kpi kpi = mockKpi(2, 999L); // 다른 사원이 소유
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
+        @Test
+        @DisplayName("다른 사원이 수정 시도시 예외")
+        void updateProgress_forbidden() {
+            Kpi kpi = mockKpi(2, 999L); // 다른 사원이 소유
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.of(kpi));
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(50);
+            KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                    .progress(50)
+                    .build();
 
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.updateProgress(empId, kpiId, req)
-        );
-        assertEquals(ErrorCode.KPI_REQUEST_FORBIDDEN, ex.getErrorCode());
-    }
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.updateProgress(empId, kpiId, req)
+            );
+            assertEquals(ErrorCode.KPI_REQUEST_FORBIDDEN, ex.getErrorCode());
+        }
 
-    @Test
-    @DisplayName("존재하지 않는 KPI")
-    void updateProgress_notFound() {
-        when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
+        @Test
+        @DisplayName("존재하지 않는 KPI")
+        void updateProgress_notFound() {
+            when(kpiRepository.findById(kpiId)).thenReturn(Optional.empty());
 
-        KpiProgressUpdateRequest req = new KpiProgressUpdateRequest();
-        req.setProgress(60);
+            KpiProgressUpdateRequest req = KpiProgressUpdateRequest.builder()
+                    .progress(60)
+                    .build();
 
-        KpiException ex = assertThrows(KpiException.class, () ->
-                service.updateProgress(empId, kpiId, req)
-        );
-        assertEquals(ErrorCode.KPI_NOT_FOUND, ex.getErrorCode());
+            KpiException ex = assertThrows(KpiException.class, () ->
+                    service.updateProgress(empId, kpiId, req)
+            );
+            assertEquals(ErrorCode.KPI_NOT_FOUND, ex.getErrorCode());
+        }
     }
 }

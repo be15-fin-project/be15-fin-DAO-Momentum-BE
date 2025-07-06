@@ -1,21 +1,19 @@
 package com.dao.momentum.evaluation.kpi.query.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Builder;
 
-@Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Schema(description = "KPI 통계 응답 DTO")
-public class KpiStatisticsResponseDto {
+public record KpiStatisticsResponseDto(
 
-    @Schema(description = "전체 KPI 수", example = "35")
-    private int totalKpiCount;
+        @Schema(description = "전체 KPI 수", example = "35")
+        int totalKpiCount,
 
-    @Schema(description = "완료된 KPI 수", example = "21")
-    private int completedKpiCount;
+        @Schema(description = "완료된 KPI 수", example = "21")
+        int completedKpiCount,
 
-    @Schema(description = "평균 진척도 (%)", example = "62.5")
-    private double averageProgress;
-}
+        @Schema(description = "평균 진척도 (%)", example = "62.5")
+        double averageProgress
+
+) {}

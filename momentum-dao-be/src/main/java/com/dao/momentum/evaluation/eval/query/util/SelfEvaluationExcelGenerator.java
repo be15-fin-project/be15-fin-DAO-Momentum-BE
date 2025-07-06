@@ -1,6 +1,6 @@
 package com.dao.momentum.evaluation.eval.query.util;
 
-import com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationExcelDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.SelfEvaluationExcelDto;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 

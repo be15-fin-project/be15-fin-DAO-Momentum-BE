@@ -39,15 +39,15 @@ class EvalFormQueryControllerTest {
     @DisplayName("평가 양식 상세 조회 성공")
     @WithMockUser
     void getFormDetail_success() throws Exception {
-        // given
+        // given: EvalFormDetailResultDto 생성
         PromptDto prompt1 = PromptDto.builder()
                 .content("회사의 비전에 공감하며 일하고 있다.")
-                .isPositive(true)
+                .isPositive(true)  // 필드 확인
                 .build();
 
         PromptDto prompt2 = PromptDto.builder()
                 .content("조직의 목표와 나의 목표가 일치한다.")
-                .isPositive(true)
+                .isPositive(true)  // 필드 확인
                 .build();
 
         FactorDto factor = FactorDto.builder()
@@ -60,20 +60,22 @@ class EvalFormQueryControllerTest {
                 .factors(List.of(factor))
                 .build();
 
+        // mock service method
         Mockito.when(evalFormQueryService.getFormDetail(anyInt(), anyInt()))
                 .thenReturn(responseDto);
 
-        // when & then
+        // when & then: 실제 API 호출을 수행하고 응답 결과를 검증
         mockMvc.perform(get("/eval-forms/1")
                         .param("roundId", "3"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.formName").value("조직 몰입도"))
-                .andExpect(jsonPath("$.data.factors", hasSize(1)))
-                .andExpect(jsonPath("$.data.factors[0].propertyName").value("조직 몰입"))
-                .andExpect(jsonPath("$.data.factors[0].prompts", hasSize(2)))
-                .andExpect(jsonPath("$.data.factors[0].prompts[0].content").value("회사의 비전에 공감하며 일하고 있다."))
-                .andExpect(jsonPath("$.data.factors[0].prompts[0].positive").value(true))
-                .andDo(print());
+                .andExpect(status().isOk())  // HTTP 상태 코드가 200 OK인지 확인
+                .andExpect(jsonPath("$.success").value(true))  // success 필드 값이 true인지 확인
+                .andExpect(jsonPath("$.data.formName").value("조직 몰입도"))  // formName이 올바른지 확인
+                .andExpect(jsonPath("$.data.factors", hasSize(1)))  // factors 배열의 크기가 1인지 확인
+                .andExpect(jsonPath("$.data.factors[0].propertyName").value("조직 몰입"))  // factor의 propertyName 확인
+                .andExpect(jsonPath("$.data.factors[0].prompts", hasSize(2)))  // prompts가 2개인지 확인
+                .andExpect(jsonPath("$.data.factors[0].prompts[0].content").value("회사의 비전에 공감하며 일하고 있다."))  // 첫 번째 prompt의 content 확인
+                .andExpect(jsonPath("$.data.factors[0].prompts[0].isPositive").value(true))  // 첫 번째 prompt의 positive 값 확인
+                .andDo(print());  // 응답 내용 출력 (디버깅 용도)
     }
+
 }

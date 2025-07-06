@@ -1,10 +1,10 @@
 package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
-import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.*;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.OrgEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.SelfEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -40,7 +40,7 @@ public class KpiCommandController {
             @RequestBody @Valid KpiCancelRequest request
     ) {
         Long empId = Long.parseLong(userDetails.getUsername());
-        CancelKpiResponse response = kpiCommandService.cancelKpi(empId, kpiId, request.getReason());
+        CancelKpiResponse response = kpiCommandService.cancelKpi(empId, kpiId, request.reason());
         return ApiResponse.success(response);
     }
 

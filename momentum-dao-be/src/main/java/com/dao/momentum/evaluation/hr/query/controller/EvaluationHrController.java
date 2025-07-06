@@ -7,9 +7,7 @@ import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationDetailResul
 import com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationListResultDto;
 import com.dao.momentum.evaluation.hr.query.service.EvaluationHrService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;

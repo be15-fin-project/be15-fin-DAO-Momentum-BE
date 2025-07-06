@@ -41,7 +41,7 @@
             </if>
         </where>
         ORDER BY o.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
     <!-- 이의제기 전체 개수 조회 -->
