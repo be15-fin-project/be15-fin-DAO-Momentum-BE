@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttachmentDto {
+    private Long fileId;
     private String url;
     private String name;
 }
