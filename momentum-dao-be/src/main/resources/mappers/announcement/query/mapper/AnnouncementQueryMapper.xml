@@ -49,6 +49,7 @@
     <!-- collection 태그의 column 속성은 단일 값 매핑처럼 컬럼의 값을 직접 가져오는 것이 아니라, 그룹핑 기준 또는 하위 쿼리의 파라미터 역할 -->
     <select id="findAttachmentsByAnnouncementId" resultType="com.dao.momentum.file.command.application.dto.response.AttachmentDto">
         SELECT
+        f.attachment_id AS fileId,
         f.s3_key AS url,
         f.name   AS name
         FROM file f
