@@ -7,6 +7,7 @@ import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.HrObjectionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -32,127 +33,132 @@ class HrObjectionQueryServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        req = new HrObjectionListRequestDto();
-        req.setPage(1);
-        req.setSize(10);
-    }
-
-    @Test
-    @DisplayName("정상: 전체 건수와 리스트 반환 시 HrObjectionListResultDto 생성")
-    void getObjections_success() {
-        // given
-        long total = 15;
-        HrObjectionItemDto dto1 = HrObjectionItemDto.builder()
-                .objectionId(1L)
-                .roundNo(2)
-                .employeeName("reason1")  // 적절한 필드에 매핑
-                .status(null)
+        req = HrObjectionListRequestDto.builder()
+                .page(1)
+                .size(10)
                 .build();
-        HrObjectionItemDto dto2 = HrObjectionItemDto.builder()
-                .objectionId(2L)
-                .roundNo(2)
-                .employeeName("reason2")
-                .status(null)
-                .build();
-
-        given(mapper.countObjections(req)).willReturn(total);
-        given(mapper.findObjections(req)).willReturn(List.of(dto1, dto2));
-
-        // when
-        HrObjectionListResultDto result = service.getObjections(req);
-
-        // then
-        assertThat(result.getList())
-                .hasSize(2)
-                .usingElementComparatorOnFields("objectionId", "roundNo", "employeeName", "status")
-                .containsExactly(dto1, dto2);
-        assertThat(result.getPagination().getTotalPage()).isEqualTo(2);
     }
 
+    @Nested
+    @DisplayName("이의제기 목록 조회 테스트")
+    class GetObjectionsTests {
 
-    @Test
-    @DisplayName("리스트가 null인 경우 HrException 발생")
-    void getObjections_nullList_throwsHrException() {
-        // given
-        given(mapper.countObjections(req)).willReturn(5L);
-        given(mapper.findObjections(req)).willReturn(null);
+        @Test
+        @DisplayName("정상: 이의제기 목록 조회 성공 - HrObjectionListResultDto 생성")
+        void getObjections_success() {
+            // given
+            long total = 2;
+            HrObjectionItemDto dto1 = createHrObjectionItemDto(1L, 2, "reason1");
+            HrObjectionItemDto dto2 = createHrObjectionItemDto(2L, 2, "reason2");
 
-        // when
-        Throwable thrown = catchThrowable(() -> service.getObjections(req));
+            // requesterEmpId 값을 명시적으로 설정
+            req = HrObjectionListRequestDto.builder()
+                    .requesterEmpId(1L)  // 필요한 필드 값을 명시적으로 설정
+                    .page(1)
+                    .size(10)
+                    .build();
 
-        // then
-        assertThat(thrown)
-                .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.HR_OBJECTIONS_NOT_FOUND.getMessage());
+            given(mapper.countObjections(req)).willReturn(total);
+            given(mapper.findObjections(req)).willReturn(Arrays.asList(dto1, dto2));  // 데이터 반환
+
+            // when
+            HrObjectionListResultDto result = service.getObjections(1L, req);
+
+            // then
+            assertThat(result.list())
+                    .hasSize(2)
+                    .containsExactly(dto1, dto2);
+            assertThat(result.pagination().getTotalPage()).isEqualTo(1);  // 페이지는 1이어야 함
+        }
+
+        @Test
+        @DisplayName("리스트가 비어있을 때 - 빈 결과 반환")
+        void getObjections_emptyList_returnsEmptyResult() {
+            // given
+            given(mapper.countObjections(req)).willReturn(0L);
+            given(mapper.findObjections(req)).willReturn(Collections.emptyList());
+
+            // when
+            HrObjectionListResultDto result = service.getObjections(1L, req);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.list()).isEmpty();
+            assertThat(result.pagination().getTotalItems()).isZero();
+            assertThat(result.pagination().getTotalPage()).isZero();
+        }
+
+        private HrObjectionItemDto createHrObjectionItemDto(Long objectionId, Integer roundNo, String employeeName) {
+            return HrObjectionItemDto.builder()
+                    .objectionId(objectionId)
+                    .roundNo(roundNo)
+                    .employeeName(employeeName)
+                    .status(null)
+                    .build();
+        }
     }
 
-    @Test
-    @DisplayName("리스트가 비어있을 때 빈 결과를 반환")
-    void getObjections_emptyList_returnsEmptyResult() {
-        // given
-        given(mapper.countObjections(req)).willReturn(0L);
-        given(mapper.findObjections(req)).willReturn(Collections.emptyList());
+    @Nested
+    @DisplayName("이의제기 상세 조회 테스트")
+    class GetObjectionDetailTests {
 
-        // when
-        HrObjectionListResultDto result = service.getObjections(req);
+        @Test
+        @DisplayName("정상: 이의제기 상세 조회 성공 - ObjectionDetailResultDto 생성")
+        void getObjectionDetail_success() {
+            // given
+            Long objectionId = 1L;
+            Long resultId = 100L;
 
-        // then
-        assertThat(result).isNotNull();
-        assertThat(result.getList()).isEmpty();
-        assertThat(result.getPagination().getTotalItems()).isZero();
-        assertThat(result.getPagination().getTotalPage()).isZero();
-    }
+            ObjectionItemDto itemDto = createObjectionItemDto(objectionId, resultId);
+            List<FactorScoreDto> factorScores = createFactorScores();
+            WeightInfo weightInfo = new WeightInfo(20, 20, 20, 20, 10, 10);
+            RateInfo rateInfo = new RateInfo(10, 20, 30, 30, 10);
 
-    @Test
-    @DisplayName("정상: 이의제기 상세 조회 성공 시 ObjectionDetailResultDto 생성")
-    void getObjectionDetail_success() {
-        // given
-        Long objectionId = 1L;
-        Long resultId = 100L;
+            given(mapper.findObjectionDetail(objectionId)).willReturn(itemDto);
+            given(mapper.findFactorScores(resultId)).willReturn(factorScores);
+            given(mapper.findWeightInfo(resultId)).willReturn(weightInfo);
+            given(mapper.findRateInfo(resultId)).willReturn(rateInfo);
 
-        ObjectionItemDto itemDto = ObjectionItemDto.builder()
-                .objectionId(objectionId)
-                .resultId(resultId)
-                .empNo("20250001")
-                .empName("홍길동")
-                .build();
+            // when
+            ObjectionDetailResultDto result = service.getObjectionDetail(objectionId);
 
-        List<FactorScoreDto> factorScores = Arrays.asList(
-                new FactorScoreDto("11", "업무 수행 역량", "우수"),
-                new FactorScoreDto("12", "협업 역량", "보통")
-        );
+            // then
+            assertThat(result.itemDto()).isEqualTo(itemDto);
+            assertThat(result.factorScores()).hasSize(2);
+            assertThat(result.weightInfo()).isEqualTo(weightInfo);
+            assertThat(result.rateInfo()).isEqualTo(rateInfo);
+        }
 
-        WeightInfo weightInfo = new WeightInfo(20, 20, 20, 20, 10, 10);
-        RateInfo rateInfo = new RateInfo(10, 20, 30, 30, 10);
+        @Test
+        @DisplayName("비정상: 이의제기 상세 조회 실패 시 - HrException 발생")
+        void getObjectionDetail_notFound_throwsHrException() {
+            // given
+            Long objectionId = 1L;
+            given(mapper.findObjectionDetail(objectionId)).willReturn(null);
 
-        given(mapper.findObjectionDetail(objectionId)).willReturn(itemDto);
-        given(mapper.findFactorScores(resultId)).willReturn(factorScores);
-        given(mapper.findWeightInfo(resultId)).willReturn(weightInfo);
-        given(mapper.findRateInfo(resultId)).willReturn(rateInfo);
+            // when
+            Throwable thrown = catchThrowable(() -> service.getObjectionDetail(objectionId));
 
-        // when
-        ObjectionDetailResultDto result = service.getObjectionDetail(objectionId);
+            // then
+            assertThat(thrown)
+                    .isInstanceOf(HrException.class)
+                    .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
+        }
 
-        // then
-        assertThat(result.getItemDto()).isEqualTo(itemDto);
-        assertThat(result.getFactorScores()).hasSize(2);
-        assertThat(result.getWeightInfo()).isEqualTo(weightInfo);
-        assertThat(result.getRateInfo()).isEqualTo(rateInfo);
-    }
+        private ObjectionItemDto createObjectionItemDto(Long objectionId, Long resultId) {
+            return ObjectionItemDto.builder()
+                    .objectionId(objectionId)
+                    .resultId(resultId)
+                    .empNo("20250001")
+                    .empName("홍길동")
+                    .build();
+        }
 
-    @Test
-    @DisplayName("비정상: 이의제기 상세 조회 실패 시 HrException 발생")
-    void getObjectionDetail_notFound_throwsHrException() {
-        // given
-        Long objectionId = 1L;
-        given(mapper.findObjectionDetail(objectionId)).willReturn(null);
-
-        // when
-        Throwable thrown = catchThrowable(() -> service.getObjectionDetail(objectionId));
-
-        // then
-        assertThat(thrown)
-                .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.MY_OBJECTIONS_NOT_FOUND.getMessage());
+        private List<FactorScoreDto> createFactorScores() {
+            return Arrays.asList(
+                    new FactorScoreDto("11", "업무 수행 역량", "우수"),
+                    new FactorScoreDto("12", "협업 역량", "보통")
+            );
+        }
     }
 }

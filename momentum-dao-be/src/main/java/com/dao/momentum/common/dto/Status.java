@@ -1,9 +1,12 @@
 package com.dao.momentum.common.dto;
 
+import lombok.Getter;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Getter
 public enum Status {
     PENDING(1),
     ACCEPTED(2),
@@ -13,10 +16,6 @@ public enum Status {
 
     Status(int id) {
         this.id = id;
-    }
-
-    public int getId() {
-        return id;
     }
 
     private static final Map<Integer, Status> ID_MAP = Stream.of(values())

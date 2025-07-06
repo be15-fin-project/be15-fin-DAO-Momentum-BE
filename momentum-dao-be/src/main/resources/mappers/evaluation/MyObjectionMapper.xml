@@ -26,7 +26,7 @@
                 AND r.round_id = #{req.roundId}
             </if>
         ORDER BY o.objection_id DESC
-        LIMIT #{req.size} OFFSET #{req.offset}
+        LIMIT #{req.size} OFFSET #{req.getOffset}
     </select>
 
     <select id="countMyObjections" resultType="long">

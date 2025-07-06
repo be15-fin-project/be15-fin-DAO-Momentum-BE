@@ -176,7 +176,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
     private void notifyNextApproveLineIfExists(ApproveLine currentLine) {
         approveLineRepository.findNextLine(
                 currentLine.getApproveId(),
-                currentLine.getApproveLineOrder()       
+                currentLine.getApproveLineOrder()
         ).ifPresent(nextLine -> {
             // 다음 결재선에 속한 결재자 전부 조회 하기
             List<ApproveLineList> assignees =
@@ -206,7 +206,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
                 workApplyCommandService.applyApprovalWork(approve);
             } else if(approveType == ApproveType.CANCEL) { // 취소 결재인 경우
                 Long parentApproveId = approve.getParentApproveId();
-                
+
                 // 부모 결재 가져오기
                 Approve parentApprove = approveRepository
                         .getApproveByApproveId(parentApproveId)

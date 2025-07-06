@@ -1,11 +1,10 @@
 package com.dao.momentum.evaluation.eval.query.controller;
 
-import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskListResultDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.NoneSubmitDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.NoneSubmitDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationTaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -121,7 +120,7 @@ class EvaluationTaskControllerTest {
                 .pagination(pag)
                 .build();
 
-        Mockito.when(evaluationTaskService.getTasks(eq(53L), argThat(req -> req.getFormId() == 2)))
+        Mockito.when(evaluationTaskService.getTasks(eq(53L), argThat(req -> req.formId() == 2)))
                 .thenReturn(result);
 
         // when & then

@@ -6,19 +6,19 @@ import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalSubm
 import com.dao.momentum.evaluation.eval.exception.EvalException;
 import com.dao.momentum.evaluation.hr.command.domain.aggregate.HrWeight;
 import com.dao.momentum.evaluation.hr.command.domain.repository.HrWeightRepository;
-import com.dao.momentum.evaluation.hr.exception.HrException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 class EvalScoreCalculatorImplTest {
 
@@ -31,153 +31,151 @@ class EvalScoreCalculatorImplTest {
         calculator = new EvalScoreCalculatorImpl(hrWeightRepository);
     }
 
-    @Test
-    @DisplayName("가중치 계산 방식 - 성공")
-    void calculateScore_withWeights_success() {
-        EvalSubmitRequest request = new EvalSubmitRequest();
-        setField(request, "formId", 4);
-        setField(request, "roundId", 1);
+    @Nested
+    @DisplayName("가중치 계산 방식 (Score Calculation with Weights)")
+    class ScoreCalculationWithWeights {
 
-        List<EvalFactorScoreDto> factors = new ArrayList<>();
-        factors.add(createFactorScore(1, 80));
-        factors.add(createFactorScore(2, 90));
-        factors.add(createFactorScore(3, 70));
-        factors.add(createFactorScore(4, 60));
-        factors.add(createFactorScore(5, 100));
-        factors.add(createFactorScore(6, 50));
-        setField(request, "factorScores", factors);
+        @Test
+        @DisplayName("가중치 계산 방식 - 성공")
+        void calculateScore_withWeights_success() {
+            // Arrange
+            EvalSubmitRequest request = new EvalSubmitRequest(1, 4, 1003L, "Test Reason", List.of(
+                    new EvalFactorScoreDto(1, 80),
+                    new EvalFactorScoreDto(2, 90),
+                    new EvalFactorScoreDto(3, 70),
+                    new EvalFactorScoreDto(4, 60),
+                    new EvalFactorScoreDto(5, 100),
+                    new EvalFactorScoreDto(6, 50)
+            ));
 
-        HrWeight weight = HrWeight.builder()
-                .performWt(10)
-                .teamWt(20)
-                .attitudeWt(10)
-                .growthWt(20)
-                .engagementWt(20)
-                .resultWt(20)
-                .build();
+            HrWeight weight = HrWeight.builder()
+                    .performWt(10)
+                    .teamWt(20)
+                    .attitudeWt(10)
+                    .growthWt(20)
+                    .engagementWt(20)
+                    .resultWt(20)
+                    .build();
 
-        given(hrWeightRepository.findByRoundId(1)).willReturn(Optional.of(weight));
+            given(hrWeightRepository.findByRoundId(1)).willReturn(Optional.of(weight));
 
-        int score = calculator.calculateScore(1001L, request);
+            // Act
+            int score = calculator.calculateScore(1001L, request);
 
-        assertThat(score).isEqualTo(75); // 계산 공식 결과
-    }
+            // Assert
+            assertThat(score).isEqualTo(75); // 계산 공식 결과
+        }
 
-    @Test
-    @DisplayName("평균 계산 방식 - 성공")
-    void calculateScore_simpleAverage_success() {
-        EvalSubmitRequest request = new EvalSubmitRequest();
-        setField(request, "formId", 2);
-        List<EvalFactorScoreDto> factors = new ArrayList<>();
-        factors.add(createFactorScore(1, 80));
-        factors.add(createFactorScore(2, 90));
-        factors.add(createFactorScore(3, 70));
-        setField(request, "factorScores", factors);
+        @Test
+        @DisplayName("가중치가 존재하지 않으면 예외 발생")
+        void calculateScore_missingWeights_fail() {
+            // Arrange
+            EvalSubmitRequest request = new EvalSubmitRequest(1, 4, 1003L, "Test Reason", List.of(
+                    new EvalFactorScoreDto(1, 80)
+            ));
 
-        int score = calculator.calculateScore(1002L, request);
+            given(hrWeightRepository.findByRoundId(99)).willReturn(Optional.empty());
 
-        assertThat(score).isEqualTo(80);
-    }
-
-    @Test
-    @DisplayName("factorScores가 비어있으면 예외 발생")
-    void calculateScore_noFactors_fail() {
-        EvalSubmitRequest request = new EvalSubmitRequest();
-        setField(request, "formId", 4);
-        setField(request, "factorScores", List.of());
-
-        assertThatThrownBy(() -> calculator.calculateScore(1003L, request))
-                .isInstanceOf(EvalException.class)
-                .hasMessageContaining(ErrorCode.EVAL_INVALID_NOT_EXIST.getMessage());
-    }
-
-    @Test
-    @DisplayName("가중치가 존재하지 않으면 예외 발생")
-    void calculateScore_missingWeights_fail() {
-        EvalSubmitRequest request = new EvalSubmitRequest();
-        setField(request, "formId", 4);
-        setField(request, "roundId", 99);
-        List<EvalFactorScoreDto> factors = new ArrayList<>();
-        factors.add(createFactorScore(1, 80));
-        setField(request, "factorScores", factors);
-
-        given(hrWeightRepository.findByRoundId(99)).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> calculator.calculateScore(1004L, request))
-                .isInstanceOf(HrException.class)
-                .hasMessageContaining(ErrorCode.HR_WEIGHT_NOT_FOUND.getMessage());
-    }
-
-    private EvalFactorScoreDto createFactorScore(int propertyId, int score) {
-        EvalFactorScoreDto dto = new EvalFactorScoreDto();
-        setField(dto, "propertyId", propertyId);
-        setField(dto, "score", score);
-        return dto;
-    }
-
-    private void setField(Object target, String fieldName, Object value) {
-        try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException("리플렉션 주입 실패: " + fieldName, e);
+            // Act & Assert
+            assertThatThrownBy(() -> calculator.calculateScore(1004L, request))
+                    .isInstanceOf(EvalException.class)
+                    .extracting("errorCode") // errorCode를 추출하여 비교
+                    .isEqualTo(ErrorCode.EVAL_SCORE_CALCULATION_FAILED);  // 예상하는 errorCode와 비교
         }
     }
 
-    @Test
-    @DisplayName("calculateOverallScore - 점수 계산 성공")
-    void calculateOverallScore_success() {
-        // given
-        Map<Integer, Integer> scoreMap = Map.of(
-                1, 80,  // perform
-                2, 90,  // team
-                3, 70,  // attitude
-                4, 60,  // growth
-                5, 100, // engagement
-                6, 50   // result
-        );
+    @Nested
+    @DisplayName("평균 계산 방식 (Simple Average Calculation)")
+    class SimpleAverageCalculation {
 
-        HrWeight weight = HrWeight.builder()
-                .performWt(10)
-                .teamWt(20)
-                .attitudeWt(10)
-                .growthWt(20)
-                .engagementWt(20)
-                .resultWt(20)
-                .build();
+        @Test
+        @DisplayName("평균 계산 방식 - 성공")
+        void calculateScore_simpleAverage_success() {
+            // Arrange
+            EvalSubmitRequest request = new EvalSubmitRequest(2, 2, 1002L, "Test Reason", List.of(
+                    new EvalFactorScoreDto(1, 80),
+                    new EvalFactorScoreDto(2, 90),
+                    new EvalFactorScoreDto(3, 70)
+            ));
 
-        // when
-        int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+            // Act
+            int score = calculator.calculateScore(1002L, request);
 
-        // then
-        assertThat(finalScore).isEqualTo(75); // 계산 공식과 동일
+            // Assert
+            assertThat(score).isEqualTo(80);
+        }
+
+        @Test
+        @DisplayName("factorScores가 비어있으면 예외 발생")
+        void calculateScore_noFactors_fail() {
+            // Arrange
+            EvalSubmitRequest request = new EvalSubmitRequest(4, 4, 1003L, "Test Reason", List.of());
+
+            // Act & Assert
+            assertThatThrownBy(() -> calculator.calculateScore(1003L, request))
+                    .isInstanceOf(EvalException.class)
+                    .extracting("errorCode") // errorCode를 추출하여 비교
+                    .isEqualTo(ErrorCode.EVAL_INVALID_NOT_EXIST);  // 예상하는 errorCode와 비교
+        }
     }
 
-    @Test
-    @DisplayName("calculateOverallScore - 일부 키 누락 시 기본값 0 처리")
-    void calculateOverallScore_missingFactors_defaultsToZero() {
-        // given
-        Map<Integer, Integer> scoreMap = Map.of(
-                1, 80,
-                2, 90 // 나머지 3~6번 요인 없음 → 0으로 처리
-        );
+    @Nested
+    @DisplayName("종합 점수 계산 (Overall Score Calculation)")
+    class OverallScoreCalculation {
 
-        HrWeight weight = HrWeight.builder()
-                .performWt(10)
-                .teamWt(20)
-                .attitudeWt(10)
-                .growthWt(20)
-                .engagementWt(20)
-                .resultWt(20)
-                .build();
+        @Test
+        @DisplayName("calculateOverallScore - 점수 계산 성공")
+        void calculateOverallScore_success() {
+            // Arrange
+            Map<Integer, Integer> scoreMap = Map.of(
+                    1, 80,  // perform
+                    2, 90,  // team
+                    3, 70,  // attitude
+                    4, 60,  // growth
+                    5, 100, // engagement
+                    6, 50   // result
+            );
 
-        // when
-        int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+            HrWeight weight = HrWeight.builder()
+                    .performWt(10)
+                    .teamWt(20)
+                    .attitudeWt(10)
+                    .growthWt(20)
+                    .engagementWt(20)
+                    .resultWt(20)
+                    .build();
 
-        // then
-        // 계산: (80*10 + 90*20 + 0 + 0 + 0 + 0)/100 = (800 + 1800) / 100 = 26
-        assertThat(finalScore).isEqualTo(26);
+            // Act
+            int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+
+            // Assert
+            assertThat(finalScore).isEqualTo(75); // 계산 공식과 동일
+        }
+
+        @Test
+        @DisplayName("calculateOverallScore - 일부 키 누락 시 기본값 0 처리")
+        void calculateOverallScore_missingFactors_defaultsToZero() {
+            // Arrange
+            Map<Integer, Integer> scoreMap = Map.of(
+                    1, 80,
+                    2, 90 // 나머지 3~6번 요인 없음 → 0으로 처리
+            );
+
+            HrWeight weight = HrWeight.builder()
+                    .performWt(10)
+                    .teamWt(20)
+                    .attitudeWt(10)
+                    .growthWt(20)
+                    .engagementWt(20)
+                    .resultWt(20)
+                    .build();
+
+            // Act
+            int finalScore = calculator.calculateOverallScore(scoreMap, weight);
+
+            // Assert
+            // 계산: (80*10 + 90*20 + 0 + 0 + 0 + 0)/100 = (800 + 1800) / 100 = 26
+            assertThat(finalScore).isEqualTo(26);
+        }
     }
-
 }

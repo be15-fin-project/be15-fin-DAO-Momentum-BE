@@ -2,7 +2,7 @@ package com.dao.momentum.evaluation.eval.query.service;
 
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTaskRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskListResultDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.NoneSubmitDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.NoneSubmitDto;
 
 import java.util.List;
 

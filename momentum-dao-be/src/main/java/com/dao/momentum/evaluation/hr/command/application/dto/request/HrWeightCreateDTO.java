@@ -1,27 +1,27 @@
 package com.dao.momentum.evaluation.hr.command.application.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
-public class HrWeightCreateDTO {
+@Builder
+@Schema(description = "HR 평가 가중치 생성 DTO")
+public record HrWeightCreateDTO(
+        @Schema(description = "실적 가중치", example = "40")
+        int performWt,
 
-    private int performWt;
-    private int teamWt;
-    private int attitudeWt;
-    private int growthWt;
-    private int engagementWt;
-    private int resultWt;
+        @Schema(description = "팀워크 가중치", example = "20")
+        int teamWt,
 
-    @Builder
-    public HrWeightCreateDTO(int performWt, int teamWt, int attitudeWt, int growthWt, int engagementWt, int resultWt) {
-        this.performWt = performWt;
-        this.teamWt = teamWt;
-        this.attitudeWt = attitudeWt;
-        this.growthWt = growthWt;
-        this.engagementWt = engagementWt;
-        this.resultWt = resultWt;
-    }
+        @Schema(description = "태도 가중치", example = "10")
+        int attitudeWt,
+
+        @Schema(description = "성장 가중치", example = "15")
+        int growthWt,
+
+        @Schema(description = "몰입도 가중치", example = "10")
+        int engagementWt,
+
+        @Schema(description = "결과 가중치", example = "5")
+        int resultWt
+) {
 }

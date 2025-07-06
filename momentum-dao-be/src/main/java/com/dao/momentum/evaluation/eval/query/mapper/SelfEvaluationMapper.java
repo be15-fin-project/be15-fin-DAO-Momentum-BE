@@ -1,8 +1,8 @@
 package com.dao.momentum.evaluation.eval.query.mapper;
 
-import com.dao.momentum.evaluation.eval.query.dto.request.SelfEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.FactorScoreDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.SelfEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.FactorScoreDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.SelfEvaluationResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

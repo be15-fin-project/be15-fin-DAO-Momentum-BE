@@ -2,10 +2,11 @@ package com.dao.momentum.retention.prospect.query.controller;
 
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseriesRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto;
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
 import com.dao.momentum.retention.prospect.query.service.RetentionStatisticsQueryService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,14 +33,10 @@ class RetentionStatisticsQueryControllerTest {
     @MockitoBean
     private RetentionStatisticsQueryService retentionStatisticsQueryService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
-    @DisplayName("평균 근속 지수 조회 성공")
+    @DisplayName("평균 근속 지수 조회 성공 - getAverageScore_success")
     @WithMockUser(authorities = "HR")
     void getAverageScore_success() throws Exception {
-        // given
         RetentionAverageScoreDto dto = RetentionAverageScoreDto.builder()
                 .averageScore(78.4)
                 .totalEmpCount(100)
@@ -50,7 +47,6 @@ class RetentionStatisticsQueryControllerTest {
         Mockito.when(retentionStatisticsQueryService.getAverageScore(any(RetentionStatisticsRequestDto.class)))
                 .thenReturn(dto);
 
-        // when & then
         mockMvc.perform(get("/retention/statistics/overview")
                         .param("year", "2025")
                         .param("month", "6"))
@@ -64,10 +60,9 @@ class RetentionStatisticsQueryControllerTest {
     }
 
     @Test
-    @DisplayName("부서별 근속 안정성 분포 조회 성공")
+    @DisplayName("부서별 근속 안정성 분포 조회 성공 - getStabilityDistribution_success")
     @WithMockUser(authorities = "MASTER")
     void getStabilityDistribution_success() throws Exception {
-        // given
         StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
                 .deptName("기획팀")
                 .positionName("대리")
@@ -82,7 +77,6 @@ class RetentionStatisticsQueryControllerTest {
         Mockito.when(retentionStatisticsQueryService.getStabilityDistributionByDept(any(RetentionInsightRequestDto.class)))
                 .thenReturn(List.of(dto));
 
-        // when & then
         mockMvc.perform(get("/retention/statistics/stability-distribution")
                         .param("roundId", "3"))
                 .andExpect(status().isOk())
@@ -98,10 +92,9 @@ class RetentionStatisticsQueryControllerTest {
     }
 
     @Test
-    @DisplayName("전체 근속 안정성 분포 조회 성공")
+    @DisplayName("전체 근속 안정성 분포 조회 성공 - getOverallStabilityDistribution_success")
     @WithMockUser(authorities = "HR")
     void getOverallStabilityDistribution_success() throws Exception {
-        // given
         StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
                 .deptName("전체")
                 .positionName(null)
@@ -116,7 +109,6 @@ class RetentionStatisticsQueryControllerTest {
         Mockito.when(retentionStatisticsQueryService.getOverallStabilityDistribution(any(RetentionInsightRequestDto.class)))
                 .thenReturn(dto);
 
-        // when & then
         mockMvc.perform(get("/retention/statistics/stability-distribution/overall")
                         .param("roundId", "3"))
                 .andExpect(status().isOk())
@@ -125,6 +117,38 @@ class RetentionStatisticsQueryControllerTest {
                 .andExpect(jsonPath("$.data.empCount").value(50))
                 .andExpect(jsonPath("$.data.progress20").value(2))
                 .andExpect(jsonPath("$.data.progress100").value(15))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("근속 지수 시계열 조회 성공 - getRetentionTimeseriesStats_success")
+    @WithMockUser(authorities = "HR")
+    void getRetentionTimeseriesStats_success() throws Exception {
+        RetentionMonthlyStatDto stat1 = RetentionMonthlyStatDto.builder()
+                .month(12)
+                .averageScore(73.2)
+                .stdDeviation(11.2)
+                .build();
+
+        RetentionMonthlyStatDto stat2 = RetentionMonthlyStatDto.builder()
+                .month(1)
+                .averageScore(75.0)
+                .stdDeviation(9.5)
+                .build();
+
+        Mockito.when(retentionStatisticsQueryService.getMonthlyRetentionStats(any(RetentionTimeseriesRequestDto.class)))
+                .thenReturn(List.of(stat1, stat2));
+
+        mockMvc.perform(get("/retention/statistics/timeseries")
+                        .param("yearFrom", "2024")
+                        .param("monthFrom", "12")
+                        .param("yearTo", "2025")
+                        .param("monthTo", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(2)))
+                .andExpect(jsonPath("$.data[0].averageScore").value(73.2))
+                .andExpect(jsonPath("$.data[1].averageScore").value(75.0))
                 .andDo(print());
     }
 }

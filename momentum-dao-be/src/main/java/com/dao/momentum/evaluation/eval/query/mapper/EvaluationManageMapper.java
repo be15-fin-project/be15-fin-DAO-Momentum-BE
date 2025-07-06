@@ -2,6 +2,7 @@ package com.dao.momentum.evaluation.eval.query.mapper;
 
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationFormListRequestDto;
 import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationRoundListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.EvaluationTypeDto;
 import com.dao.momentum.evaluation.eval.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;

@@ -59,7 +59,7 @@
             </if>
         </where>
         ORDER BY k.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
 
@@ -185,7 +185,7 @@
             </if>
         GROUP BY e.emp_id
         ORDER BY averageProgress DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
     <!-- 카운트 (페이징용) -->

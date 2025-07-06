@@ -125,7 +125,7 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/position", "/position/**",
+                "/position/**",
                 "/employees/roles",
                 "/employees/{empId}/roles"
                 ).hasAuthority("MASTER")
@@ -156,6 +156,7 @@ public class SecurityConfig {
     // 마스터 관리자 및 인사 관리자 공용
     private void adminEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
+                "/position",
                 "/contracts", // GET, POST
                 "/employees/csv", // GET, POST
                 "/employees/appoints",

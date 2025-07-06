@@ -1,9 +1,10 @@
 package com.dao.momentum.evaluation.eval.query.controller;
 
 import com.dao.momentum.common.dto.Pagination;
-import com.dao.momentum.evaluation.eval.query.dto.request.OrgEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.*;
+import com.dao.momentum.evaluation.eval.query.dto.request.FactorScoreDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.OrgEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.*;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationQueryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

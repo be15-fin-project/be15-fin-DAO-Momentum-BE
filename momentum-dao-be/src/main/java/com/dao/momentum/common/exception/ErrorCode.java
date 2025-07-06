@@ -118,6 +118,15 @@ public enum ErrorCode {
     EVALUATION_TYPE_NOT_FOUND("40022", "평가 타입 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVALUATOR_ROLE_NOT_FOUND("40023", "사원의 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVAL_RESULT_NOT_FOUND("40024", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVAL_ROUND_CREATION_FAILED("40025", "평가 회차 등록 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_UPDATE_FAILED("40026", "평가 회차 수정 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_DELETE_FAILED("40027", "평가 회차 삭제 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SUBMIT_FAILED("40028", "평가 제출 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SCORE_CALCULATION_FAILED("40029", "평가 점수 계산 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SAVE_FAILED("40030", "평가 점수 저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_UPDATE_FAILED("40031", "평가 점수 갱신 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_DELETE_FAILED("40031", "평가 점수 삭제 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SAVE_ALL_FAILED("40031", "일괄 평가 점수 저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
@@ -134,6 +143,12 @@ public enum ErrorCode {
     HR_OBJECTION_CANNOT_MODIFY("40032", "이미 처리된 이의제기는 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_NOT_FOUND2("40033", "reult id searching failed", HttpStatus.NOT_FOUND),
     HR_EVALUATION_FORBIDDEN("40034", "인사 평가 처리 권한이 없습니다.", HttpStatus.NOT_FOUND),
+    HR_EVALUATIONS_NOT_FOUND("1001", "HR 평가 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RATE_INFO_NOT_FOUND("1003", "등급 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    WEIGHT_INFO_NOT_FOUND("1004", "가중치 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FACTOR_SCORES_NOT_FOUND("1005", "요인 점수를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_ROUND_NO("1006", "유효하지 않은 회차 번호입니다.", HttpStatus.BAD_REQUEST),
+    NO_EVALUATION_ROUND_FOUND("1007", "사용 가능한 평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
@@ -143,6 +158,7 @@ public enum ErrorCode {
     RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_ROUND_NOT_FOUND("50007", "근속 전망 회차 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_ROUND_ALREADY_EXIST("50008", "해당 일자의 근속 전망 회차가 이미 등록되어 있습니다.", HttpStatus.BAD_REQUEST),
 
 
     //공지사항 오류(60001 - 69999)

@@ -7,7 +7,7 @@
 
     <!-- 사원간 평가 엑셀 다운로드 쿼리 -->
     <select id="selectPeerEvaluationsForExcel"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationExcelDto">
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.PeerEvaluationExcelDto">
         WITH RECURSIVE dept_tree AS (
             SELECT dept_id
             FROM department
@@ -60,7 +60,7 @@
     </select>
 
     <select id="selectOrgEvaluationsForExcel"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.OrgEvaluationExcelDto">
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.OrgEvaluationExcelDto">
         WITH RECURSIVE dept_tree AS (
             SELECT dept_id
             FROM department
@@ -109,7 +109,7 @@
     </select>
 
     <select id="selectSelfEvaluationsForExcel"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.SelfEvaluationExcelDto">
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.SelfEvaluationExcelDto">
         WITH RECURSIVE dept_tree AS (
             SELECT dept_id
             FROM department

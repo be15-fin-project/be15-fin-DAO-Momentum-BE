@@ -31,9 +31,8 @@ public class HrObjectionQueryController {
             @AuthenticationPrincipal UserDetails userDetails,
             @ParameterObject @ModelAttribute HrObjectionListRequestDto req
     ) {
-        // JWT subject(empId)를 요청 DTO에 설정
-        req.setRequesterEmpId(Long.parseLong(userDetails.getUsername()));
-        HrObjectionListResultDto result = service.getObjections(req);
+        Long empId = Long.parseLong(userDetails.getUsername());
+        HrObjectionListResultDto result = service.getObjections(empId, req);
         return ApiResponse.success(result);
     }
 
