@@ -109,13 +109,24 @@
             rc.created_at,
             rc.response,
             rc.response_at,
-            rc.feedback
+            rc.feedback,
+            -- 피드백 작성 가능 여부 (response가 널이 아니고 feedback이 널인 경우)
+            CASE
+                WHEN rc.response IS NOT NULL AND rc.feedback IS NULL THEN TRUE
+                ELSE FALSE
+            END AS feedbackWritable,
+            -- 요청 삭제 가능 여부 (response와 feedback이 널인 경우)
+            CASE
+                WHEN rc.response IS NULL AND rc.feedback IS NULL THEN TRUE
+                ELSE FALSE
+            END AS deletable
         FROM retention_contact rc
         JOIN employee t ON rc.target_id = t.emp_id
         LEFT JOIN employee m ON rc.manager_id = m.emp_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p ON t.position_id = p.position_id
         WHERE rc.retention_id = #{retentionId}
-            AND rc.is_deleted = 'N'
+        AND rc.is_deleted = 'N'
     </select>
+
 </mapper>
