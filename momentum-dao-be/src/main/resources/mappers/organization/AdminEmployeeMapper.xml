@@ -4,6 +4,18 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.organization.employee.query.mapper.AdminEmployeeMapper">
     <select id="getEmployees" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeSummaryDTO">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             emp.emp_id,
             emp.emp_no,
@@ -22,7 +34,7 @@
         LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
         WHERE 1 = 1
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
@@ -62,6 +74,18 @@
     </select>
 
     <select id="countEmployees" resultType="java.lang.Long">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             COUNT(DISTINCT emp.emp_id)
         FROM employee AS emp
@@ -71,7 +95,7 @@
         LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
         WHERE 1 = 1
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
