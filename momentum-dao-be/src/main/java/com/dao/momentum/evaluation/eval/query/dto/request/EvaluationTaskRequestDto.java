@@ -23,9 +23,9 @@ public record EvaluationTaskRequestDto(
         Integer size
 ) {
 
-    // Constructor to handle default values
+    
     public EvaluationTaskRequestDto {
-        if (page == null) { // Default value is 1 if not provided
+        if (page == null) { 
             page = 1;
         }
         if (size == null) { // Default value is 10 if not provided
@@ -35,7 +35,7 @@ public record EvaluationTaskRequestDto(
         if (formId == null) formId = 0;
     }
 
-    // MyBatis OFFSET calculation
+    
     public int getOffset() {
         return (page - 1) * size;
     }

@@ -1,6 +1,9 @@
 // com.dao.momentum.common.type.UseStatus.java
 package com.dao.momentum.common.dto;
 
+import lombok.Getter;
+
+@Getter
 public enum UseStatus {
     Y, N;
 

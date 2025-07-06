@@ -54,7 +54,7 @@ class EvaluationQueryServiceImplTest {
                     .formId(3)
                     .roundNo(2)
                     .page(1)    // optional, defaults to 1 if not provided
-                    .size(10)   // optional, defaults to 10 if not provided
+                    .size(10)   
                     .build();
 
             PeerEvaluationResponseDto responseDto = PeerEvaluationResponseDto.builder()
@@ -98,7 +98,7 @@ class EvaluationQueryServiceImplTest {
                     .formId(3)
                     .roundNo(2)
                     .page(1)    // optional, defaults to 1 if not provided
-                    .size(10)   // optional, defaults to 10 if not provided
+                    .size(10)   
                     .build();
 
             given(peerEvaluationMapper.countPeerEvaluations(any())).willReturn(0L);
@@ -316,7 +316,7 @@ class EvaluationQueryServiceImplTest {
                     .formId(5L)
                     .roundNo(2L)
                     .page(1)   // optional, defaults to 1 if not provided
-                    .size(10)  // optional, defaults to 10 if not provided
+                    .size(10)  
                     .build();
 
             SelfEvaluationResponseDto responseDto = SelfEvaluationResponseDto.builder()
@@ -357,7 +357,7 @@ class EvaluationQueryServiceImplTest {
                     .formId(5L)
                     .roundNo(2L)
                     .page(1)   // optional, defaults to 1 if not provided
-                    .size(10)  // optional, defaults to 10 if not provided
+                    .size(10)  
                     .build();
 
             // Set up mock to return zero count

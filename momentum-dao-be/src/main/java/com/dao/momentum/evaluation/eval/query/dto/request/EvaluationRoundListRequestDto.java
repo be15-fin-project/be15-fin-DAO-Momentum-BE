@@ -33,9 +33,9 @@ public record EvaluationRoundListRequestDto(
         Integer size
 ) {
 
-    // Constructor to handle default values
+    
     public EvaluationRoundListRequestDto {
-        if (page == null) { // Default value is 1 if not provided
+        if (page == null) { 
             page = 1;
         }
         if (size == null) { // Default value is 10 if not provided
