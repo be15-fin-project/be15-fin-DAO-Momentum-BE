@@ -48,7 +48,7 @@
             e.dept_id       AS deptId,
             NULL            AS targetEmpId,
             NULL            AS targetEmpNo,
-            e.name          AS targetName,
+            NULL          AS targetName,
             CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
             r.start_at      AS startAt
         FROM eval_round r
@@ -239,7 +239,7 @@
             AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
             AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
 
-        ORDER BY roundNo DESC, formId ASC, submitted ASC
+        ORDER BY submitted ASC, roundNo DESC, formId ASC
         LIMIT #{size} OFFSET #{offset}
     </select>
 
