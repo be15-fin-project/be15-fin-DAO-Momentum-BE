@@ -91,6 +91,7 @@ public class RetentionContactQueryServiceImpl implements RetentionContactQuerySe
                 .deptName(detail.deptName())
                 .positionName(detail.positionName())
                 .managerId(detail.managerId())
+                .managerNo(detail.managerNo())
                 .managerName(detail.managerName())
                 .reason(detail.reason())
                 .createdAt(detail.createdAt())
