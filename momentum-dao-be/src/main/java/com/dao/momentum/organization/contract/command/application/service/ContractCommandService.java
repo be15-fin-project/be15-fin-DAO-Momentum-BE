@@ -68,6 +68,7 @@ public class ContractCommandService {
 
         File file = File.builder()
                 .contractId(contract.getContractId())
+                .name(attachment.getName())
                 .s3Key(attachment.getS3Key())
                 .type(attachment.getType())
                 .build();
