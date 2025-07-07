@@ -10,6 +10,8 @@ import com.dao.momentum.file.exception.FileUploadFailedException;
 import com.dao.momentum.announcement.exception.NoSuchAnnouncementException;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.common.exception.ErrorCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,11 +24,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/announcement")
+@Tag(name = "공지사항 작성/수정/삭제", description = "공지사항 생성, 수정, 삭제 API")
 public class AnnouncementCommandController {
 
     private final AnnouncementCommandService announcementCommandService;
 
     @PostMapping
+    @Operation(summary = "공지사항 생성", description = "새로운 공지사항을 작성합니다.")
     public ResponseEntity<ApiResponse<AnnouncementCreateResponse>> createAnnouncement(
             @RequestBody @Valid AnnouncementCreateRequest announcementCreateRequest,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -39,8 +43,8 @@ public class AnnouncementCommandController {
                 .body(ApiResponse.success(response));
     }
 
-
     @PutMapping("{announcementId}")
+    @Operation(summary = "공지사항 수정", description = "기존 공지사항을 수정합니다.")
     public ResponseEntity<ApiResponse<AnnouncementModifyResponse>> modifyAnnouncement(
             @RequestBody @Validated AnnouncementModifyRequest announcementModifyRequest,
             @PathVariable("announcementId") Long announcementId,
@@ -52,8 +56,8 @@ public class AnnouncementCommandController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-
     @DeleteMapping("{announcementId}")
+    @Operation(summary = "공지사항 삭제", description = "공지사항을 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteAnnouncement(
             @PathVariable("announcementId") Long announcementId,
             @AuthenticationPrincipal UserDetails userDetails)
@@ -73,7 +77,7 @@ public class AnnouncementCommandController {
     }
 
     @ExceptionHandler(NoSuchAnnouncementException.class)
-    public ResponseEntity<ApiResponse<Void>> NoSuchAnnouncementException(NoSuchAnnouncementException e) {
+    public ResponseEntity<ApiResponse<Void>> handleNoSuchAnnouncementException(NoSuchAnnouncementException e) {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
@@ -81,7 +85,7 @@ public class AnnouncementCommandController {
     }
 
     @ExceptionHandler(FileUploadFailedException.class)
-    public ResponseEntity<ApiResponse<Void>> FileUploadFailedException(FileUploadFailedException e) {
+    public ResponseEntity<ApiResponse<Void>> handleFileUploadFailedException(FileUploadFailedException e) {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
