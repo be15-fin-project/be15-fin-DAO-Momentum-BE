@@ -8,8 +8,8 @@
         SELECT
             -- 상위 결재자의 이름 + 직위명
             CASE
-                WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN CONCAT(ceo.name, ' ', p_ceo.name, '님')
-                WHEN e.position_id BETWEEN 2 AND 4 THEN CONCAT(eh_sup.name, ' ', p_sup.name, '님')
+                WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN CONCAT(ceo.name, ' ', p_ceo.name)
+                WHEN e.position_id BETWEEN 2 AND 4 THEN CONCAT(eh_sup.name, ' ', p_sup.name)
                 ELSE CONCAT(eh_cur.name, ' ', p_cur.name)
             END AS team_leader_name,
 
@@ -18,7 +18,14 @@
                 WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN ceo.emp_id
                 WHEN e.position_id BETWEEN 2 AND 4 THEN dh_sup.emp_id
                 ELSE dh_cur.emp_id
-            END AS team_leader_id
+            END AS team_leader_id,
+
+            -- 상사의 소속 부서 이름
+            CASE
+                WHEN e.dept_id = 1 AND e.position_id BETWEEN 2 AND 4 THEN d_ceo.name
+                WHEN e.position_id BETWEEN 2 AND 4 THEN d_sup.name
+                ELSE d.name
+            END AS leader_dept_name
 
         FROM employee e
 
@@ -35,6 +42,7 @@
 
         LEFT JOIN employee ceo ON ceo.emp_id = 1
         LEFT JOIN position p_ceo ON ceo.position_id = p_ceo.position_id
+        LEFT JOIN department d_ceo ON ceo.dept_id = d_ceo.dept_id
 
         WHERE e.emp_id = #{empId}
     </select>

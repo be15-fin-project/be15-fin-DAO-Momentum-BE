@@ -49,7 +49,9 @@
     <select id="getApproveLineList" resultType="com.dao.momentum.approve.query.dto.ApproveLineListDTO">
         SELECT
             al.approve_line_id,
+            al.approve_line_list_id,
             s.status_type,
+            al.emp_id,
             CONCAT(e.name, ' ', p.name) AS employee_display_name,
             d.name AS department_name,
             al.reason
