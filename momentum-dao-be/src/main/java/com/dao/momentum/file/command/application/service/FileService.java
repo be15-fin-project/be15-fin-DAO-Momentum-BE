@@ -49,11 +49,12 @@ public class FileService {
         return s3Service.generatePresignedUploadUrlWithKey(key, request.contentType());
     }
 
-    public DownloadUrlResponse generateDownloadUrl(String key) {
+    public DownloadUrlResponse generateDownloadUrl(String key, String fileName) {
         String signedUrl = s3Service.generateCloudFrontSignedUrl(key, Duration.ofMinutes(5));
 
         return DownloadUrlResponse.builder()
                 .signedUrl(signedUrl)
+                .fileName(fileName)
                 .build();
     }
 }

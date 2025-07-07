@@ -12,6 +12,7 @@ public interface RetentionSupportExcelMapper {
     List<RetentionSupportExcelDto> selectSupportListForExcel(
         @Param("roundId") Long roundId,
         @Param("deptId") Long deptId,
+        @Param("positionId") Long positionId,
         @Param("stabilityType") String stabilityType
     );
 }

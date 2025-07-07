@@ -5,7 +5,19 @@
 <mapper namespace="com.dao.momentum.retention.interview.query.mapper.RetentionContactMapper">
 
     <select id="findContacts" resultType="com.dao.momentum.retention.interview.query.dto.response.RetentionContactItemDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
+            rc.retention_id AS retentionId,
             rc.created_at,
             t.emp_no AS targetNo,
             t.name AS targetName,
@@ -29,7 +41,7 @@
                 AND m.emp_no = #{req.managerNo}
             </if>
             <if test="req.deptId != null">
-                AND t.dept_id = #{req.deptId}
+                AND t.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND t.position_id = #{req.positionId}
@@ -41,10 +53,21 @@
                 AND rc.created_at &lt;= #{req.endDate}
             </if>
         ORDER BY rc.created_at DESC
-        LIMIT #{req.size} OFFSET #{req.offset}
+        LIMIT #{req.size} OFFSET #{req.getOffset}
     </select>
 
     <select id="countContacts" resultType="int">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM retention_contact rc
         JOIN employee t ON rc.target_id = t.emp_id
@@ -59,7 +82,7 @@
                 AND t.emp_no = #{req.managerNo}
             </if>
             <if test="req.deptId != null">
-                AND t.dept_id = #{req.deptId}
+                AND t.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND t.position_id = #{req.positionId}
@@ -86,13 +109,24 @@
             rc.created_at,
             rc.response,
             rc.response_at,
-            rc.feedback
+            rc.feedback,
+            -- 피드백 작성 가능 여부 (response가 널이 아니고 feedback이 널인 경우)
+            CASE
+                WHEN rc.response IS NOT NULL AND rc.feedback IS NULL THEN TRUE
+                ELSE FALSE
+            END AS feedbackWritable,
+            -- 요청 삭제 가능 여부 (response와 feedback이 널인 경우)
+            CASE
+                WHEN rc.response IS NULL AND rc.feedback IS NULL THEN TRUE
+                ELSE FALSE
+            END AS deletable
         FROM retention_contact rc
         JOIN employee t ON rc.target_id = t.emp_id
         LEFT JOIN employee m ON rc.manager_id = m.emp_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p ON t.position_id = p.position_id
         WHERE rc.retention_id = #{retentionId}
-            AND rc.is_deleted = 'N'
+        AND rc.is_deleted = 'N'
     </select>
+
 </mapper>

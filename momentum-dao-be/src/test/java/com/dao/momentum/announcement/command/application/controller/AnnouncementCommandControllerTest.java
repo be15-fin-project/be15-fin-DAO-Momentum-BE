@@ -52,6 +52,7 @@ class AnnouncementCommandControllerTest {
 
         // presigned URL로 업로드된 파일에 대한 정보 추가
         AttachmentRequest attachment = new AttachmentRequest();
+        attachment.setName("test.png");
         attachment.setS3Key("announcements/uuid/test.png"); // S3에 업로드된 key
         attachment.setType("png");
 
@@ -81,10 +82,12 @@ class AnnouncementCommandControllerTest {
         AttachmentRequest attachment1 = new AttachmentRequest();
         attachment1.setS3Key("announcements/uuid/image1.png");
         attachment1.setType("png");
+        attachment1.setName("image1.png");
 
         AttachmentRequest attachment2 = new AttachmentRequest();
         attachment2.setS3Key("announcements/uuid/doc1.pdf");
         attachment2.setType("pdf");
+        attachment2.setName("doc1.pdf");
 
         request.setAttachments(List.of(attachment1, attachment2));
         request.setRemainFileIdList(List.of(1L, 2L));
@@ -131,10 +134,12 @@ class AnnouncementCommandControllerTest {
         AttachmentRequest attachment1 = new AttachmentRequest();
         attachment1.setS3Key("announcements/uuid/image1.png");
         attachment1.setType("png");
+        attachment1.setName("image1.png");
 
         AttachmentRequest attachment2 = new AttachmentRequest();
         attachment2.setS3Key("announcements/uuid/doc1.pdf");
         attachment2.setType("pdf");
+        attachment2.setName("doc1.pdf");
 
         request.setAttachments(List.of(attachment1, attachment2));
         request.setRemainFileIdList(List.of(1L, 2L));

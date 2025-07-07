@@ -28,7 +28,7 @@
     <resultMap id="EmployeeSummaryResultMap" type="com.dao.momentum.organization.department.query.dto.response.EmployeeSummaryDTO">
         <id property="empId" column="emp_id"/>
         <result property="name" column="emp_name"/>
-        <result property="contact" column="contact"/>
+        <result property="positionName" column="position_name"/>
         <result property="status" column="status"/>
     </resultMap>
 
@@ -54,5 +54,23 @@
         LEFT JOIN position p ON e.position_id = p.position_id AND p.is_deleted = 'N'
         WHERE d.is_deleted = 'N'
         ORDER BY d.parent_dept_id, d.dept_id
+    </select>
+
+    <select id="getLeafDepartment" resultType="com.dao.momentum.organization.department.query.dto.response.LeafDepartmentDTO">
+        SELECT
+                d.dept_id,
+                d.name
+        FROM
+                Department d
+        WHERE
+                d.is_deleted = 'N'
+        AND
+                d.dept_id
+        NOT IN (
+                SELECT DISTINCT sub.parent_dept_id
+                 FROM Department sub
+                WHERE sub.parent_dept_id IS NOT NULL
+        )
+
     </select>
 </mapper>

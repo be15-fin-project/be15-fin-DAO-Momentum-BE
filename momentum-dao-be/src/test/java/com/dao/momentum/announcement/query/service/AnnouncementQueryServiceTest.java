@@ -9,6 +9,7 @@ import com.dao.momentum.announcement.query.dto.response.AnnouncementDto;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementListResponse;
 import com.dao.momentum.announcement.query.mapper.AnnouncementQueryMapper;
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.file.command.application.dto.response.AttachmentDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -134,22 +135,33 @@ class AnnouncementQueryServiceTest {
                 .content("복지 포인트가 변경되었습니다.")
                 .createdAt(LocalDateTime.of(2025, 6, 1, 9, 0))
                 .updatedAt(LocalDateTime.of(2025, 6, 2, 10, 0))
-                .urls(List.of("https://example.com/file1.pdf", "https://example.com/file2.pdf"))
+                .attachments(List.of(
+                        AttachmentDto.builder()
+                                .url("https://example.com/file1.pdf")
+                                .name("복지자료1.pdf")
+                                .build(),
+                        AttachmentDto.builder()
+                                .url("https://example.com/file2.pdf")
+                                .name("복지자료2.pdf")
+                                .build()
+                ))
                 .build();
 
         when(announcementQueryMapper.findAnnouncement(announcementId)).thenReturn(dto);
 
-        // when
         AnnouncementDetailResponse result = announcementQueryService.getAnnouncement(announcementId);
 
-        // then
         assertThat(result).isNotNull();
         assertThat(result.getAnnouncement()).isNotNull();
         assertThat(result.getAnnouncement().getAnnouncementId()).isEqualTo(announcementId);
         assertThat(result.getAnnouncement().getTitle()).isEqualTo("복지 공지");
-        assertThat(result.getAnnouncement().getUrls()).containsExactly(
-                "https://example.com/file1.pdf", "https://example.com/file2.pdf"
-        );
+
+        assertThat(result.getAnnouncement().getAttachments()).hasSize(2);
+        assertThat(result.getAnnouncement().getAttachments().get(0).getUrl()).isEqualTo("https://example.com/file1.pdf");
+        assertThat(result.getAnnouncement().getAttachments().get(0).getName()).isEqualTo("복지자료1.pdf");
+        assertThat(result.getAnnouncement().getAttachments().get(1).getUrl()).isEqualTo("https://example.com/file2.pdf");
+        assertThat(result.getAnnouncement().getAttachments().get(1).getName()).isEqualTo("복지자료2.pdf");
+
 
         verify(announcementQueryMapper).findAnnouncement(announcementId);
     }

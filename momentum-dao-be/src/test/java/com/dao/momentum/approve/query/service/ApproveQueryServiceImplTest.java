@@ -12,6 +12,7 @@ import com.dao.momentum.approve.query.dto.response.ApproveDetailResponse;
 import com.dao.momentum.approve.query.dto.response.ApproveResponse;
 import com.dao.momentum.approve.query.dto.response.DraftApproveResponse;
 import com.dao.momentum.approve.query.mapper.ApproveDetailMapper;
+import com.dao.momentum.approve.query.mapper.ApproveMapper;
 import com.dao.momentum.approve.query.mapper.ReceivedApproveMapper;
 import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -42,6 +43,9 @@ class ApproveQueryServiceImplTest {
 
     @Mock
     private ApproveDetailMapper approveDetailMapper;
+
+    @Mock
+    private ApproveMapper approveMapper;
 
     @InjectMocks
     private ApproveQueryServiceImpl approveService;
@@ -202,6 +206,25 @@ class ApproveQueryServiceImplTest {
         assertNotNull(result);
         assertEquals(approveDTO, result.getApproveDTO());
         assertEquals(formDetail, result.getFormDetail());
+    }
+
+    @Test
+    @DisplayName("사원의 팀장 조회 테스트")
+    void testGetEmployeeLeader() {
+        Long empId = 1L;
+
+        EmployeeLeaderDto employeeLeaderDto = EmployeeLeaderDto.builder()
+                .teamLeaderId(2L)
+                .teamLeaderName("정유진 과장님")
+                .build();
+
+        when(approveMapper.findEmployeeLeader(empId)).thenReturn(employeeLeaderDto);
+
+        EmployeeLeaderDto result = approveService.getEmployeeLeader(empId);
+
+        assertNotNull(result);
+        assertEquals(2L, result.getTeamLeaderId());
+        assertEquals("정유진 과장님", result.getTeamLeaderName());
     }
 
 

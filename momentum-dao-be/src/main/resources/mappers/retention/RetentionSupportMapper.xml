@@ -6,17 +6,33 @@
 
     <!-- 근속 전망 조회 -->
     <select id="findRetentionForecasts" resultType="com.dao.momentum.retention.prospect.query.dto.request.RetentionSupportRaw">
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+                SELECT dept_id FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT
-            e.name AS empName,
+            rs.retention_id AS retentionId,
             e.emp_no AS empNo,
+            e.name AS empName,
             d.name AS deptName,
             p.name AS positionName,
             rs.retention_score,
             rr.round_no AS roundNo,
             CONCAT(
-                '직무:', rs.job_satisfaction, ', ',
-                '관계:', rs.relationship_score
-                ) AS summaryComment
+                '직무:', rs.job_level, ', ',
+                '보상:', rs.comp_level, ', ',
+                '관계:', rs.relation_level, ', ',
+                '성장:', rs.growth_level, ', ',
+                '근속:', rs.tenure_level, ', ',
+                '워라밸:', rs.wlb_level
+            ) AS summaryComment
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
@@ -24,21 +40,40 @@
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
             <if test="req.empNo != null">
-                AND t.emp_no = #{req.empNo}
+                AND e.emp_no = #{req.empNo}
             </if>
             <if test="req.deptId != null">
-                AND e.dept_id = #{req.deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND e.position_id = #{req.positionId}
             </if>
+            <if test="req.stabilityType != null">
+                AND CASE
+                    WHEN rs.retention_score >= 80 THEN 'STABLE'
+                    WHEN rs.retention_score >= 60 THEN 'WARNING'
+                    ELSE 'UNSTABLE'
+                END = #{req.stabilityType}
+            </if>
+
         ORDER BY rs.retention_score DESC
         LIMIT #{req.size}
-        OFFSET #{req.offset}
+        OFFSET #{req.getOffset}
     </select>
 
     <!-- 총 개수 조회 -->
     <select id="countRetentionForecasts" resultType="long">
+        <if test="req.deptId != null">
+            WITH RECURSIVE dept_tree AS (
+                SELECT dept_id FROM department
+                WHERE dept_id = #{req.deptId} AND is_deleted = 'N'
+                UNION ALL
+                SELECT d.dept_id
+                FROM department d
+                INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+                WHERE d.is_deleted = 'N'
+            )
+        </if>
         SELECT COUNT(*)
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
@@ -47,14 +82,22 @@
         JOIN retention_round rr ON rs.round_id = rr.round_id
         WHERE rr.round_no = #{roundNo}
             <if test="req.empNo != null">
-                AND t.emp_no = #{req.empNo}
+                AND e.emp_no = #{req.empNo}
             </if>
             <if test="req.deptId != null">
-                AND e.dept_id = #{req.deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="req.positionId != null">
                 AND e.position_id = #{req.positionId}
             </if>
+            <if test="req.stabilityType != null">
+                AND CASE
+                    WHEN rs.retention_score >= 80 THEN 'STABLE'
+                    WHEN rs.retention_score >= 60 THEN 'WARNING'
+                    ELSE 'UNSTABLE'
+                END = #{req.stabilityType}
+            </if>
+
     </select>
 
     <!-- 최신 회차 조회 -->
@@ -62,85 +105,129 @@
         SELECT MAX(round_no) FROM retention_round
     </select>
 
-
     <!-- 근속 전망 상세 조회 -->
     <select id="findSupportDetail"
             resultType="com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportDetailDto">
+        WITH team_manager AS (
+            SELECT er.emp_id
+            FROM employee_roles er
+            JOIN user_role ur ON er.user_role_id = ur.user_role_id
+            JOIN employee em ON er.emp_id = em.emp_id
+            WHERE ur.user_role_name = 'MANAGER'
+        )
+
         SELECT
-        e.name AS empName,
-        e.emp_no AS empNo,
-        d.name AS deptName,
-        p.name AS positionName,
-        rr.round_no AS roundNo,
+        -- 본인 정보
+            rr.round_no AS roundNo,
+            e.emp_id AS empId,
+            e.emp_no AS empNo,
+            e.name AS empName,
+            d.name AS deptName,
+            p.name AS positionName,
 
-        -- 점수 등급 변환 (직무 만족도)
-        CASE
-        WHEN rs.job_level >= 95 THEN '탁월'
-        WHEN rs.job_level >= 85 THEN '우수'
-        WHEN rs.job_level >= 70 THEN '양호'
-        WHEN rs.job_level >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS jobGrade,
+            -- 상급자 정보 (부서장 우선, 없으면 같은 부서의 MANAGER 중 emp_id 가장 낮은 사람)
+            COALESCE(dh.emp_id, tm.emp_id) AS managerId,
+            COALESCE(de.emp_no, te.emp_no) AS managerEmpNo,
+            COALESCE(de.name, te.name) AS managerName,
 
-        -- 보상 만족도
-        CASE
-        WHEN rs.comp_level >= 95 THEN '탁월'
-        WHEN rs.comp_level >= 85 THEN '우수'
-        WHEN rs.comp_level >= 70 THEN '양호'
-        WHEN rs.comp_level >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS compGrade,
+            -- 직무 만족도 점수 및 등급
+            rs.job_level AS jobScore,
+            CASE
+                WHEN rs.job_level &gt;= 95 THEN '탁월'
+                WHEN rs.job_level &gt;= 85 THEN '우수'
+                WHEN rs.job_level &gt;= 70 THEN '양호'
+                WHEN rs.job_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS jobGrade,
 
-        -- 관계 만족도
-        CASE
-        WHEN rs.relation_level >= 95 THEN '탁월'
-        WHEN rs.relation_level >= 85 THEN '우수'
-        WHEN rs.relation_level >= 70 THEN '양호'
-        WHEN rs.relation_level >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS relationGrade,
+            -- 보상 만족도 점수 및 등급
+            rs.comp_level AS compScore,
+            CASE
+                WHEN rs.comp_level &gt;= 95 THEN '탁월'
+                WHEN rs.comp_level &gt;= 85 THEN '우수'
+                WHEN rs.comp_level &gt;= 70 THEN '양호'
+                WHEN rs.comp_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS compGrade,
 
-        -- 성장 만족도
-        CASE
-        WHEN rs.growth_level >= 95 THEN '탁월'
-        WHEN rs.growth_level >= 85 THEN '우수'
-        WHEN rs.growth_level >= 70 THEN '양호'
-        WHEN rs.growth_level >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS growthGrade,
+            -- 관계 만족도 점수 및 등급
+            rs.relation_level AS relationScore,
+            CASE
+                WHEN rs.relation_level &gt;= 95 THEN '탁월'
+                WHEN rs.relation_level &gt;= 85 THEN '우수'
+                WHEN rs.relation_level &gt;= 70 THEN '양호'
+                WHEN rs.relation_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS relationGrade,
 
-        -- 워라밸 만족도
-        CASE
-        WHEN rs.wlb_level >= 95 THEN '탁월'
-        WHEN rs.wlb_level >= 85 THEN '우수'
-        WHEN rs.wlb_level >= 70 THEN '양호'
-        WHEN rs.wlb_level >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS wlbGrade,
+            -- 성장 만족도 점수 및 등급
+            rs.growth_level AS growthScore,
+            CASE
+                WHEN rs.growth_level &gt;= 95 THEN '탁월'
+                WHEN rs.growth_level &gt;= 85 THEN '우수'
+                WHEN rs.growth_level &gt;= 70 THEN '양호'
+                WHEN rs.growth_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS growthGrade,
 
-        rs.tenure_level AS tenure,
+            -- 워라밸 만족도 점수 및 등급
+            rs.wlb_level AS wlbScore,
+            CASE
+                WHEN rs.wlb_level &gt;= 95 THEN '탁월'
+                WHEN rs.wlb_level &gt;= 85 THEN '우수'
+                WHEN rs.wlb_level &gt;= 70 THEN '양호'
+                WHEN rs.wlb_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS wlbGrade,
 
-        -- 종합 근속 전망 등급
-        CASE
-        WHEN rs.retention_score >= 95 THEN '탁월'
-        WHEN rs.retention_score >= 85 THEN '우수'
-        WHEN rs.retention_score >= 70 THEN '양호'
-        WHEN rs.retention_score >= 60 THEN '주의'
-        ELSE '미흡'
-        END AS retentionGrade,
+            -- 근속 연수: 실 연수 계산
+            ROUND(DATEDIFF(CURDATE(), e.join_date) / 365.0, 2) AS tenure,
 
-        -- 안정성 유형 (enum 문자열 그대로 반환)
-        CASE
-        WHEN rs.retention_score >= 80 THEN 'STABLE'
-        WHEN rs.retention_score >= 60 THEN 'WARNING'
-        ELSE 'UNSTABLE'
-        END AS stabilityType
+            -- 근속 점수 및 등급
+            rs.tenure_level AS tenureScore,
+            CASE
+                WHEN rs.tenure_level &gt;= 95 THEN '탁월'
+                WHEN rs.tenure_level &gt;= 85 THEN '우수'
+                WHEN rs.tenure_level &gt;= 70 THEN '양호'
+                WHEN rs.tenure_level &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS tenureGrade,
+
+            -- 종합 근속 전망 점수 및 등급
+            rs.retention_score AS retentionScore,
+            CASE
+                WHEN rs.retention_score &gt;= 95 THEN '탁월'
+                WHEN rs.retention_score &gt;= 85 THEN '우수'
+                WHEN rs.retention_score &gt;= 70 THEN '양호'
+                WHEN rs.retention_score &gt;= 60 THEN '주의'
+                ELSE '미흡'
+            END AS retentionGrade,
+
+            -- 안정성 유형
+            CASE
+                WHEN rs.retention_score &gt;= 80 THEN 'STABLE'
+                WHEN rs.retention_score &gt;= 60 THEN 'WARNING'
+                ELSE 'UNSTABLE'
+            END AS stabilityType
 
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         LEFT JOIN department d ON e.dept_id = d.dept_id
         LEFT JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
+
+        -- 부서장
+        LEFT JOIN dept_head dh ON d.dept_id = dh.dept_id
+        LEFT JOIN employee de ON dh.emp_id = de.emp_id
+
+        -- 같은 부서의 팀장 중 가장 낮은 emp_id 1명
+        LEFT JOIN (
+            SELECT MIN(tm.emp_id) AS emp_id, em.dept_id
+            FROM team_manager tm
+            JOIN employee em ON tm.emp_id = em.emp_id
+            GROUP BY em.dept_id
+        ) tm ON tm.dept_id = e.dept_id
+        LEFT JOIN employee te ON tm.emp_id = te.emp_id
 
         WHERE rs.retention_id = #{retentionId}
     </select>

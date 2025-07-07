@@ -73,8 +73,23 @@ public class EmployeeCommandService {
             employeeRolesRepository.save(new EmployeeRoles(null, employee.getEmpId(), userRoleId));
         }
 
+        String passwordResetToken = getPasswordResetToken(employee.getEmpId());
+
+        //이메일 처리
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("resetLink","http://localhost:5173/password/init?token="+passwordResetToken);
+        emailService.sendEmailWithTemplate(
+                employee.getEmail(),
+                "Momentum 초기 비밀번호 설정",
+                "email/init-password",
+                variables
+        );
+
+    }
+
+    public String getPasswordResetToken(long empId) {
         String passwordResetToken = jwtTokenProvider.createPasswordResetToken(
-                String.valueOf(employee.getEmpId())
+                String.valueOf(empId)
         );
 
         PasswordResetToken redisPasswordResetToken = PasswordResetToken.builder()
@@ -82,14 +97,12 @@ public class EmployeeCommandService {
                 .build();
 
         passwordResetTokenRedisTemplate.opsForValue().set(
-                String.valueOf(employee.getEmpId()),
+                String.valueOf(empId),
                 redisPasswordResetToken,
                 Duration.ofDays(1)
         );
 
-        //이메일 처리
-        emailService.sendPasswordResetEmail(employee,passwordResetToken);
-
+        return passwordResetToken;
     }
 
     public String generateRandomPassword() {

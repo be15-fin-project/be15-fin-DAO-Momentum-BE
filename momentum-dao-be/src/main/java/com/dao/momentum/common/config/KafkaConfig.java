@@ -1,20 +1,36 @@
 package com.dao.momentum.common.config;
 
 import com.dao.momentum.common.kafka.dto.NotificationMessage;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
+
+    /**
+     * Kafka용 ObjectMapper 생성
+     * - LocalDateTime → ISO-8601 문자열로 직렬화되도록 설정
+     */
+    private ObjectMapper kafkaObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // LocalDateTime 지원
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // 문자열로 직렬화
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL); // null 제거
+        return mapper;
+    }
 
     /* ProducerFactory 설정
      * - Kafka에 메시지를 보내는(produce) 역할을 수행
@@ -32,7 +48,18 @@ public class KafkaConfig {
         // 메시지 값을 JSON 으로 직렬화 (NotificationMessage 객체 → JSON 문자열)
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        return new DefaultKafkaProducerFactory<>(config);
+        // 재시도 설정
+        config.put(ProducerConfig.RETRIES_CONFIG, 5); // 최대 5회 재시도
+
+        // 전송 타임아웃 설정 (네트워크 장애 대비)
+        config.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 3000); // 3초 제한
+        config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, 1000);   // 1초 간격
+
+        // 커스텀 ObjectMapper를 가진 JsonSerializer 사용
+        JsonSerializer<NotificationMessage> jsonSerializer = new JsonSerializer<>(kafkaObjectMapper());
+        jsonSerializer.setAddTypeInfo(false); // @class 제거
+
+        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), jsonSerializer);
     }
 
     /* KafkaTemplate 빈 등록

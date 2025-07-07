@@ -10,7 +10,7 @@ import java.util.List;
 public class ExcelGenerator {
 
     private static final String[] HEADERS = {
-        "사번", "이름", "회차번호", "부서명", "근속점수",
+        "사번", "이름", "회차번호", "부서명", "직위명", "근속점수",
         "직무 만족도", "보상 만족도", "관계 만족도", "성장 만족도", "근속연수", "워라밸 만족도"
     };
 

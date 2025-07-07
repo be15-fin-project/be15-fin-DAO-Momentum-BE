@@ -5,10 +5,16 @@ import com.dao.momentum.organization.company.query.dto.request.HolidaySearchDTO;
 import com.dao.momentum.organization.company.query.dto.request.HolidaySearchRequest;
 import com.dao.momentum.organization.company.query.dto.response.HolidayGetDTO;
 import com.dao.momentum.organization.company.query.dto.response.HolidayGetResponse;
+import com.dao.momentum.organization.company.query.dto.response.MonthPerHolidayGetResponse;
 import com.dao.momentum.organization.company.query.mapper.HolidayMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -35,5 +41,22 @@ public class HolidayQueryService {
                 .holidayGetDTOList(holidayGetDTOList)
                 .pagination(pagination)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MonthPerHolidayGetResponse getHolidaysPerMonth(YearMonth yearMonth) {
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<HolidayGetDTO> holidayGetDTOList = holidayMapper.searchHolidaysPerMonth(startDate, endDate);
+
+        return MonthPerHolidayGetResponse.builder()
+                .holidayGetDTOList(holidayGetDTOList)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isHoliday(LocalDate date) {
+        return holidayMapper.isHoliday(date);
     }
 }

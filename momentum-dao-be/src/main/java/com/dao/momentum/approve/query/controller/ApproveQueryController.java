@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.query.controller;
 
+import com.dao.momentum.approve.query.dto.EmployeeLeaderDto;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.PageRequest;
@@ -72,8 +73,21 @@ public class ApproveQueryController {
         ApproveDetailResponse approveDetailResponse
                 = approveQueryService.getApproveDetail(documentId);
 
-
         return ResponseEntity.ok(ApiResponse.success(approveDetailResponse));
+    }
+
+    /* 사원의 팀장 조회 기능 */
+    @GetMapping("/leader")
+    @Operation(
+            summary = "사원의 팀장 조회",
+            description = "사원의 팀장을 조회합니다. 만약 팀장 권한을 가지고 있는 사원이라면 상위 부서의 팀장을 조회합니다."
+    )
+    public ResponseEntity<ApiResponse<EmployeeLeaderDto>> getLeader(
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+
+        return ResponseEntity.ok(ApiResponse.success(approveQueryService.getEmployeeLeader(empId)));
     }
 
 }

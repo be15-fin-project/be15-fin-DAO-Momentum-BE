@@ -27,10 +27,13 @@ public class RetentionSupportExcelDownloadController {
             @Parameter(description = "부서 ID", example = "101")
             @RequestParam(required = false) Long deptId,
 
+            @Parameter(description = "직위 ID", example = "101")
+            @RequestParam(required = false) Long positionId,
+
             @Parameter(description = "안정성 유형", example = "STABLE")
             @RequestParam(required = false) String stabilityType
     ) {
-        byte[] file = excelDownloadService.downloadExcel(roundId, deptId, stabilityType);
+        byte[] file = excelDownloadService.downloadExcel(roundId, deptId, positionId, stabilityType);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))

@@ -1,18 +1,15 @@
 package com.dao.momentum.retention.prospect.query.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Builder;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 @Schema(description = "근속 전망 상세 조회 요청 DTO")
-public class RetentionSupportDetailRequestDto {
+public record RetentionSupportDetailRequestDto(
+        @Schema(description = "회차 ID", example = "12", required = true)
+        Integer roundId,
 
-    @Schema(description = "회차 ID", example = "12", required = true)
-    private Integer roundId;
-
-    @Schema(description = "사원 ID", example = "10023", required = true)
-    private Long empId;
+        @Schema(description = "사원 ID", example = "10023", required = true)
+        Long empId
+) {
 }

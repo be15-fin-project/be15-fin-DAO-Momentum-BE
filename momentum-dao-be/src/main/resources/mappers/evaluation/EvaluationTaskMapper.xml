@@ -5,149 +5,656 @@
 
 <mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.EvaluationTaskMapper">
 
-    <!-- 평가 태스크 목록 조회 -->
+    <!-- 평가 제출 목록 조회 -->
     <select id="findTasks"
             parameterType="map"
             resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto">
 
-        <!-- SELF &amp; ORG -->
+        <!-- SELF -->
         SELECT
-        r.round_no      AS roundNo,
-        et.name         AS typeName,
-        ef.form_id      AS formId,
-        ef.name         AS formName,
-        e.dept_id       AS deptId,
-        NULL            AS targetEmpNo,
-        e.name          AS targetName,
-        CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
-        r.start_at      AS startAt
+            r.round_no      AS roundNo,
+            ef.type_id      AS typeId,
+            et.name         AS typeName,
+            ef.form_id      AS formId,
+            ef.name         AS formName,
+            e.dept_id       AS deptId,
+            e.emp_id        AS targetEmpId,
+            e.emp_no        AS targetEmpNo,
+            e.name          AS targetName,
+            CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
         FROM eval_round r
         JOIN eval_form  ef
-        ON ef.type_id IN (2,3)
-        AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            ON ef.type_id IN (3)
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
         JOIN eval_type  et  ON et.type_id = ef.type_id
         JOIN employee   e   ON e.emp_id = #{empId}
         LEFT JOIN eval_response resp
-        ON resp.eval_id   = #{empId}
-        AND resp.form_id   = ef.form_id
-        AND resp.round_id  = r.round_id
+            ON resp.eval_id   = #{empId}
+            AND resp.form_id   = ef.form_id
+            AND resp.round_id  = r.round_id
         WHERE r.round_no = #{roundNo}
 
         UNION ALL
 
-        <!-- PEER -->
+        <!-- ORG -->
         SELECT
-        r.round_no      AS roundNo,
-        et2.name        AS typeName,
-        ef2.form_id     AS formId,
-        ef2.name        AS formName,
-        emp.dept_id     AS deptId,
-        emp.emp_no      AS targetEmpNo,
-        emp.name        AS targetName,
-        CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
-        r.start_at      AS startAt
+            r.round_no      AS roundNo,
+            ef.type_id      AS typeId,
+            et.name         AS typeName,
+            ef.form_id      AS formId,
+            ef.name         AS formName,
+            e.dept_id       AS deptId,
+            NULL            AS targetEmpId,
+            NULL            AS targetEmpNo,
+            e.name          AS targetName,
+            CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
         FROM eval_round r
-        JOIN eval_form  ef2
-        ON ef2.type_id = 1
-        AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
-        JOIN eval_type  et2 ON et2.type_id = ef2.type_id
-
-        <!-- 평가 대상자 목록 -->
-        JOIN (
-        <choose>
-            <when test="req.formId == 0 or req.formId == 1">
-                SELECT emp_id AS target_id
-                FROM employee
-                WHERE dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-                AND emp_id != #{empId}
-            </when>
-            <when test="req.formId == 2">
-                SELECT emp_id AS target_id
-                FROM dept_head
-                WHERE dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-            </when>
-            <when test="req.formId == 3">
-                SELECT dh.emp_id AS target_id
-                FROM dept_head dh
-                WHERE dh.dept_id IN (
-                SELECT dept_id
-                FROM department
-                WHERE parent_dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-                )
-            </when>
-        </choose>
-        ) t ON 1=1
-
-        JOIN employee emp      ON emp.emp_id = t.target_id
-
-        LEFT JOIN eval_response resp2
-        ON resp2.eval_id    = #{empId}
-        AND resp2.target_id  = t.target_id
-        AND resp2.form_id    = ef2.form_id
-        AND resp2.round_id   = r.round_id
-
+        JOIN eval_form  ef
+            ON ef.type_id IN (2)
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
+        JOIN eval_type  et  ON et.type_id = ef.type_id
+        JOIN employee   e   ON e.emp_id = #{empId}
+        LEFT JOIN eval_response resp
+            ON resp.eval_id   = #{empId}
+            AND resp.form_id   = ef.form_id
+            AND resp.round_id  = r.round_id
         WHERE r.round_no = #{roundNo}
 
-        ORDER BY roundNo DESC
-        LIMIT #{req.size} OFFSET #{req.offset}
 
+        <!-- PEER - 동료 평가 -->
+        <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+            UNION ALL
+            SELECT
+                r.round_no      AS roundNo,
+                et2.type_id     AS typeId,
+                et2.name        AS typeName,
+                ef2.form_id     AS formId,
+                ef2.name        AS formName,
+                emp.dept_id     AS deptId,
+                emp.emp_id      AS targetEmpId,
+                emp.emp_no      AS targetEmpNo,
+                emp.name        AS targetName,
+                CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+                r.start_at      AS startAt
+            FROM eval_round r
+            JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id = 1
+            JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+            JOIN (
+                SELECT e.emp_id AS target_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND e.emp_id != #{evaluator.empId}
+                    AND dh.emp_id IS NULL
+            ) t ON 1=1
+            JOIN employee emp ON emp.emp_id = t.target_id
+            LEFT JOIN eval_response resp2
+                ON resp2.eval_id = #{empId}
+                AND resp2.target_id = t.target_id
+                AND resp2.form_id = ef2.form_id
+                AND resp2.round_id = r.round_id
+            WHERE r.round_no = #{roundNo}
+                AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+                AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
+        </if>
+
+
+        <!-- PEER - 상향 평가 -->
+        UNION ALL
+        SELECT
+            r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
+            et2.name        AS typeName,
+            ef2.form_id     AS formId,
+            ef2.name        AS formName,
+            emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
+            emp.emp_no      AS targetEmpNo,
+            emp.name        AS targetName,
+            CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id = 2
+        JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+
+            <!-- 일반 사원: 자기 부서의 팀장 -->
+            <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT er.emp_id
+                FROM employee_roles er
+                JOIN employee e ON e.emp_id = er.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND er.user_role_id = 4
+            </if>
+
+            <!-- 팀장 (부서장 아님): 자기 부서 부서장 -->
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id != #{evaluator.empId}
+            </if>
+
+            <!-- 팀장 + 부서장: 상위 부서의 부서장 -->
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM department d
+                JOIN dept_head dh ON dh.dept_id = d.parent_dept_id
+                WHERE d.dept_id = #{evaluator.deptId}
+            </if>
+        ) t ON 1=1
+        JOIN employee emp ON emp.emp_id = t.target_id
+        LEFT JOIN eval_response resp2
+            ON resp2.eval_id    = #{empId}
+            AND resp2.target_id = t.target_id
+            AND resp2.form_id   = ef2.form_id
+            AND resp2.round_id  = r.round_id
+        WHERE r.round_no = #{roundNo}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
+
+        <!-- PEER - 하향 및 인사 평가 (formId IN 3, 4) -->
+        UNION ALL
+        SELECT
+            r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
+            et2.name        AS typeName,
+            ef2.form_id     AS formId,
+            ef2.name        AS formName,
+            emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
+            emp.emp_no      AS targetEmpNo,
+            emp.name        AS targetName,
+            CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id IN (3, 4)
+        JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+
+            <!-- 팀장 (부서장 아님): 권한 없는 소속 사원 -->
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+            </if>
+
+            <!-- 팀장 + 부서장: 권한 없는 소속 사원 + 하위 부서 부서장 -->
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id
+                    FROM department
+                    WHERE parent_dept_id = #{evaluator.deptId}
+                )
+            </if>
+
+            <!-- 부서장만: 하위 부서 부서장 -->
+            <if test="!evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id
+                    FROM department
+                    WHERE parent_dept_id = #{evaluator.deptId}
+                )
+            </if>
+
+        ) t ON 1=1
+        JOIN employee emp ON emp.emp_id = t.target_id
+        LEFT JOIN eval_response resp2
+            ON resp2.eval_id    = #{empId}
+            AND resp2.target_id = t.target_id
+            AND resp2.form_id   = ef2.form_id
+            AND resp2.round_id  = r.round_id
+        WHERE r.round_no = #{roundNo}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR et2.type_id = #{req.typeId})
+
+        ORDER BY roundNo DESC, formId ASC, submitted ASC
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <!-- 전체 태스크 건수 조회 -->
+    <!-- 평가 제출 목록 조회 -->
+    <select id="findAllTasks"
+            parameterType="map"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskResponseDto">
+
+        <!-- SELF -->
+        SELECT
+            r.round_no      AS roundNo,
+            et.type_id      AS typeId,
+            et.name         AS typeName,
+            ef.form_id      AS formId,
+            ef.name         AS formName,
+            e.dept_id       AS deptId,
+            e.emp_id        AS targetEmpId,
+            e.emp_no        AS targetEmpNo,
+            e.name          AS targetName,
+            CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef
+            ON ef.type_id IN (3)
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+        JOIN eval_type  et  ON et.type_id = ef.type_id
+        JOIN employee   e   ON e.emp_id = #{empId}
+        LEFT JOIN eval_response resp
+            ON resp.eval_id   = #{empId}
+            AND resp.form_id   = ef.form_id
+            AND resp.round_id  = r.round_id
+        WHERE r.round_id = #{roundId}
+
+        UNION ALL
+
+        <!-- ORG -->
+        SELECT
+            r.round_no      AS roundNo,
+            et.type_id      AS typeId,
+            et.name         AS typeName,
+            ef.form_id      AS formId,
+            ef.name         AS formName,
+            e.dept_id       AS deptId,
+            NULL            AS targetEmpId,
+            NULL            AS targetEmpNo,
+            e.name          AS targetName,
+            CASE WHEN resp.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef
+            ON ef.type_id IN (2)
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+        JOIN eval_type  et  ON et.type_id = ef.type_id
+        JOIN employee   e   ON e.emp_id = #{empId}
+        LEFT JOIN eval_response resp
+            ON resp.eval_id   = #{empId}
+            AND resp.form_id   = ef.form_id
+            AND resp.round_id  = r.round_id
+        WHERE r.round_id = #{roundId}
+
+
+        <!-- PEER - 동료 평가 -->
+        <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+            UNION ALL
+            SELECT
+                r.round_no      AS roundNo,
+                et2.type_id     AS typeId,
+                et2.name        AS typeName,
+                ef2.form_id     AS formId,
+                ef2.name        AS formName,
+                emp.dept_id     AS deptId,
+                emp.emp_id      AS targetEmpId,
+                emp.emp_no      AS targetEmpNo,
+                emp.name        AS targetName,
+                CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+                r.start_at      AS startAt
+            FROM eval_round r
+            JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id = 1
+            JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+            JOIN (
+                SELECT e.emp_id AS target_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND e.emp_id != #{evaluator.empId}
+                    AND dh.emp_id IS NULL
+            ) t ON 1=1
+            JOIN employee emp ON emp.emp_id = t.target_id
+            LEFT JOIN eval_response resp2
+                ON resp2.eval_id = #{empId}
+                AND resp2.target_id = t.target_id
+                AND resp2.form_id = ef2.form_id
+                AND resp2.round_id = r.round_id
+            WHERE r.round_id = #{roundId}
+                AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+        </if>
+
+
+        <!-- PEER - 상향 평가 -->
+        UNION ALL
+        SELECT
+            r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
+            et2.name        AS typeName,
+            ef2.form_id     AS formId,
+            ef2.name        AS formName,
+            emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
+            emp.emp_no      AS targetEmpNo,
+            emp.name        AS targetName,
+            CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id = 2
+        JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+
+            <!-- 일반 사원: 자기 부서의 팀장 -->
+            <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT er.emp_id
+                FROM employee_roles er
+                JOIN employee e ON e.emp_id = er.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND er.user_role_id = 4
+            </if>
+
+            <!-- 팀장 (부서장 아님): 자기 부서 부서장 -->
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id != #{evaluator.empId}
+            </if>
+
+            <!-- 팀장 + 부서장: 상위 부서의 부서장 -->
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM department d
+                JOIN dept_head dh ON dh.dept_id = d.parent_dept_id
+                WHERE d.dept_id = #{evaluator.deptId}
+            </if>
+        ) t ON 1=1
+        JOIN employee emp ON emp.emp_id = t.target_id
+        LEFT JOIN eval_response resp2
+            ON resp2.eval_id    = #{empId}
+            AND resp2.target_id = t.target_id
+            AND resp2.form_id   = ef2.form_id
+            AND resp2.round_id  = r.round_id
+        WHERE r.round_id = #{roundId}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+
+        <!-- PEER - 하향 및 인사 평가 (formId IN 3, 4) -->
+        UNION ALL
+        SELECT
+            r.round_no      AS roundNo,
+            et2.type_id     AS typeId,
+            et2.name        AS typeName,
+            ef2.form_id     AS formId,
+            ef2.name        AS formName,
+            emp.dept_id     AS deptId,
+            emp.emp_id      AS targetEmpId,
+            emp.emp_no      AS targetEmpNo,
+            emp.name        AS targetName,
+            CASE WHEN resp2.result_id IS NOT NULL THEN TRUE ELSE FALSE END AS submitted,
+            r.start_at      AS startAt
+        FROM eval_round r
+        JOIN eval_form  ef2 ON ef2.type_id = 1 AND ef2.form_id IN (3, 4)
+        JOIN eval_type  et2 ON et2.type_id = ef2.type_id
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+
+            <!-- 팀장 (부서장 아님): 권한 없는 소속 사원 -->
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+            </if>
+
+            <!-- 팀장 + 부서장: 권한 없는 소속 사원 + 하위 부서 부서장 -->
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id
+                    FROM department
+                    WHERE parent_dept_id = #{evaluator.deptId}
+                )
+            </if>
+
+            <!-- 부서장만: 하위 부서 부서장 -->
+            <if test="!evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id
+                    FROM department
+                    WHERE parent_dept_id = #{evaluator.deptId}
+                )
+            </if>
+
+        ) t ON 1=1
+        JOIN employee emp ON emp.emp_id = t.target_id
+        LEFT JOIN eval_response resp2
+            ON resp2.eval_id    = #{empId}
+            AND resp2.target_id = t.target_id
+            AND resp2.form_id   = ef2.form_id
+            AND resp2.round_id  = r.round_id
+        WHERE r.round_id = #{roundId}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+
+        ORDER BY roundNo DESC, formId ASC, submitted ASC
+    </select>
+
+    <!-- 평가 태스크 갯수 조회 -->
     <select id="countTasks"
             parameterType="map"
             resultType="int">
-        SELECT
-        (
-        -- SELF &amp; ORG count
-        SELECT COUNT(*)
+
+        SELECT SUM(cnt) FROM (
+
+        <!-- SELF -->
+        SELECT COUNT(*) AS cnt
         FROM eval_round r
-        JOIN eval_form ef
-        ON ef.type_id IN (2,3)
-        AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+        JOIN eval_form ef ON ef.type_id = 3
         WHERE r.round_no = #{roundNo}
-        )
-        +
-        (
-        -- PEER count
-        SELECT COUNT(*)
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
+
+        UNION ALL
+
+        <!-- ORG -->
+        SELECT COUNT(*) AS cnt
         FROM eval_round r
-        JOIN eval_form ef2
-        ON ef2.type_id = 1
-        AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+        JOIN eval_form ef ON ef.type_id = 2
+        WHERE r.round_no = #{roundNo}
+            AND (#{req.formId} = 0 OR ef.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef.type_id = #{req.typeId})
+
+
+        <!-- PEER - 동료 평가 -->
+        <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+        UNION ALL
+        SELECT COUNT(*) AS cnt
+        FROM eval_round r
+        JOIN eval_form ef2 ON ef2.type_id = 1 AND ef2.form_id = 1
         JOIN (
-        <choose>
-            <when test="req.formId == 0 or req.formId == 1">
-                SELECT emp_id AS target_id
-                FROM employee
-                WHERE dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-                AND emp_id != #{empId}
-            </when>
-            <when test="req.formId == 2">
-                SELECT emp_id AS target_id
-                FROM dept_head
-                WHERE dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-            </when>
-            <when test="req.formId == 3">
-                SELECT dh.emp_id AS target_id
-                FROM dept_head dh
-                WHERE dh.dept_id IN (
-                SELECT dept_id
-                FROM department
-                WHERE parent_dept_id = (SELECT dept_id FROM employee WHERE emp_id = #{empId})
-                )
-            </when>
-        </choose>
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+            WHERE e.dept_id = #{evaluator.deptId}
+                AND e.emp_id != #{evaluator.empId}
+                AND dh.emp_id IS NULL
         ) t ON 1=1
         WHERE r.round_no = #{roundNo}
-        )
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
+        </if>
+
+        UNION ALL
+
+        <!-- PEER - 상향 평가 -->
+        SELECT COUNT(*) AS cnt
+        FROM eval_round r
+        JOIN eval_form ef2 ON ef2.type_id = 1 AND ef2.form_id = 2
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+            <if test="!evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT er.emp_id
+                FROM employee_roles er
+                JOIN employee e ON e.emp_id = er.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND er.user_role_id = 4
+            </if>
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id != #{evaluator.empId}
+            </if>
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM department d
+                JOIN dept_head dh ON dh.dept_id = d.parent_dept_id
+                WHERE d.dept_id = #{evaluator.deptId}
+            </if>
+        ) t ON 1=1
+        WHERE r.round_no = #{roundNo}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
+
+        UNION ALL
+
+        <!-- PEER - 하향 및 인사 평가 -->
+        SELECT COUNT(*) AS cnt
+        FROM eval_round r
+        JOIN eval_form ef2 ON ef2.type_id = 1 AND ef2.form_id IN (3, 4)
+        JOIN (
+            SELECT e.emp_id AS target_id
+            FROM employee e
+            WHERE 1 = 0
+            <if test="evaluator.isTeamLeader and !evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+            </if>
+            <if test="evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT e.emp_id
+                FROM employee e
+                LEFT JOIN dept_head dh ON dh.emp_id = e.emp_id
+                WHERE e.dept_id = #{evaluator.deptId}
+                    AND dh.emp_id IS NULL
+                    AND e.emp_id != #{evaluator.empId}
+
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id FROM department WHERE parent_dept_id = #{evaluator.deptId}
+                )
+            </if>
+            <if test="!evaluator.isTeamLeader and evaluator.isDeptHead">
+                UNION
+                SELECT dh.emp_id
+                FROM dept_head dh
+                WHERE dh.dept_id IN (
+                    SELECT dept_id FROM department WHERE parent_dept_id = #{evaluator.deptId}
+                )
+        </if>
+        ) t ON 1=1
+        WHERE r.round_no = #{roundNo}
+            AND (#{req.formId} = 0 OR ef2.form_id = #{req.formId})
+            AND (#{req.typeId} = 0 OR ef2.type_id = #{req.typeId})
+
+        ) total
     </select>
 
-    <!-- 최신 라운드 번호 조회 -->
+    <!-- 최신 평가 회차 번호 조회 -->
     <select id="findLatestRoundNo"
             resultType="int">
         SELECT MAX(round_no)
         FROM eval_round
     </select>
+
+    <!-- 모든 재직 중인 사원 조회 -->
+    <select id="findAllActiveEmployees" resultType="com.dao.momentum.evaluation.eval.query.dto.request.EmployeeSimpleDto">
+        SELECT
+            e.emp_id     AS empId,
+            e.emp_no     AS empNo,
+            e.name       AS name,
+            d.dept_id    AS deptId,
+            d.name       AS deptName
+        FROM employee e
+        JOIN department d ON e.dept_id = d.dept_id
+        WHERE e.status = 'EMPLOYED'
+    </select>
+
+    <!-- 사용자 권한 조회 -->
+    <select id="findEvaluatorRole" resultType="com.dao.momentum.evaluation.eval.query.dto.request.EvaluatorRoleDto">
+        SELECT
+        e.emp_id     AS empId,
+        e.dept_id    AS deptId,
+
+        -- 팀장 여부: employee_roles 테이블에서 ROLE_ID = 4 (MANAGER) 존재 여부
+        CASE
+        WHEN er.user_role_id IS NOT NULL THEN TRUE
+        ELSE FALSE
+        END AS isTeamLeader,
+
+        -- 부서장 여부: dept_head 테이블 기준
+        CASE
+        WHEN dh.emp_id IS NOT NULL THEN TRUE
+        ELSE FALSE
+        END AS isDeptHead
+
+        FROM employee e
+        LEFT JOIN dept_head dh
+            ON dh.dept_id = e.dept_id AND dh.emp_id = e.emp_id
+        LEFT JOIN employee_roles er
+            ON er.emp_id = e.emp_id AND er.user_role_id = 4  <!-- 팀장 권한 체크 -->
+
+        WHERE e.emp_id = #{empId}
+    </select>
+
+
 
 </mapper>

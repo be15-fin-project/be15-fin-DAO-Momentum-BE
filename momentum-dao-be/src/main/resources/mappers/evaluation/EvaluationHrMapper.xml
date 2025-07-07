@@ -22,6 +22,9 @@
             JOIN eval_form f ON er.form_id = f.form_id
             WHERE er.target_id = #{empId}
                 AND f.name = 'HR_REVIEW'
+                <if test="req.roundId != null">
+                    AND r.round_id = #{req.roundId}
+                </if>
                 <if test="req.startDate != null">
                     <![CDATA[AND r.start_at >= #{req.startDate}]]>
                 </if>
@@ -68,13 +71,22 @@
         )
         SELECT
             g.round_no      AS round_no,
+            g.result_id     AS resultId,
             g.overall_grade AS overall_grade,
             g.created_at    AS evaluated_at,
-            g.result_id     AS result_id
+            CASE
+            WHEN o.objection_id IS NOT NULL THEN TRUE
+            ELSE FALSE
+            END            AS objectionSubmitted
         FROM graded g
+        LEFT JOIN hr_objection o
+        ON o.result_id = g.result_id
+        AND o.is_deleted = 'N'
         ORDER BY g.created_at DESC
-        LIMIT #{req.offset}, #{req.size}
+        LIMIT #{req.getOffset}, #{req.size}
+
     </select>
+
 
     <!-- 2) 전체 건수 조회 -->
     <select id="countHrEvaluations"
@@ -86,6 +98,9 @@
         JOIN eval_form  f  ON er.form_id  = f.form_id
         WHERE er.target_id = #{empId}
             AND f.name = 'HR_REVIEW'
+            <if test="req.roundId != null">
+                AND r.round_id = #{req.roundId}
+            </if>
             <if test="req.startDate != null">
                 AND r.start_at <![CDATA[>=]]> #{req.startDate}
             </if>
@@ -99,7 +114,8 @@
             parameterType="long"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
         SELECT
-            p.name      AS property_name,
+            p.property_id      AS propertyId,
+            p.name             AS propertyName,
             CASE
                 WHEN s.score >= 95 THEN '탁월'
                 WHEN s.score >= 85 THEN '우수'
@@ -125,7 +141,7 @@
                 er.round_id,
                 er.eval_id,
                 er.score,
-                er.created_at,
+                DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
                 e.emp_no,
                 e.name
             FROM eval_response er
@@ -164,7 +180,7 @@
                 b.result_id,
                 b.emp_no,
                 b.name,
-                b.created_at,
+                b.createdAt,
                 CASE
                     WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
                     WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
@@ -180,7 +196,7 @@
             result_id      AS resultId,
             emp_no         AS empNo,
             name           AS empName,
-            created_at     AS evaluatedAt,
+            createdAt      AS evaluatedAt,
             overall_grade  AS overallGrade
         FROM evaluated
 

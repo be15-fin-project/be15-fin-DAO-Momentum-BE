@@ -96,6 +96,7 @@ public class SecurityConfig {
         auths.requestMatchers(
                 "/employees/login",
                 "/employees",
+                "/employees/refresh",
                 "/employees/reset-password",
                 "/employees/reset-password/request",
                 "/swagger-ui/**",
@@ -124,12 +125,16 @@ public class SecurityConfig {
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/position", "/position/**",
+                "/position/**",
                 "/employees/roles",
                 "/employees/{empId}/roles"
                 ).hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.GET,"/holiday").hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.POST, "/departments","/holiday").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.GET,"/holiday", "/employees/ids").hasAuthority("MASTER")
+                .requestMatchers(HttpMethod.POST,
+                        "/employees/batch-token",
+                        "/departments",
+                        "/holiday"
+                ).hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.PUT, "/company","/departments").hasAuthority("MASTER")
                 .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
     }
@@ -151,17 +156,18 @@ public class SecurityConfig {
     // 마스터 관리자 및 인사 관리자 공용
     private void adminEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
+                "/position",
                 "/contracts", // GET, POST
                 "/employees/csv", // GET, POST
                 "/employees/appoints",
                 "/employees/{empId}/hr-info"
-
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(
                 HttpMethod.GET,
                 "/works",
-                "/employees/{empId}" // "/csv"는 여기서도 매칭되지만 위에서 먼저 처리했으므로 안 잡힘
+                "/employees/{empId}", // "/csv"는 여기서도 매칭되지만 위에서 먼저 처리했으므로 안 잡힘
+                "/departments/leaf"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(
@@ -173,6 +179,11 @@ public class SecurityConfig {
                 HttpMethod.DELETE,
                 "/contracts/{contractId}"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
+
+        auths.requestMatchers(
+                HttpMethod.GET,
+                "/admin/approval/documents"
+        ).hasAnyAuthority("MASTER");
     }
 
 }

@@ -4,6 +4,18 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dao.momentum.organization.employee.query.mapper.AdminEmployeeMapper">
     <select id="getEmployees" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeSummaryDTO">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             emp.emp_id,
             emp.emp_no,
@@ -16,19 +28,26 @@
             emp.join_date,
             emp.status
         FROM employee AS emp
-        JOIN department AS dept ON emp.dept_id = dept.dept_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
         JOIN position AS pos ON emp.position_id = pos.position_id
         LEFT JOIN employee_roles AS erole ON emp.emp_id = erole.emp_id
         LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
         WHERE 1 = 1
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.userRole != null">
-            AND ur.user_role_name = #{request.userRole}
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    AND ur.user_role_name IS NULL
+                </when>
+                <otherwise>
+                    AND ur.user_role_name = #{request.userRole}
+                </otherwise>
+            </choose>
         </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}
@@ -45,7 +64,7 @@
                 ORDER BY emp.join_date
             </when>
             <otherwise>
-                ORDER BY emp.emp_id
+                ORDER BY emp.emp_no
             </otherwise>
         </choose>
         <if test="request.order != null and request.order.name() == 'DESC'">
@@ -55,22 +74,41 @@
     </select>
 
     <select id="countEmployees" resultType="java.lang.Long">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{request.deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
+
         SELECT
             COUNT(DISTINCT emp.emp_id)
         FROM employee AS emp
-        JOIN department AS dept ON emp.dept_id = dept.dept_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
         JOIN position AS pos ON emp.position_id = pos.position_id
         LEFT JOIN employee_roles AS erole ON emp.emp_id = erole.emp_id
         LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
         WHERE 1 = 1
         <if test="request.deptId != null">
-            AND dept.dept_id = #{request.deptId}
+            AND emp.dept_id IN (SELECT dept_id FROM dept_tree)
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
         <if test="request.userRole != null">
-            AND ur.user_role_name = #{request.userRole}
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    AND ur.user_role_name IS NULL
+                </when>
+                <otherwise>
+                    AND ur.user_role_name = #{request.userRole}
+                </otherwise>
+            </choose>
         </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}
@@ -98,7 +136,7 @@
             emp.status,
             emp.birth_date
         FROM employee AS emp
-        JOIN department AS dept ON emp.dept_id = dept.dept_id
+        LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
         JOIN position AS pos ON emp.position_id = pos.position_id
         LEFT JOIN employee_roles AS erole ON emp.emp_id = erole.emp_id
         LEFT JOIN user_role AS ur ON erole.user_role_id = ur.user_role_id
@@ -108,13 +146,13 @@
 
     <select id="getEmployeeRecords" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeRecordsDTO">
         SELECT
-        record_id,
-        emp_id,
-        type,
-        organization,
-        start_date,
-        end_date,
-        name
+            record_id,
+            emp_id,
+            type,
+            organization,
+            start_date,
+            end_date,
+            name
         FROM employee_records
         WHERE emp_id = #{empId}
     </select>
@@ -148,8 +186,8 @@
             <if test="request.positionId != null">
                 AND apos.position_id = #{request.positionId}
             </if>
-            <if test="request.empId != null">
-                AND emp.emp_id = #{request.empId}
+            <if test="request.empNo != null and request.empNo != ''">
+                AND emp.emp_no = #{request.empNo}
             </if>
             <if test="request.empName != null and request.empName != ''">
                 AND emp.name = #{request.empName}
@@ -191,8 +229,8 @@
             <if test="request.positionId != null">
                 AND apos.position_id = #{request.positionId}
             </if>
-            <if test="request.empId != null">
-                AND emp.emp_id = #{request.empId}
+            <if test="request.empNo != null and request.empNo != ''">
+                AND emp.emp_no = #{request.empNo}
             </if>
             <if test="request.empName != null and request.empName != ''">
                 AND emp.name = #{request.empName}
@@ -209,4 +247,9 @@
         </where>
     </select>
 
+    <select id="getAllEmployeeIds" resultType="long">
+        SELECT emp_id
+        FROM employee
+        WHERE status = 'EMPLOYED'
+    </select>
 </mapper>

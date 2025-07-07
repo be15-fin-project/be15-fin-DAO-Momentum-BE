@@ -31,4 +31,23 @@
             AND MONTH(date) = #{month}
         </if>
     </select>
+
+    <select id="searchHolidaysPerMonth" resultType="com.dao.momentum.organization.company.query.dto.response.HolidayGetDTO">
+        SELECT
+                holiday_id,
+                holiday_name,
+                date
+        FROM
+                holiday
+        WHERE
+                date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <select id="isHoliday" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM holiday
+            WHERE date = #{date}
+        )
+    </select>
 </mapper>

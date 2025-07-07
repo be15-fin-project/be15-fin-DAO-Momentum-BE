@@ -41,7 +41,7 @@
             </if>
         </where>
         ORDER BY o.created_at DESC
-        LIMIT #{size} OFFSET #{offset}
+        LIMIT #{size} OFFSET #{getOffset}
     </select>
 
     <!-- 이의제기 전체 개수 조회 -->
@@ -72,5 +72,82 @@
             </if>
         </where>
     </select>
+
+
+    <!-- 2) 이의 제기 상세 조회 -->
+    <select id="findObjectionDetail"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.ObjectionItemDto">
+        SELECT
+            o.objection_id                                 AS objectionId,
+            er.result_id                                   AS resultId,
+            e.emp_no                                       AS empNo,
+            e.name                                         AS empName,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i:%s') AS evaluatedAt,
+            o.reason                                       AS objectionReason,
+            s.status_type                                  AS statusType,
+            o.response                                     AS responseReason
+        FROM hr_objection o
+        JOIN eval_response er
+            ON er.result_id = o.result_id
+        JOIN employee e
+            ON e.emp_id     = er.target_id
+        JOIN status s
+            ON s.status_id  = o.status_id
+        LEFT JOIN hr_weight w
+            ON w.round_id   = er.round_id
+        LEFT JOIN hr_rate r
+            ON r.round_id   = er.round_id
+        WHERE o.objection_id = #{objectionId}
+    </select>
+
+    <!-- 3) 요인별 점수 조회 -->
+    <select id="findFactorScores"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.FactorScoreDto">
+        SELECT
+            ep.property_id   AS propertyId,
+            ep.name         AS propertyName,
+            es.score        AS score
+        FROM eval_score es
+        JOIN eval_property ep
+        ON ep.property_id = es.property_id
+        WHERE es.result_id = #{resultId}
+        ORDER BY ep.property_id
+    </select>
+
+
+    <!-- 등급 비율 조회 -->
+    <select id="findRateInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT
+            r.rate_s AS rateS,
+            r.rate_a AS rateA,
+            r.rate_b AS rateB,
+            r.rate_c AS rateC,
+            r.rate_d AS rateD
+        FROM eval_response er
+        JOIN hr_rate r ON r.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+    <!-- 가중치 정보 조회 -->
+    <select id="findWeightInfo"
+            parameterType="long"
+            resultType="com.dao.momentum.evaluation.hr.query.dto.response.WeightInfo">
+        SELECT
+            w.perform_wt     AS weightPerform,
+            w.team_wt        AS weightTeam,
+            w.attitude_wt    AS weightAttitude,
+            w.growth_wt      AS weightGrowth,
+            w.engagement_wt  AS weightEngagement,
+            w.result_wt      AS weightResult
+        FROM eval_response er
+        JOIN hr_weight w ON w.round_id = er.round_id
+        WHERE er.result_id = #{resultId}
+    </select>
+
+
 
 </mapper>

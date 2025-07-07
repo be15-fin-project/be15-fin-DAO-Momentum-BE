@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/kpis")
+@RequestMapping("/kpi")
 @RequiredArgsConstructor
 @Tag(name = "KPI", description = "KPI 생성, 취소 요청 API")
 public class KpiCommandController {
@@ -40,7 +40,7 @@ public class KpiCommandController {
             @RequestBody @Valid KpiCancelRequest request
     ) {
         Long empId = Long.parseLong(userDetails.getUsername());
-        CancelKpiResponse response = kpiCommandService.cancelKpi(empId, kpiId, request.getReason());
+        CancelKpiResponse response = kpiCommandService.cancelKpi(empId, kpiId, request.reason());
         return ApiResponse.success(response);
     }
 

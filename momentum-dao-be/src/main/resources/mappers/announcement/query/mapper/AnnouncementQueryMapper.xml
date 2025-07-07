@@ -16,13 +16,11 @@
         a.title,
         a.content,
         a.created_at,
-        a.updated_at,
-        f.s3_key AS file_url
+        a.updated_at
         FROM announcement a
         JOIN employee e ON a.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
         JOIN `position` p ON e.position_id = p.position_id
-        LEFT JOIN file f ON f.announcement_id = a.announcement_id
         WHERE a.announcement_id = #{announcementId}
         AND a.is_deleted = 'N'
     </select>
@@ -44,20 +42,33 @@
         <result property="updatedAt" column="updated_at"/>
 
         <!-- 파일 URL 목록 수집 -->
-        <collection property="urls" ofType="string" javaType="java.util.List"
-                    select="findFileUrlsByAnnouncementId" column="announcement_id"/>
+        <collection property="attachments" ofType="com.dao.momentum.file.command.application.dto.response.AttachmentDto"
+                    javaType="java.util.List" select="findAttachmentsByAnnouncementId" column="announcement_id"/>
     </resultMap>
 
     <!-- collection 태그의 column 속성은 단일 값 매핑처럼 컬럼의 값을 직접 가져오는 것이 아니라, 그룹핑 기준 또는 하위 쿼리의 파라미터 역할 -->
-    <select id="findFileUrlsByAnnouncementId" resultType="string">
+    <select id="findAttachmentsByAnnouncementId" resultType="com.dao.momentum.file.command.application.dto.response.AttachmentDto">
         SELECT
-        f.s3_key
+        f.attachment_id AS fileId,
+        f.s3_key AS url,
+        f.name   AS name
         FROM file f
         WHERE f.announcement_id = #{announcementId}
     </select>
 
     <!-- 게시글 목록 검색 -->
     <select id="findAnnouncementsByCondition" resultType="com.dao.momentum.announcement.query.dto.response.AnnouncementDto">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
         SELECT a.announcement_id,
         a.title,
         e.name,
@@ -76,7 +87,7 @@
             </if>
 
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
 
             <if test="startDate != null">
@@ -91,8 +102,20 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+
     <!-- 게시글 목록 수 카운트 -->
     <select id="countAnnouncementsByCondition" resultType="long">
+        WITH RECURSIVE dept_tree AS (
+        SELECT dept_id
+        FROM department
+        WHERE dept_id = #{deptId}
+        AND is_deleted = 'N'
+        UNION ALL
+        SELECT d.dept_id
+        FROM department d
+        INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+        WHERE d.is_deleted = 'N'
+        )
         SELECT COUNT(*)
         FROM announcement a
         JOIN employee e ON a.emp_id = e.emp_id
@@ -108,7 +131,7 @@
             </if>
 
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
 
             <if test="startDate != null">

@@ -11,11 +11,13 @@ import com.dao.momentum.retention.prospect.query.dto.response.RetentionSupportDe
 import com.dao.momentum.retention.prospect.query.mapper.RetentionSupportMapper;
 import com.dao.momentum.retention.prospect.command.domain.aggregate.StabilityType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RetentionSupportQueryServiceImpl implements RetentionSupportQueryService {
@@ -25,46 +27,67 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionForecastResponseDto getRetentionForecasts(RetentionForecastRequestDto req) {
+        log.info("API 호출 시작 - getRetentionForecasts, 요청 파라미터: roundNo={}, stabilityType={}, page={}, size={}",
+                req.roundNo(), req.stabilityType(), req.page(), req.size());
 
-        // 1. 회차 번호 기본 처리
-        Integer roundNo = (req.getRoundNo() != null) ? req.getRoundNo() : mapper.findLatestRoundNo();
+        Integer roundNo = (req.roundNo() != null) ? req.roundNo() : mapper.findLatestRoundNo();
+        log.info("회차 조회 완료 - roundNo={}", roundNo);
 
-        // 2. 조회
+        // 근속 전망 조회
         List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundNo);
         long total = mapper.countRetentionForecasts(req, roundNo);
 
         if (rawList == null) {
+            log.error("근속 전망 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
             throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
         }
 
-        // 3. 안정성 유형 필터링 (Java에서 처리)
-        List<RetentionForecastItemDto> filtered =
-            rawList.stream()
-                   .map(raw -> RetentionForecastItemDto.builder()
-                       .empNo(raw.getEmpNo())
-                       .empName(raw.getEmpName())
-                       .deptName(raw.getDeptName())
-                       .positionName(raw.getPositionName())
-                       .retentionGrade(convertScoreToGrade(raw.getRetentionScore()))
-                       .stabilityType(convertScoreToStabilityType(raw.getRetentionScore()))
-                       .summaryComment(raw.getSummaryComment())
-                       .roundNo(raw.getRoundNo())
-                       .build())
-                   .filter(dto -> req.getStabilityType() == null || dto.getStabilityType() == req.getStabilityType())
-                   .toList();
+        // 필터링 후, DTO 생성
+        List<RetentionForecastItemDto> filtered = rawList.stream()
+                .map(raw -> RetentionForecastItemDto.builder()
+                        .retentionId(raw.retentionId())
+                        .empNo(raw.empNo())
+                        .empName(raw.empName())
+                        .deptName(raw.deptName())
+                        .positionName(raw.positionName())
+                        .retentionGrade(convertScoreToGrade(raw.retentionScore()))
+                        .stabilityType(convertScoreToStabilityType(raw.retentionScore()))
+                        .summaryComment(raw.summaryComment())
+                        .roundNo(raw.roundNo())
+                        .build())
+                .filter(dto -> req.stabilityType() == null || dto.stabilityType() == req.stabilityType())
+                .toList();
 
-        // 4. 페이지네이션 정보 생성
         Pagination pagination = Pagination.builder()
-                .currentPage(req.getPage())
+                .currentPage(req.page())
                 .totalItems(total)
-                .totalPage((int) Math.ceil((double) total / req.getSize()))
+                .totalPage((int) Math.ceil((double) total / req.size()))
                 .build();
 
-        // 5. 결과 조립
+        log.info("근속 전망 결과 조회 완료 - roundNo={}, filteredCount={}", roundNo, filtered.size());
+
         return RetentionForecastResponseDto.builder()
                 .items(filtered)
                 .pagination(pagination)
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RetentionSupportDetailDto getSupportDetail(Long retentionId) {
+        log.info("API 호출 시작 - getSupportDetail, 요청 파라미터: retentionId={}", retentionId);
+
+        // 근속 지원 상세 조회
+        RetentionSupportDetailDto detail = mapper.findSupportDetail(retentionId);
+
+        if (detail == null) {
+            log.error("근속 상세 조회 실패 - 데이터 없음, retentionId={}", retentionId);
+            throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
+        }
+
+        log.info("근속 상세 조회 완료 - empNo={}, name={}", detail.empNo(), detail.empName());
+
+        return detail;
     }
 
     private String convertScoreToGrade(int score) {
@@ -79,17 +102,4 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         if (score >= 60) return StabilityType.WARNING;
         return StabilityType.UNSTABLE;
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public RetentionSupportDetailDto getSupportDetail(Long retentionId) {
-        RetentionSupportDetailDto detail = mapper.findSupportDetail(retentionId);
-
-        if (detail == null) {
-            throw new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND);
-        }
-
-        return detail;
-    }
-
 }

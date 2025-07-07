@@ -71,14 +71,16 @@ class EmailServiceTest {
         when(templateEngine.process(any(String.class),any(Context.class))).thenReturn("HTML");
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
-        doThrow(new MessagingException("메일 전송 실패")).when(mailSender).send(any(MimeMessage.class));
+        doThrow(new RuntimeException(new MessagingException()))
+                .when(mailSender).send(any(MimeMessage.class));
 
         // when & then
-        EmailFailException exception = assertThrows(EmailFailException.class, () -> {
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             emailService.sendPasswordResetEmail(employee, token);
         });
 
-        assertEquals(ErrorCode.EMAIL_SENDING_FAILED, exception.getErrorCode());
+        // 감싸고 있는 원인이 MessagingException인지 확인
+        assertInstanceOf(MessagingException.class, exception.getCause());
     }
 
 

@@ -1,19 +1,24 @@
 package com.dao.momentum.retention.prospect.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
-import com.dao.momentum.retention.interview.exception.InterviewException;
+import com.dao.momentum.retention.prospect.exception.ProspectException;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionInsightRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatisticsRequestDto;
+import com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseriesRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
+import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto;
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -28,137 +33,180 @@ class RetentionStatisticsQueryServiceImplTest {
     @InjectMocks
     private RetentionStatisticsQueryServiceImpl service;
 
-    @Test
-    @DisplayName("getAverageScore - 정상 조회")
-    void getAverageScore_success() {
-        // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
-        req.setMonth(6);
-        req.setDeptId(1);
+    @Nested
+    @DisplayName("평균 근속 지수 조회")
+    class GetAverageScoreTests {
 
-        when(mapper.findAverageRetentionScore(req))
-                .thenReturn(RetentionAverageScoreDto.builder().averageScore(75.5).build());
+        @Test
+        @DisplayName("정상 조회")
+        void getAverageScore_success() {
+            var req = RetentionStatisticsRequestDto.builder()
+                    .roundId(1)
+                    .deptId(10)
+                    .positionId(5)
+                    .build();
 
-        // when
-        RetentionAverageScoreDto result = service.getAverageScore(req);
+            var dto = RetentionAverageScoreDto.builder()
+                    .averageScore(75.5)
+                    .totalEmpCount(20)
+                    .stabilitySafeRatio(40.0)
+                    .stabilityRiskRatio(10.0)
+                    .build();
 
-        // then
-        assertThat(result.getAverageScore()).isEqualTo(75.5);
+            when(mapper.findAverageRetentionScore(req)).thenReturn(dto);
+
+            var result = service.getAverageScore(req);
+
+            assertThat(result.averageScore()).isEqualTo(75.5);
+            assertThat(result.totalEmpCount()).isEqualTo(20);
+            assertThat(result.stabilitySafeRatio()).isEqualTo(40.0);
+            assertThat(result.stabilityRiskRatio()).isEqualTo(10.0);
+        }
+
+        @Test
+        @DisplayName("조회 결과 없음")
+        void getAverageScore_empty() {
+            var req = RetentionStatisticsRequestDto.builder()
+                    .roundId(1)
+                    .build();
+
+            when(mapper.findAverageRetentionScore(req)).thenReturn(null);
+
+            assertThatThrownBy(() -> service.getAverageScore(req))
+                    .isInstanceOf(ProspectException.class)
+                    .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
+        }
     }
 
-    @Test
-    @DisplayName("getAverageScore - 조회 결과 없음")
-    void getAverageScore_empty() {
-        // given
-        RetentionStatisticsRequestDto req = new RetentionStatisticsRequestDto();
-        req.setYear(2025);
+    @Nested
+    @DisplayName("전체 안정성 분포 조회")
+    class GetOverallStabilityDistributionTests {
 
-        when(mapper.findAverageRetentionScore(req)).thenReturn(null);
+        @Test
+        @DisplayName("정상 조회")
+        void getOverallStabilityDistribution_success() {
+            var req = RetentionInsightRequestDto.builder()
+                    .roundId(3)
+                    .build();
 
-        // when & then
-        assertThatThrownBy(() -> service.getAverageScore(req))
-                .isInstanceOf(InterviewException.class)
-                .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
+            var dto = StabilityDistributionByDeptDto.builder()
+                    .deptName(null)
+                    .positionName(null)
+                    .empCount(100)
+                    .progress20(10)
+                    .progress40(20)
+                    .progress60(30)
+                    .progress80(25)
+                    .progress100(15)
+                    .build();
+
+            when(mapper.findInsightDistribution(req)).thenReturn(dto);
+
+            var result = service.getOverallStabilityDistribution(req);
+
+            assertThat(result.empCount()).isEqualTo(100);
+            assertThat(result.progress40()).isEqualTo(20);
+            assertThat(result.progress80()).isEqualTo(25);
+        }
+
+        @Test
+        @DisplayName("조회 결과 없음")
+        void getOverallStabilityDistribution_empty() {
+            var req = RetentionInsightRequestDto.builder()
+                    .roundId(3)
+                    .build();
+
+            when(mapper.findInsightDistribution(req)).thenReturn(null);
+
+            assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
+                    .isInstanceOf(ProspectException.class)
+                    .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        @DisplayName("roundId 미지정 예외")
+        void getOverallStabilityDistribution_missingRoundId() {
+            var req = RetentionInsightRequestDto.builder()
+                    .roundId(null)
+                    .build(); // roundId = null
+
+            assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
+                    .isInstanceOf(ProspectException.class)
+                    .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
+        }
     }
 
-    @Test
-    @DisplayName("getOverallStabilityDistribution - 전체 기준 조회 성공")
-    void getOverallStabilityDistribution_success() {
-        // given
-        var req = new RetentionInsightRequestDto();
-        req.setRoundId(3); // 필수
+    @Nested
+    @DisplayName("부서별 안정성 분포 조회")
+    class GetStabilityDistributionByDeptTests {
 
-        var dto = StabilityDistributionByDeptDto.builder()
-                .deptName(null)
-                .positionName(null)
-                .empCount(100)
-                .progress20(10)
-                .progress40(20)
-                .progress60(30)
-                .progress80(25)
-                .progress100(15)
-                .build();
+        @Test
+        @DisplayName("정상 조회")
+        void getStabilityDistributionByDept_success() {
+            var req = RetentionInsightRequestDto.builder()
+                    .roundId(3)
+                    .build();
 
-        when(mapper.findInsightDistribution(req)).thenReturn(dto);
+            var dto = StabilityDistributionByDeptDto.builder()
+                    .deptName("인사팀")
+                    .positionName("대리")
+                    .empCount(12)
+                    .progress20(2)
+                    .progress40(3)
+                    .progress60(4)
+                    .progress80(2)
+                    .progress100(1)
+                    .build();
 
-        // when
-        var result = service.getOverallStabilityDistribution(req);
+            when(mapper.findInsightDistributionList(req)).thenReturn(List.of(dto));
 
-        // then
-        assertThat(result.getDeptName()).isEqualTo("전체");
-        assertThat(result.getEmpCount()).isEqualTo(100);
-        assertThat(result.getProgress80()).isEqualTo(25);
+            var result = service.getStabilityDistributionByDept(req);
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).deptName()).isEqualTo("인사팀");
+            assertThat(result.get(0).positionName()).isEqualTo("대리");
+            assertThat(result.get(0).progress60()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("조회 결과 없음")
+        void getStabilityDistributionByDept_empty() {
+            var req = RetentionInsightRequestDto.builder()
+                    .roundId(3)
+                    .build();
+
+            when(mapper.findInsightDistributionList(req)).thenReturn(null); // ← service 내부 로직은 null만 예외 처리함
+
+            assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
+                    .isInstanceOf(ProspectException.class)
+                    .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
+        }
     }
 
-    @Test
-    @DisplayName("getOverallStabilityDistribution - 조회 결과 없음")
-    void getOverallStabilityDistribution_empty() {
-        // given
-        var req = new RetentionInsightRequestDto();
-        req.setRoundId(3);
+    @Nested
+    @DisplayName("근속 지수 시계열 조회")
+    class GetMonthlyRetentionStatsTests {
 
-        when(mapper.findInsightDistribution(req)).thenReturn(null);
+        @Test
+        @DisplayName("정상 조회")
+        void getMonthlyRetentionStats_success() {
+            var req = RetentionTimeseriesRequestDto.builder()
+                    .year(2025)
+                    .build();
 
-        // when & then
-        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(InterviewException.class)
-                .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
-    }
+            var stat1 = RetentionMonthlyStatDto.builder()
+                    .month(1)
+                    .averageScore(74.1)
+                    .stdDeviation(9.1)
+                    .build();
 
-    @Test
-    @DisplayName("getStabilityDistributionByDept - 정상 조회")
-    void getStabilityDistributionByDept_success() {
-        // given
-        var req = new RetentionInsightRequestDto();
-        req.setRoundId(3);
+            when(mapper.findMonthlyRetentionStats(req)).thenReturn(List.of(stat1));
 
-        var dto = StabilityDistributionByDeptDto.builder()
-                .deptName("인사팀")
-                .positionName("대리")
-                .empCount(12)
-                .progress20(2)
-                .progress40(3)
-                .progress60(4)
-                .progress80(2)
-                .progress100(1)
-                .build();
+            var result = service.getMonthlyRetentionStats(req);
 
-        when(mapper.findInsightDistributionList(req)).thenReturn(List.of(dto));
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).averageScore()).isEqualTo(74.1);
+        }
 
-        // when
-        var result = service.getStabilityDistributionByDept(req);
-
-        // then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDeptName()).isEqualTo("인사팀");
-        assertThat(result.get(0).getProgress60()).isEqualTo(4);
-    }
-
-    @Test
-    @DisplayName("getStabilityDistributionByDept - 조회 결과 없음")
-    void getStabilityDistributionByDept_empty() {
-        // given
-        var req = new RetentionInsightRequestDto();
-        req.setRoundId(3);
-
-        when(mapper.findInsightDistributionList(req)).thenReturn(List.of());
-
-        // when & then
-        assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
-                .isInstanceOf(InterviewException.class)
-                .hasMessageContaining(ErrorCode.RETENTION_FORECAST_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    @DisplayName("getOverallStabilityDistribution - roundId 누락 예외")
-    void getOverallStabilityDistribution_missingRoundId() {
-        // given
-        var req = new RetentionInsightRequestDto(); // roundId 미설정
-
-        // when & then
-        assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
-                .isInstanceOf(InterviewException.class)
-                .hasMessageContaining(ErrorCode.INVALID_REQUEST.getMessage());
     }
 }

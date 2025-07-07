@@ -48,9 +48,10 @@ public class HrObjection {
     // === 생성 팩토리 메서드 ===
     public static HrObjection create(HrObjectionCreateDto dto, Integer defaultStatusId) {
         return HrObjection.builder()
-                .resultId(dto.getResultId())
+                .resultId(dto.resultId())
+                .writerId(dto.writerId())
                 .statusId(defaultStatusId)
-                .reason(dto.getReason())
+                .reason(dto.reason())
                 .createdAt(LocalDateTime.now())
                 .isDeleted(UseStatus.N)
                 .build();

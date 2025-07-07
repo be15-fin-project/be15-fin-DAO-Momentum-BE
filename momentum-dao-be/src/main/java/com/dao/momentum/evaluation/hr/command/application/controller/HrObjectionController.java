@@ -31,7 +31,7 @@ public class HrObjectionController {
 
         HrObjectionCreateDto dto = request.toDto(evaluationId, empId);
 
-        HrObjectionCreateResponse response = hrObjectionService.create(dto);
+        HrObjectionCreateResponse response = hrObjectionService.create(dto, empId);
         return ApiResponse.success(response);
     }
 

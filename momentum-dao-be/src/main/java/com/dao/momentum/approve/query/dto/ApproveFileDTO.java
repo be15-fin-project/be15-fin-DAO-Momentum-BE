@@ -2,8 +2,6 @@ package com.dao.momentum.approve.query.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 @ToString
 @NoArgsConstructor
@@ -11,6 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ApproveFileDTO {
 
+    private String name;
     private String s3Key;
     private String type;
 

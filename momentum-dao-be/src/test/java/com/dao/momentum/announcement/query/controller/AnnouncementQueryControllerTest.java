@@ -6,6 +6,7 @@ import com.dao.momentum.announcement.query.dto.response.AnnouncementDto;
 import com.dao.momentum.announcement.query.dto.response.AnnouncementListResponse;
 import com.dao.momentum.announcement.query.service.AnnouncementQueryService;
 import com.dao.momentum.common.dto.Pagination;
+import com.dao.momentum.file.command.application.dto.response.AttachmentDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,16 @@ class AnnouncementQueryControllerTest {
                 .content("복지포인트가 늘어났습니다.")
                 .createdAt(LocalDateTime.of(2025, 6, 1, 10, 0))
                 .updatedAt(LocalDateTime.of(2025, 6, 2, 12, 0))
-                .urls(List.of("https://example.com/file1.pdf", "https://example.com/file2.pdf"))
+                .attachments(List.of(
+                        AttachmentDto.builder()
+                                .url("https://example.com/file1.pdf")
+                                .name("사내복지안내.pdf")
+                                .build(),
+                        AttachmentDto.builder()
+                                .url("https://example.com/file2.pdf")
+                                .name("복지포인트규정.pdf")
+                                .build()
+                ))
                 .build();
 
         AnnouncementDetailResponse response = AnnouncementDetailResponse.builder()
@@ -68,8 +78,10 @@ class AnnouncementQueryControllerTest {
                 .andExpect(jsonPath("$.data.announcement.employeeName").value("김현우"))
                 .andExpect(jsonPath("$.data.announcement.departmentName").value("인사팀"))
                 .andExpect(jsonPath("$.data.announcement.title").value("복지제도 변경 안내"))
-                .andExpect(jsonPath("$.data.announcement.urls[0]").value("https://example.com/file1.pdf"))
-                .andExpect(jsonPath("$.data.announcement.urls[1]").value("https://example.com/file2.pdf"))
+                .andExpect(jsonPath("$.data.announcement.attachments[0].url").value("https://example.com/file1.pdf"))
+                .andExpect(jsonPath("$.data.announcement.attachments[0].name").value("사내복지안내.pdf"))
+                .andExpect(jsonPath("$.data.announcement.attachments[1].url").value("https://example.com/file2.pdf"))
+                .andExpect(jsonPath("$.data.announcement.attachments[1].name").value("복지포인트규정.pdf"))
                 .andExpect(jsonPath("$.errorCode").doesNotExist())
                 .andExpect(jsonPath("$.message").doesNotExist());
     }

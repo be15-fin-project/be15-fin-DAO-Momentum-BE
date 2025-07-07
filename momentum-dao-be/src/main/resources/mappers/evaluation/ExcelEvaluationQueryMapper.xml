@@ -7,9 +7,21 @@
 
     <!-- 사원간 평가 엑셀 다운로드 쿼리 -->
     <select id="selectPeerEvaluationsForExcel"
-            resultType="com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationExcelDto">
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.PeerEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             r.round_no       AS roundNo,
+            ef.description    AS formName,
             t.emp_no         AS targetEmpNo,
             t.name           AS targetName,
             d.name           AS departmentName,
@@ -21,6 +33,8 @@
         FROM eval_response er
         JOIN employee t ON er.target_id = t.emp_id
         JOIN employee e ON er.eval_id = e.emp_id
+        JOIN eval_form ef ON ef.form_id = er.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
         LEFT JOIN department d ON t.dept_id = d.dept_id
         LEFT JOIN position p   ON t.position_id = p.position_id
         JOIN eval_round r ON er.round_id = r.round_id
@@ -35,7 +49,7 @@
                 AND e.emp_no = #{evaluatorEmpNo}
             </if>
             <if test="deptId != null">
-                AND t.dept_id = #{deptId}
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
             </if>
             <if test="positionId != null">
                 AND t.position_id = #{positionId}
@@ -45,4 +59,101 @@
         LIMIT 5000
     </select>
 
+    <select id="selectOrgEvaluationsForExcel"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.OrgEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
+        SELECT
+            r.round_no       AS roundNo,
+            f.description    AS formName,
+            e.emp_no         AS evalEmpNo,
+            e.name           AS evalName,
+            d.name           AS departmentName,
+            p.name           AS positionName,
+            er.score         AS score,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i') AS submittedAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p   ON e.position_id = p.position_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_form f ON er.form_id = f.form_id
+        JOIN eval_type et ON f.type_id = et.type_id
+        <where>
+            AND et.name = 'ORG'
+
+            <if test="roundId != null">
+                AND r.round_id = #{roundId}
+            </if>
+            <if test="evalEmpNo != null and evalEmpNo != ''">
+                AND e.emp_no = #{evalEmpNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+        </where>
+        ORDER BY r.round_no DESC, e.emp_no
+        LIMIT 5000
+    </select>
+
+    <select id="selectSelfEvaluationsForExcel"
+            resultType="com.dao.momentum.evaluation.eval.query.dto.response.various.SelfEvaluationExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
+        SELECT
+            r.round_no       AS roundNo,
+            f.description    AS formName,
+            e.emp_no         AS empNo,
+            e.name           AS name,
+            d.name           AS departmentName,
+            p.name           AS positionName,
+            er.score         AS score,
+            DATE_FORMAT(er.created_at, '%Y-%m-%d %H:%i') AS submittedAt
+        FROM eval_response er
+        JOIN employee e ON er.eval_id = e.emp_id
+        LEFT JOIN department d ON e.dept_id = d.dept_id
+        LEFT JOIN position p   ON e.position_id = p.position_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        JOIN eval_form f ON er.form_id = f.form_id
+        JOIN eval_type et ON f.type_id = et.type_id
+        <where>
+            AND et.name = 'SELF'
+
+            <if test="roundId != null">
+                AND r.round_id = #{roundId}
+            </if>
+            <if test="empNo != null and empNo != ''">
+                AND e.emp_no = #{empNo}
+            </if>
+            <if test="deptId != null">
+                AND e.dept_id IN (SELECT dept_id FROM dept_tree)
+            </if>
+            <if test="positionId != null">
+                AND e.position_id = #{positionId}
+            </if>
+        </where>
+        ORDER BY r.round_no DESC, e.emp_no
+        LIMIT 5000
+    </select>
 </mapper>

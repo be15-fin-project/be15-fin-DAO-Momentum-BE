@@ -42,7 +42,10 @@ class CompanyQueryServiceTest {
                 "contact@momentum.com",
                 25,
                 LocalDate.of(2020, 1, 1),
-                LocalTime.of(9, 0)
+                LocalTime.of(9, 0),
+                20,
+                2,
+                11
         );
 
         when(companyMapper.getCompanyInfo()).thenReturn(mockDto);

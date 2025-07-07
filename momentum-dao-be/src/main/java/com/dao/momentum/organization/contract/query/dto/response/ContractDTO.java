@@ -31,4 +31,7 @@ public class ContractDTO {
 
     @Schema(description = "다운로드 키")
     private String s3Key;
+
+    @Schema(description = "파일명")
+    private String fileName;
 }

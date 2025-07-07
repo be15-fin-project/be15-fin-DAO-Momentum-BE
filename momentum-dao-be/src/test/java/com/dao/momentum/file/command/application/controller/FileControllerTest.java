@@ -57,10 +57,13 @@ class FileControllerTest {
     @Test
     @DisplayName("Download URL 생성 성공")
     void generateDownloadUrl_success() throws Exception {
-        DownloadUrlRequest request = new DownloadUrlRequest("announcements/5634f623-9646-4103-bb8d-3f4d92b35693/test.png");
-        DownloadUrlResponse response = new DownloadUrlResponse("https://download.url");
+        String key = "announcements/5634f623-9646-4103-bb8d-3f4d92b35693/test.png";
+        String fileName = "test.png";
 
-        when(fileService.generateDownloadUrl("announcements/5634f623-9646-4103-bb8d-3f4d92b35693/test.png")).thenReturn(response);
+        DownloadUrlRequest request = new DownloadUrlRequest(key, fileName); // 생성자 수정 필요
+        DownloadUrlResponse response = new DownloadUrlResponse("https://download.url", fileName);
+
+        when(fileService.generateDownloadUrl(key, fileName)).thenReturn(response);
 
         mockMvc.perform(post("/file/download-url")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +71,8 @@ class FileControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.signedUrl").value("https://download.url"));
+                .andExpect(jsonPath("$.data.signedUrl").value("https://download.url"))
+                .andExpect(jsonPath("$.data.fileName").value("test.png"));
     }
 
     @Test

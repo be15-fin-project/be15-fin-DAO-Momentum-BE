@@ -47,10 +47,11 @@ public class S3Service {
      * 업로드용 Presigned URL 발급
      */
     public FilePresignedUrlResponse generatePresignedUploadUrlWithKey(String key, String contentType) {
+
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
-                .contentType(contentType)
+                .contentType(resolveContentTypeWithCharset(contentType, key))
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
@@ -154,5 +155,22 @@ public class S3Service {
             return null;
         }
         return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+    }
+
+    private String resolveContentTypeWithCharset(String contentType, String key) {
+        String lowerKey = key.toLowerCase();
+        // 텍스트 기반 확장자는 charset 추가
+        if (lowerKey.endsWith(".txt") || lowerKey.endsWith(".csv")) {
+            if (!contentType.toLowerCase().contains("charset")) {
+                return contentType + "; charset=UTF-8";
+            }
+        }
+        return contentType;
+    }
+
+    private String extractFilenameFromKey(String key) {
+        if (key == null || key.isEmpty()) return "unnamed";
+        int lastSlash = key.lastIndexOf('/');
+        return lastSlash != -1 ? key.substring(lastSlash + 1) : key;
     }
 }

@@ -1,8 +1,8 @@
 package com.dao.momentum.evaluation.eval.query.mapper;
 
-import com.dao.momentum.evaluation.eval.query.dto.request.PeerEvaluationListRequestDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.FactorScoreDto;
-import com.dao.momentum.evaluation.eval.query.dto.response.PeerEvaluationResponseDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.various.PeerEvaluationListRequestDto;
+import com.dao.momentum.evaluation.eval.query.dto.request.FactorScoreDto;
+import com.dao.momentum.evaluation.eval.query.dto.response.various.PeerEvaluationResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 

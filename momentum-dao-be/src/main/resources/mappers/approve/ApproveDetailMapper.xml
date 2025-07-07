@@ -27,7 +27,7 @@
     <!-- 결재 내역 파일 조회 -->
     <select id="getApproveFiles" resultType="com.dao.momentum.approve.query.dto.ApproveFileDTO">
         SELECT
-            s3_key, type
+            name, s3_key, type
         FROM file
         WHERE approve_id = #{approveId}
     </select>

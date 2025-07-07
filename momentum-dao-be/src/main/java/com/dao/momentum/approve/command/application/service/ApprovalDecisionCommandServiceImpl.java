@@ -1,18 +1,26 @@
 package com.dao.momentum.approve.command.application.service;
 
 import com.dao.momentum.approve.command.application.dto.request.ApprovalConfirmRequest;
+import com.dao.momentum.approve.command.application.service.strategy.FormDetailStrategy;
+import com.dao.momentum.approve.command.application.service.strategy.FormDetailStrategyDispatcher;
 import com.dao.momentum.approve.command.domain.aggregate.*;
 import com.dao.momentum.approve.command.domain.repository.ApproveLineListRepository;
 import com.dao.momentum.approve.command.domain.repository.ApproveLineRepository;
 import com.dao.momentum.approve.command.domain.repository.ApproveRepository;
 import com.dao.momentum.approve.exception.ApproveException;
 import com.dao.momentum.common.exception.ErrorCode;
+import com.dao.momentum.common.kafka.dto.NotificationMessage;
+import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
+import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.work.command.application.service.WorkApplyCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +39,10 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
     private static final int PENDING = 1;
     private static final int APPROVED = 2;
     private static final int REJECTED = 3;
+    private final FormDetailStrategyDispatcher formDetailStrategyDispatcher;
+    private final NotificationKafkaProducer notificationKafkaProducer;
+    private final EmployeeRepository employeeRepository;
+
 
     private static final Set<ApproveType> WORK_APPROVE_TYPE = Set.of(
             ApproveType.BUSINESSTRIP,
@@ -164,16 +176,16 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
     private void notifyNextApproveLineIfExists(ApproveLine currentLine) {
         approveLineRepository.findNextLine(
                 currentLine.getApproveId(),
-                currentLine.getApproveLineOrder()       
+                currentLine.getApproveLineOrder()
         ).ifPresent(nextLine -> {
             // 다음 결재선에 속한 결재자 전부 조회 하기
             List<ApproveLineList> assignees =
                     approveLineListRepository.findByApproveLineId(nextLine.getId());
 
-            assignees.forEach(a -> {
-                /* 여기에서 알림 전송하면 됨 */
-                log.info("다음 결재선 사람에게 알림 보내기");
-            });
+            Approve approve = approveRepository.getApproveByApproveId(currentLine.getApproveId())
+                    .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_APPROVE));
+
+            sendApprovalNotificationToAssignees(approve, assignees);
         });
     }
 
@@ -194,7 +206,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
                 workApplyCommandService.applyApprovalWork(approve);
             } else if(approveType == ApproveType.CANCEL) { // 취소 결재인 경우
                 Long parentApproveId = approve.getParentApproveId();
-                
+
                 // 부모 결재 가져오기
                 Approve parentApprove = approveRepository
                         .getApproveByApproveId(parentApproveId)
@@ -221,6 +233,73 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
 
         approveLine.updateApproveLineStatus(REJECTED);
         approve.updateApproveStatus(REJECTED);
+
+        // 반려자 → 기안자에게 알림 보내기
+        sendRejectionNotificationToDrafter(approve, approvalAssignee.getEmpId());
+    }
+
+    /* 공통 알림 전송 로직 */
+    private void sendApprovalNotificationToAssignees(Approve approve, List<ApproveLineList> assignees) {
+        Long approveId = approve.getApproveId();
+        Long senderId = approve.getEmpId();
+
+        Employee sender = employeeRepository.findByEmpId(senderId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        String senderName = sender.getName();
+
+        FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
+        String content = strategy.createNotificationContent(approveId, senderName);
+
+        assignees.forEach(assignee -> {
+            NotificationMessage message = NotificationMessage.builder()
+                    .content(content)
+                    .type("APPROVAL_REQUEST")
+                    .url("/approval/" + approveId)
+                    .receiverId(assignee.getEmpId())
+                    .senderId(senderId)
+                    .senderName(senderName)
+                    .timestamp(LocalDateTime.now())
+                    .approveId(approveId)
+                    .build();
+
+            try {
+                notificationKafkaProducer.sendNotification(assignee.getEmpId().toString(), message);
+                log.info("결재 ID: {}, 수신자 ID: {} → 다음 결재선 알림 전송 완료", approveId, assignee.getEmpId());
+            } catch (Exception e) {
+                log.error("알림 전송 실패 - 결재 ID: {}, 수신자 ID: {}, 사유: {}", approveId, assignee.getEmpId(), e.getMessage(), e);
+            }
+        });
+    }
+
+    /* 반려 시 기안자에게 알림 */
+    private void sendRejectionNotificationToDrafter(Approve approve, Long rejectorId) {
+        Long senderId = rejectorId;
+        Long receiverId = approve.getEmpId(); // 기안자
+
+        Employee sender = employeeRepository.findByEmpId(senderId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        String senderName = sender.getName();
+
+        FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
+        String content = strategy.createNotificationContent(approve.getApproveId(), senderName);
+
+        NotificationMessage message = NotificationMessage.builder()
+                .content(content)
+                .type("APPROVAL_REJECTED")
+                .url("/approval/" + approve.getApproveId())
+                .receiverId(receiverId)
+                .senderId(senderId)
+                .senderName(senderName)
+                .timestamp(LocalDateTime.now())
+                .approveId(approve.getApproveId())
+                .build();
+
+        try {
+            notificationKafkaProducer.sendNotification(receiverId.toString(), message);
+            log.info("결재 ID: {}, 수신자 ID(기안자): {} → 반려 알림 전송 완료", approve.getApproveId(), receiverId);
+        } catch (Exception e) {
+            log.error("반려 알림 전송 실패 - 결재 ID: {}, 수신자 ID: {}, 사유: {}", approve.getApproveId(), receiverId, e.getMessage(), e);
+        }
     }
 
 }

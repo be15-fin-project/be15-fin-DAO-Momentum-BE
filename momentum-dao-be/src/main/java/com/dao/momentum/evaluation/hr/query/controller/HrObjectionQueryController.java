@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.hr.query.controller;
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.evaluation.hr.query.dto.request.HrObjectionListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.HrObjectionListResultDto;
+import com.dao.momentum.evaluation.hr.query.dto.response.ObjectionDetailResultDto;
 import com.dao.momentum.evaluation.hr.query.service.HrObjectionQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,9 +31,20 @@ public class HrObjectionQueryController {
             @AuthenticationPrincipal UserDetails userDetails,
             @ParameterObject @ModelAttribute HrObjectionListRequestDto req
     ) {
-        // JWT subject(empId)를 요청 DTO에 설정
-        req.setRequesterEmpId(Long.parseLong(userDetails.getUsername()));
-        HrObjectionListResultDto result = service.getObjections(req);
+        Long empId = Long.parseLong(userDetails.getUsername());
+        HrObjectionListResultDto result = service.getObjections(empId, req);
         return ApiResponse.success(result);
+    }
+
+    @GetMapping("/requests/{objectionId}")
+    @Operation(
+            summary = "이의제기 요청 상세 조회",
+            description = "로그인한 사원이 본인에게 제기된 특정 이의제기 건의 상세 정보를 조회합니다."
+    )
+    public ApiResponse<ObjectionDetailResultDto> getMyObjectionDetail(
+            @PathVariable Long objectionId
+    ) {
+        ObjectionDetailResultDto dto = service.getObjectionDetail(objectionId);
+        return ApiResponse.success(dto);
     }
 }

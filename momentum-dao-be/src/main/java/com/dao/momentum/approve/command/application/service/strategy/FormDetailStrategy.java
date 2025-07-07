@@ -7,5 +7,5 @@ import org.springframework.stereotype.Component;
 public interface FormDetailStrategy {
 
     void saveDetail(JsonNode form, Long approveId);
-
+    String createNotificationContent(Long approveId, String senderName);
 }

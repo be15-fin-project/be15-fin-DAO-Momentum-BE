@@ -17,7 +17,7 @@ public enum ErrorCode {
     INVALID_LEVEL("10006","유효하지 않은 직위 단계입니다." , HttpStatus.BAD_REQUEST),
     POSITION_IN_USE("10007","해당 직위인 사원이 존재합니다." ,HttpStatus.CONFLICT ),
     NOT_EMPLOYED_USER("10008", "현재 재직중이지 않은 직원입니다.",HttpStatus.FORBIDDEN),
-    INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST ),
+    INVALID_COMMAND_REQUEST("10009", "유효하지 않은 수정 요청입니다." , HttpStatus.BAD_REQUEST),
     INVALID_POSITION_FOR_PROMOTION("10010", "한 단계 높은 직위로만 승진 가능합니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
@@ -33,6 +33,7 @@ public enum ErrorCode {
     DEPARTMENT_NOT_EMPTY("11005","해당 부서에 사원이 남아있습니다.",HttpStatus.BAD_REQUEST),
     DEPARTMENT_HAS_CHILD("11006","하위 부서가 존재합니다.",HttpStatus.BAD_REQUEST),
     HOLIDAY_ALREADY_EXISTS("11007", "해당 날짜에 휴일이 이미 존재합니다.", HttpStatus.CONFLICT),
+    HOLIDAY_NOT_FOUND("11008", "해당 휴일이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
 
     // 계약서 오류 (12001 - 12999)
     INVALID_SALARY_AGREEMENT("12001", "연봉계약서에는 연봉이 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
@@ -87,6 +88,8 @@ public enum ErrorCode {
     APPROVAL_ALREADY_PROCESSED("30019", "이미 승인/반려 된 결재입니다.", HttpStatus.BAD_REQUEST),
     APPROVAL_ALREADY_CANCELED("30020", "이미 취소된 결재는 다시 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
     PREVIOUS_APPROVAL_NOT_COMPLETED("30021", "이전 단계 결재가 완료 되지 않아 결재를 진행할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_REF("30022", "존재하지 않는 참조 내역입니다.", HttpStatus.BAD_REQUEST),
+
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류
     STATISTICS_NOT_FOUND("40001", "해당 조건에 대한 KPI 통계가 없습니다.", HttpStatus.NOT_FOUND),
@@ -94,7 +97,7 @@ public enum ErrorCode {
     KPI_NOT_FOUND("40003", "해당 KPI 항목을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     KPI_EMPLOYEE_SUMMARY_NOT_FOUND("40004", "사원별 KPI 요약 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     KPI_REQUEST_NOT_FOUND("40005", "조회 가능한 KPI 요청 내역이 없습니다.", HttpStatus.NOT_FOUND),
-    KPI_REQUEST_FORBIDDEN("40006", "본인의 KPI만 취소할 수 있습니다.", HttpStatus.BAD_REQUEST),
+    KPI_REQUEST_FORBIDDEN("40006", "본인의 KPI만 수정할 수 있습니다.", HttpStatus.BAD_REQUEST),
     KPI_INVALID_STATUS("40007", "취소 가능한 상태의 KPI가 아닙니다.", HttpStatus.BAD_REQUEST),
     KPI_ALREADY_PROCESSED("40008", "이미 처리 된 KPI입니다.", HttpStatus.BAD_REQUEST),
     KPI_REJECTION_REASON_REQUIRED("40009", "반려 할 경우 반드시 처리 사유가 작성되어야 합니다.", HttpStatus.BAD_REQUEST),
@@ -106,12 +109,24 @@ public enum ErrorCode {
     INVALID_REQUEST("40013", "평가 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     EVAL_ROUND_NOT_FOUND("40014", "평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     EVAL_ROUND_DUPLICATE("40015", "이미 존재하는 회차 번호입니다.", HttpStatus.BAD_REQUEST),
-    EVAL_ROUND_INVALID_START_DATE("40016", "시작일은 오늘 이후여야 합니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_INVALID_START_DATE("40016", "시작일은 반드시 오늘 또는 이후 날짜여야 합니다.", HttpStatus.BAD_REQUEST),
     EVAL_ALREADY_SUBMITTED("40017", "이미 제출된 평가입니다.", HttpStatus.BAD_REQUEST),
     EVAL_INVALID_NOT_EXIST("40018", "요인별 점수가 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_RESULT_REQUEST("40019", "평가 결과 ID는 필수입니다.", HttpStatus.BAD_REQUEST),
     EVALUATION_NOT_FOUND("40020", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    EVALUATION_PROMPT_NOT_FOUND("40020", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_PROMPT_NOT_FOUND("40021", "해당 양식의 문항 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATION_TYPE_NOT_FOUND("40022", "평가 타입 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVALUATOR_ROLE_NOT_FOUND("40023", "사원의 권한을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVAL_RESULT_NOT_FOUND("40024", "평가 결과를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    EVAL_ROUND_CREATION_FAILED("40025", "평가 회차 등록 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_UPDATE_FAILED("40026", "평가 회차 수정 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_ROUND_DELETE_FAILED("40027", "평가 회차 삭제 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SUBMIT_FAILED("40028", "평가 제출 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SCORE_CALCULATION_FAILED("40029", "평가 점수 계산 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SAVE_FAILED("40030", "평가 점수 저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_UPDATE_FAILED("40031", "평가 점수 갱신 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_DELETE_FAILED("40031", "평가 점수 삭제 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    EVAL_SAVE_ALL_FAILED("40031", "일괄 평가 점수 저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST),
 
     // 인사 평가 오류
     HR_OBJECTIONS_NOT_FOUND("40021", "조회 가능한 인사 평가 이의제기가 없습니다.", HttpStatus.NOT_FOUND),
@@ -127,6 +142,13 @@ public enum ErrorCode {
     HR_OBJECTION_CANNOT_DELETE("40031", "대기 상태의 이의제기만 삭제할 수 있습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_CANNOT_MODIFY("40032", "이미 처리된 이의제기는 수정할 수 없습니다.", HttpStatus.BAD_REQUEST),
     HR_OBJECTION_NOT_FOUND2("40033", "reult id searching failed", HttpStatus.NOT_FOUND),
+    HR_EVALUATION_FORBIDDEN("40034", "인사 평가 처리 권한이 없습니다.", HttpStatus.NOT_FOUND),
+    HR_EVALUATIONS_NOT_FOUND("1001", "HR 평가 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RATE_INFO_NOT_FOUND("1003", "등급 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    WEIGHT_INFO_NOT_FOUND("1004", "가중치 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    FACTOR_SCORES_NOT_FOUND("1005", "요인 점수를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    INVALID_ROUND_NO("1006", "유효하지 않은 회차 번호입니다.", HttpStatus.BAD_REQUEST),
+    NO_EVALUATION_ROUND_FOUND("1007", "사용 가능한 평가 회차를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     // 근속 지원 오류 (50001 ~ 59999)
     RETENTION_FORECAST_NOT_FOUND("50001", "조회 가능한 근속 전망 정보가 없습니다.", HttpStatus.NOT_FOUND),
@@ -136,6 +158,7 @@ public enum ErrorCode {
     RETENTION_CONTACT_FORBIDDEN("50005", "면담 요청을 삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_RESPONSE_FORBIDDEN("50006", "면담 요청에 대한 보고 권한이 없습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_ROUND_NOT_FOUND("50007", "근속 전망 회차 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_ROUND_ALREADY_EXIST("50008", "해당 일자의 근속 전망 회차가 이미 등록되어 있습니다.", HttpStatus.BAD_REQUEST),
 
 
     //공지사항 오류(60001 - 69999)

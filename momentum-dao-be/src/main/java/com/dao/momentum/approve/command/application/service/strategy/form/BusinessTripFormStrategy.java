@@ -37,4 +37,18 @@ public class BusinessTripFormStrategy implements FormDetailStrategy {
         businessTripRepository.save(businessTrip);
     }
 
+    @Override
+    public String createNotificationContent(Long approveId, String senderName) {
+        BusinessTrip trip = businessTripRepository.findByApproveId(approveId)
+                .orElseThrow(() -> new IllegalArgumentException("출장 결재 정보가 없습니다."));
+
+        return String.format(
+                "[출장] %s님이 %s ~ %s 동안 %s로 출장을 신청했습니다. 사유: %s",
+                senderName,
+                trip.getStartDate(),
+                trip.getEndDate(),
+                trip.getPlace(),
+                trip.getReason()
+        );
+    }
 }

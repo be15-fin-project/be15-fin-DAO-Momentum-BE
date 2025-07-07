@@ -2,6 +2,7 @@ package com.dao.momentum.evaluation.eval.command.domain.repository;
 
 import com.dao.momentum.evaluation.eval.command.domain.aggregate.EvalResponse;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
@@ -17,4 +18,6 @@ public interface EvalResponseRepository {
 
     Optional<Integer> findRoundIdByResultId(@Param("resultId") Long resultId);
 
+    @Query("SELECT e.evalId FROM EvalResponse e WHERE e.resultId = :resultId")
+    Optional<Long> findEvalIdByResultId(@Param("resultId") Long resultId);
 }

@@ -24,4 +24,6 @@ public interface AdminEmployeeMapper {
     List<AppointDTO> getAppoints(@Param("request") AppointSearchDTO request);
 
     long countAppoints(@Param("request") AppointSearchDTO request);
+
+    List<Long> getAllEmployeeIds();
 }

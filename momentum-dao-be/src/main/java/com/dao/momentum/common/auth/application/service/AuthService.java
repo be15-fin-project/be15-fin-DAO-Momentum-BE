@@ -17,7 +17,6 @@ import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -179,10 +180,17 @@ public class AuthService {
         );
 
         //이메일 처리
-        emailService.sendPasswordResetEmail(employee,passwordResetToken);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("resetLink","http://localhost:5173/password/reset?token="+passwordResetToken);
+        emailService.sendEmailWithTemplate(
+                employee.getEmail(),
+                "Momentum 비밀번호 재설정",
+                "email/reset-password",
+                variables
+        );
 
         return PasswordResetResponse.builder()
-                .message("비밀번호 재설정 메일이 전송되었습니다. 이메일을 확인해주세요.")
+                .message("비밀번호 재설정 메일이 전송되었습니다.")
                 .build();
     }
 
@@ -213,4 +221,23 @@ public class AuthService {
                 .message("비밀번호가 변경되었습니다.")
                 .build();
     }
+
+    public TokenResponse issuePermanentBatchToken() {
+        // 1. 사번 1번 사용자 조회 (관리자)
+        Long empId = 1L;
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        List<String> employeeRoles = userRoleMapper.findByEmpId(employee.getEmpId());
+        String[] employeeRoleArray = employeeRoles.toArray(new String[0]);
+
+        // 2. 만료되지 않는 토큰 생성
+        String accessToken = jwtTokenProvider.createPermanentToken(String.valueOf(employee.getEmpId()), employeeRoleArray);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(null) // 배치용이므로 refresh token 생략
+                .build();
+    }
+
 }

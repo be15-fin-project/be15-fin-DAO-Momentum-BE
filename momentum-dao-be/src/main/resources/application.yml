@@ -30,7 +30,7 @@ spring:
             enable: true
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -82,3 +82,7 @@ naver:
   service:
     url: ${NAVER_URL}
     secret-key: ${NAVER_SECRET_KEY}
+
+batch:
+  server:
+    url: ${BATCH_SERVER_URL} # 알림 배치 서버
