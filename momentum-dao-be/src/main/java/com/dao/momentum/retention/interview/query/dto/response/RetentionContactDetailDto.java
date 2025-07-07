@@ -26,6 +26,9 @@ public record RetentionContactDetailDto(
         @Schema(description = "면담 진행자 ID", example = "101")
         Long managerId,
 
+        @Schema(description = "면담 진행자 사번", example = "101")
+        String managerNo,
+
         @Schema(description = "면담 진행자 이름", example = "정지우")
         String managerName,
 

@@ -104,6 +104,7 @@
             d.name AS deptName,
             p.name AS positionName,
             rc.manager_id AS managerId,
+            m.emp_no AS managerNo,
             m.name AS managerName,
             rc.reason,
             rc.created_at,
