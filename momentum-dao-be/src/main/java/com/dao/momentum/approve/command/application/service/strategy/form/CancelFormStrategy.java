@@ -16,6 +16,7 @@ public class CancelFormStrategy implements FormDetailStrategy {
     private final ObjectMapper objectMapper;
     private final ApproveCancelRepository approveCancelRepository;
 
+    @Override
     public void saveDetail(JsonNode form, Long approveId) {
         // json 형식의 폼을 ApproveCancelRequest 타입으로 변경
         ApproveCancelRequest detail = objectMapper.convertValue(

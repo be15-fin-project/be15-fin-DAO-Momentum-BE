@@ -16,6 +16,7 @@ public class ProposalFormStrategy implements FormDetailStrategy {
     private final ObjectMapper objectMapper;
     private final ApproveProposalRepository approveProposalRepository;
 
+    @Override
     public void saveDetail(JsonNode form, Long approveId) {
         // ApproveProposalRequest로 변환하기
         ApproveProposalRequest detail = objectMapper.convertValue(
