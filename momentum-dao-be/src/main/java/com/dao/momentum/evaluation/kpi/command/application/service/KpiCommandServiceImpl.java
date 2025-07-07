@@ -8,6 +8,7 @@ import com.dao.momentum.evaluation.kpi.command.application.dto.request.KpiProgre
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiProgressUpdateResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiWithdrawResponse;
 import com.dao.momentum.evaluation.kpi.command.domain.aggregate.Kpi;
 import com.dao.momentum.evaluation.kpi.command.domain.repository.KpiRepository;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
@@ -39,6 +40,40 @@ public class KpiCommandServiceImpl implements KpiCommandService {
                 .message("KPI가 성공적으로 생성되었습니다.")
                 .build();
     }
+
+    // KPI 철회
+    @Override
+    @Transactional
+    public KpiWithdrawResponse withdrawKpi(Long empId, Long kpiId) {
+        log.info("[KpiCommandServiceImpl] withdrawKpi() 호출 - empId={}, kpiId={}", empId, kpiId);
+
+        Kpi kpi = kpiRepository.findById(kpiId)
+                .orElseThrow(() -> {
+                    log.error("KPI 정보 없음 - kpiId={}", kpiId);
+                    throw new KpiException(ErrorCode.KPI_NOT_FOUND);
+                });
+
+        if (!kpi.getEmpId().equals(empId)) {
+            log.error("KPI 철회 권한 없음 - empId={}, kpiId={}", empId, kpiId);
+            throw new KpiException(ErrorCode.KPI_REQUEST_FORBIDDEN);
+        }
+
+        if (!kpi.getStatusId().equals(Status.PENDING.getId()) || kpi.getIsDeleted() == UseStatus.Y) {
+            log.error("철회 불가능한 KPI 상태 - kpiId={}, statusId={}, isDeleted={}", kpiId, kpi.getStatusId(), kpi.getIsDeleted());
+            throw new KpiException(ErrorCode.KPI_INVALID_STATUS);
+        }
+
+        // 논리 삭제 처리
+        kpi.withdraw();
+        kpiRepository.save(kpi);
+
+        log.info("KPI 철회 완료 - kpiId={}", kpiId);
+        return KpiWithdrawResponse.builder()
+                .kpiId(kpiId)
+                .message("KPI가 성공적으로 철회되었습니다.")
+                .build();
+    }
+
 
     // KPI 취소 요청
     @Override

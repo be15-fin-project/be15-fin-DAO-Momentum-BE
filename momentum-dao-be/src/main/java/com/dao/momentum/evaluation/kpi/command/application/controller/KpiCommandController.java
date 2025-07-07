@@ -5,6 +5,7 @@ import com.dao.momentum.evaluation.kpi.command.application.dto.request.*;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.CancelKpiResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiCreateResponse;
 import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiProgressUpdateResponse;
+import com.dao.momentum.evaluation.kpi.command.application.dto.response.KpiWithdrawResponse;
 import com.dao.momentum.evaluation.kpi.command.application.service.KpiCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +31,16 @@ public class KpiCommandController {
     ) {
         Long empId = Long.parseLong(userDetails.getUsername());
         return ApiResponse.success(kpiCommandService.createKpi(empId, request.toDTO()));
+    }
+
+    @DeleteMapping("/{kpiId}/withdraw")
+    @Operation(summary = "KPI 철회", description = "사원이 대기중(PENDING) 상태의 KPI를 철회합니다.")
+    public ApiResponse<KpiWithdrawResponse> withdrawKpi(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long kpiId
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+        return ApiResponse.success(kpiCommandService.withdrawKpi(empId, kpiId));
     }
 
     @DeleteMapping("/{kpiId}")
