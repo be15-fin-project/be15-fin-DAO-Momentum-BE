@@ -16,6 +16,7 @@ public class BusinessTripFormStrategy implements FormDetailStrategy {
     private final ObjectMapper objectMapper;
     private final BusinessTripRepository businessTripRepository;
 
+    @Override
     public void saveDetail(JsonNode form, Long approveId) {
         // BusinessTripRequest로 변환하기
         BusinessTripRequest detail = objectMapper.convertValue(

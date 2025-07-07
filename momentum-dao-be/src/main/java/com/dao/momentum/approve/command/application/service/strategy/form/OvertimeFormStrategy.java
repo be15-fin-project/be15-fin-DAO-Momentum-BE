@@ -15,6 +15,7 @@ public class OvertimeFormStrategy implements FormDetailStrategy {
     private final ObjectMapper objectMapper;
     private final OvertimeRepository overtimeRepository;
 
+    @Override
     public void saveDetail(JsonNode form, Long approveId) {
         // OvertimeRequest로 변환하기
         OvertimeRequest detail = objectMapper.convertValue(

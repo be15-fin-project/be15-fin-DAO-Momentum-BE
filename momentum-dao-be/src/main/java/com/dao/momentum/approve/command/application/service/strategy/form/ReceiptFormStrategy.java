@@ -16,6 +16,7 @@ public class ReceiptFormStrategy implements FormDetailStrategy {
     private final ObjectMapper objectMapper;
     private final ApproveReceiptRepository approveReceiptRepository;
 
+    @Override
     public void saveDetail(JsonNode form, Long approveId) {
         // ApproveReceiptRequest로 변환하기
         ApproveReceiptRequest detail = objectMapper.convertValue(
