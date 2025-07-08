@@ -50,9 +50,13 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         String title = approveRequest.getApproveTitle();
         JsonNode form = approveRequest.getFormDetail();
 
+        log.info("부모 결재 Id : {} ", parentApproveId);
         log.info("결재 종류 : {}", approveType);
         log.info("결재 문제 제목 : {}", title);
         log.info("결재 문서 내용 : {}", form);
+        log.info("결재선 목록 : {}", approveRequest.getApproveLineLists());
+        log.info("참조자 목록 : {}", approveRequest.getRefRequests());
+        log.info("첨부 파일 : {}", approveRequest.getAttachments());
 
         // 취소 요청인 경우에는 parentApproveId가 있어야 함
         if(approveType == ApproveType.CANCEL) {

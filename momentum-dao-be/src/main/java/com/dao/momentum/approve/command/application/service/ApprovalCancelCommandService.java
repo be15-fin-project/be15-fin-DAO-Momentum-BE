@@ -1,5 +1,6 @@
 package com.dao.momentum.approve.command.application.service;
 
+import com.dao.momentum.approve.command.application.validator.VacationCommandValidator;
 import com.dao.momentum.approve.command.domain.aggregate.Approve;
 import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.exception.ApproveException;
@@ -7,7 +8,6 @@ import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
-import com.dao.momentum.work.command.application.validator.WorkCreateValidator;
 import com.dao.momentum.work.command.domain.aggregate.*;
 import com.dao.momentum.work.command.domain.repository.*;
 import com.dao.momentum.work.exception.WorkException;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -33,8 +32,7 @@ public class ApprovalCancelCommandService {
     private final VacationTypeRepository vacationTypeRepository;
     private final WorkCorrectionRepository workCorrectionRepository;
     private final EmployeeRepository employeeRepository;
-    private final WorkCreateValidator workCreateValidator;
-
+    private final VacationCommandValidator vacationCommandValidator;
     /*
     * 근태와 관련된 결재 내역을 취소하는 로직
     * (1) 초과 근무, 휴가, 재택 근무, 출장 내역은 work 테이블에서 데이터 삭제
@@ -83,16 +81,16 @@ public class ApprovalCancelCommandService {
                     // 1. 반차인 경우엔 4시간 추가
                     employee.updateRemainingDayOff(employee.getRemainingDayoffHours() + 4);
                 } else if (vacationTypeEnum == VacationTypeEnum.DAYOFF){
-                    // 2. 연차인 경우엔 8시간 추가
-                    employee.updateRemainingDayOff(employee.getRemainingDayoffHours() + 8);
+                    // 2. 연차인 경우엔 연차 신청 날짜 * 8시간 추가
+                    int dayOff = vacationCommandValidator.calculateWorkingDays(startDate, endDate);
 
-                } else{
+                    employee.updateRemainingDayOff(employee.getRemainingDayoffHours() + dayOff * 8);
+
+                } else if(vacationTypeEnum == VacationTypeEnum.REFRESH){
                     // 3. 리프레시 휴가인 경우
-                    int vacationDays = (int) Stream.iterate(startDate, date -> !date.isAfter(endDate), date -> date.plusDays(1))
-                            .filter(date -> !workCreateValidator.isHoliday(date))  // 휴일이 아닌 날만 필터링
-                            .count();
+                    int refreshDays = vacationCommandValidator.calculateWorkingDays(startDate, endDate);
 
-                    employee.updateRemainingRefreshDay(employee.getRemainingRefreshDays() + vacationDays);
+                    employee.updateRemainingRefreshDay(employee.getRemainingRefreshDays() + refreshDays);
                 }
 
             }

@@ -139,7 +139,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
         approvalAssignee.updateApproveLineListStatus(APPROVED);
 
         // 2. 승인 사유가 있다면 승인 사유 넣기
-        if(!reason.isEmpty()) {
+        if (reason != null && !reason.isEmpty()) {
             approvalAssignee.updateReason(reason);
         }
 
