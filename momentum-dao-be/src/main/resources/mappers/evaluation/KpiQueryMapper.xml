@@ -255,7 +255,8 @@
             </choose>
         ORDER BY
             CASE WHEN s.status_type = 'ACCEPTED' THEN 0 ELSE 1 END,
-            k.kpi_progress DESC
+            k.kpi_progress DESC,
+            k.kpi_id DESC
             <if test="request.limit != null">
                 LIMIT #{request.limit}
             </if>
