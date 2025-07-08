@@ -241,6 +241,7 @@
         JOIN status s ON k.status_id = s.status_id
         WHERE e.emp_id = #{empId}
             AND k.is_deleted = 'N'
+            AND k.status_id != 3
             <choose>
                 <when test="request.startDate != null and request.endDate != null">
                     AND #{request.startDate} &lt;= DATE(k.deadline)
@@ -255,8 +256,9 @@
             </choose>
         ORDER BY
             CASE WHEN s.status_type = 'ACCEPTED' THEN 0 ELSE 1 END,
+            CASE WHEN k.kpi_progress = 100 THEN 1 ELSE 0 END,
             k.kpi_progress DESC,
-            k.kpi_id DESC
+            k.kpi_id ASC
             <if test="request.limit != null">
                 LIMIT #{request.limit}
             </if>
