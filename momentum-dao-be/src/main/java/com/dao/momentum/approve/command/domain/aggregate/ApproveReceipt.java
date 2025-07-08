@@ -29,8 +29,8 @@ public class ApproveReceipt {
     @Column(name = "store_name", nullable = false)
     private String storeName;
 
-    @Column(name = "store_address", nullable = false)
-    private String storeAddress;
+    @Column(name = "address", nullable = false)
+    private String address;
 
     @Column(name = "amount", nullable = false)
     private Integer amount;
@@ -40,11 +40,11 @@ public class ApproveReceipt {
 
     @Builder
     public ApproveReceipt(Long approveId, ReceiptType receiptType, String storeName,
-                          String storeAddress, Integer amount, LocalDate usedAt) {
+                          String address, Integer amount, LocalDate usedAt) {
         this.receiptType = receiptType;
         this.approveId = approveId;
         this.storeName = storeName;
-        this.storeAddress = storeAddress;
+        this.address = address;
         this.amount = amount;
         this.usedAt = usedAt;
     }
