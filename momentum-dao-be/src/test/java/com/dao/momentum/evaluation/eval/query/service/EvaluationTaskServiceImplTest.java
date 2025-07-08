@@ -41,7 +41,7 @@ class EvaluationTaskServiceImplTest {
             long empId = 53L;
             int fixedRoundNo = 7;  // 고정된 roundNo로 7 설정
             EvaluationTaskRequestDto req = EvaluationTaskRequestDto.builder()
-                    .roundNo(fixedRoundNo)  // 고정된 roundNo 사용
+                    .roundId(fixedRoundNo)  // 고정된 roundNo 사용
                     .page(1)
                     .size(10)
                     .build();

@@ -609,10 +609,18 @@
     </select>
 
     <!-- 최신 평가 회차 번호 조회 -->
-    <select id="findLatestRoundNo"
+    <select id="findLatestRoundId"
             resultType="int">
-        SELECT MAX(round_no)
+        SELECT MAX(round_id)
         FROM eval_round
+    </select>
+
+    <!-- 최신 평가 회차 번호 조회 -->
+    <select id="findRoundNoByRoundId"
+            resultType="int">
+        SELECT round_no      AS roundNo
+        FROM eval_round
+        WHERE round_id = #{roundId}
     </select>
 
     <!-- 모든 재직 중인 사원 조회 -->
