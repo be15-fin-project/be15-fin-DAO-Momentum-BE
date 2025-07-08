@@ -210,8 +210,12 @@ public class WorkApplyCommandService {
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
         if(vacationTypeEnum == VacationTypeEnum.DAYOFF) {
-            employee.updateRemainingDayOff(employee.getRemainingDayoffHours() - 8); // 연차인 경우 휴가 날짜 만큼 차감
-        } else {
+            int dayOff = (int) Stream.iterate(startDate, date -> !date.isAfter(endDate), date -> date.plusDays(1))
+                    .filter(date -> !workCreateValidator.isHoliday(date))  // 휴일이 아닌 날만 필터링
+                    .count();
+
+            employee.updateRemainingDayOff(employee.getRemainingDayoffHours() - dayOff * 8); // 연차인 경우 휴가 날짜 만큼 차감
+        } else if(vacationTypeEnum == VacationTypeEnum.REFRESH) {
             int vacationDays = (int) Stream.iterate(startDate, date -> !date.isAfter(endDate), date -> date.plusDays(1))
                     .filter(date -> !workCreateValidator.isHoliday(date))  // 휴일이 아닌 날만 필터링
                     .count();
