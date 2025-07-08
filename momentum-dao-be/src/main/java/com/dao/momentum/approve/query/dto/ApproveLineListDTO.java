@@ -10,6 +10,8 @@ import lombok.*;
 public class ApproveLineListDTO {
 
     private Long approveLineId;
+    private Long approveLineListId;
+    private Long empId;
     private String statusType;
     private String employeeDisplayName;
     private String departmentName;

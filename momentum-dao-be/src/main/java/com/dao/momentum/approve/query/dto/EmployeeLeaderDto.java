@@ -11,5 +11,6 @@ public class EmployeeLeaderDto {
 
     private Long teamLeaderId;
     private String teamLeaderName;
+    private String leaderDeptName;
 
 }
