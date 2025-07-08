@@ -1,8 +1,10 @@
 package com.dao.momentum.evaluation.kpi.query.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiDashboardRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.response.KpiDashboardResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiDetailResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiEmployeeSummaryResultDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiListResultDto;
@@ -14,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -74,4 +78,18 @@ public class KpiQueryController {
         return ApiResponse.success(result);
     }
 
+    @GetMapping("/dashboard")
+    @Operation(
+            summary = "대시보드 KPI 조회",
+            description = "자신의 KPI 중 지정된 날짜 범위 내 존재하는 KPI들을 조회합니다."
+    )
+    public ApiResponse<List<KpiDashboardResponseDto>> getDashboardKpis(
+            @AuthenticationPrincipal UserDetails user,
+            @ModelAttribute KpiDashboardRequestDto request
+    ) {
+        Long empId = Long.parseLong(user.getUsername());
+
+        List<KpiDashboardResponseDto> result = kpiQueryService.getDashboardKpis(empId, request);
+        return ApiResponse.success(result);
+    }
 }

@@ -2,10 +2,12 @@ package com.dao.momentum.evaluation.kpi.query.service;
 
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiDashboardRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
 import com.dao.momentum.evaluation.kpi.query.mapper.KpiQueryMapper;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,9 @@ class KpiQueryServiceImplTest {
 
     @Mock
     private KpiQueryMapper kpiQueryMapper;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @InjectMocks
     private KpiQueryServiceImpl kpiQueryService;
@@ -148,4 +153,37 @@ class KpiQueryServiceImplTest {
             assertEquals(ErrorCode.KPI_EMPLOYEE_SUMMARY_NOT_FOUND, ex.getErrorCode());
         }
     }
+
+    @Nested
+    @DisplayName("대시보드 KPI 조회 테스트")
+    class DashboardKpiTests {
+
+        @Test
+        @DisplayName("대시보드 KPI 조회 성공")
+        void getDashboardKpis_success() {
+            Long empId = 123L;
+            KpiDashboardRequestDto requestDto = KpiDashboardRequestDto.builder().build();
+
+            List<KpiDashboardResponseDto> mockResult = List.of(KpiDashboardResponseDto.builder().build());
+            when(kpiQueryMapper.getDashboardKpis(empId, requestDto)).thenReturn(mockResult);
+
+            List<KpiDashboardResponseDto> result = kpiQueryService.getDashboardKpis(empId, requestDto);
+
+            assertNotNull(result);
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        @DisplayName("대시보드 KPI 조회 실패 - empId null")
+        void getDashboardKpis_fail_nullEmpId() {
+            KpiDashboardRequestDto requestDto = KpiDashboardRequestDto.builder().build();
+
+            KpiException ex = assertThrows(KpiException.class, () -> {
+                kpiQueryService.getDashboardKpis(null, requestDto);
+            });
+
+            assertEquals(ErrorCode.INVALID_EMPLOYEE_INFO, ex.getErrorCode());
+        }
+    }
+
 }

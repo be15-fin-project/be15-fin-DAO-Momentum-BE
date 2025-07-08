@@ -1,11 +1,14 @@
 package com.dao.momentum.evaluation.kpi.query.mapper;
 
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiDashboardRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
+import com.dao.momentum.evaluation.kpi.query.dto.response.KpiDashboardResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiEmployeeSummaryResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiListResponseDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.KpiDetailResponseDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -25,7 +28,9 @@ public interface KpiQueryMapper {
 
     long countEmployeeKpiSummary(KpiEmployeeSummaryRequestDto requestDto);
 
-    // KPI 제목/키워드 목록 (간략 목록용)
-    // List<KpiSimpleResponseDto> getSimpleKpiList();
-
+    // 대시보드 KPI 조회 (DTO 통합)
+    List<KpiDashboardResponseDto> getDashboardKpis(
+            @Param("empId") Long empId,
+            @Param("request") KpiDashboardRequestDto request
+    );
 }

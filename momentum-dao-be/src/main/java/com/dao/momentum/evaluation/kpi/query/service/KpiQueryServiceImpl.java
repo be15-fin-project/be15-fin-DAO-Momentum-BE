@@ -3,6 +3,7 @@ package com.dao.momentum.evaluation.kpi.query.service;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.kpi.exception.KpiException;
+import com.dao.momentum.evaluation.kpi.query.dto.request.KpiDashboardRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiEmployeeSummaryRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.request.KpiListRequestDto;
 import com.dao.momentum.evaluation.kpi.query.dto.response.*;
@@ -146,6 +147,22 @@ public class KpiQueryServiceImpl implements KpiQueryService {
 
         log.info("최종적으로 결정된 KPI 요청 필터 - resolved={}", resolved);
         return getKpiList(resolved);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<KpiDashboardResponseDto> getDashboardKpis(Long empId, KpiDashboardRequestDto requestDto) {
+        log.info("[KpiQueryServiceImpl] getDashboardKpis() 호출 - empNo={}, requestDto={}", empId, requestDto);
+
+        if (empId == null) {
+            throw new KpiException(ErrorCode.INVALID_EMPLOYEE_INFO);
+        }
+
+        List<KpiDashboardResponseDto> result = kpiQueryMapper.getDashboardKpis(empId, requestDto);
+
+        log.info("대시보드 KPI 조회 완료 - 결과 개수: {}", result.size());
+        return result;
     }
 
     private boolean hasPrivilegedRole() {
