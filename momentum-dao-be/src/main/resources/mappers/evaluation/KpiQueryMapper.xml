@@ -225,4 +225,38 @@
         ) AS summary
     </select>
 
+    <!-- KPI 대시보드 조회 -->
+    <select id="getDashboardKpis"
+            resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiDashboardResponseDto">
+        SELECT
+            k.kpi_id,
+            k.goal,
+            k.goal_value,
+            k.kpi_progress,
+            s.status_type AS statusType,
+            DATE_FORMAT(k.created_at, '%Y-%m-%d') AS createdAt,
+            DATE_FORMAT(k.deadline, '%Y-%m-%d') AS deadline
+        FROM kpi k
+        JOIN employee e ON k.emp_id = e.emp_id
+        JOIN status s ON k.status_id = s.status_id
+        WHERE e.emp_id = #{empId}
+            AND k.is_deleted = 'N'
+            <choose>
+                <when test="request.startDate != null and request.endDate != null">
+                    AND k.deadline &gt;= #{request.startDate}
+                    AND k.created_at &lt;= #{request.endDate}
+                </when>
+                <when test="request.startDate != null">
+                    AND #{request.startDate} BETWEEN k.created_at AND k.deadline
+                </when>
+            </choose>
+        ORDER BY
+            CASE WHEN s.status_type = 'ACCEPTED' THEN 0 ELSE 1 END,
+            k.kpi_progress DESC
+            <if test="request.limit != null">
+                LIMIT #{request.limit}
+            </if>
+    </select>
+
+
 </mapper>
