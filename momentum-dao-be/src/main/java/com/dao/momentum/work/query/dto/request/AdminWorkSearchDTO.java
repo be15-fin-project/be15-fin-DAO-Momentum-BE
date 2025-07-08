@@ -1,5 +1,6 @@
 package com.dao.momentum.work.query.dto.request;
 
+import com.dao.momentum.work.query.dto.response.IsNormalWork;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -27,6 +28,8 @@ public class AdminWorkSearchDTO {
     private Integer vacationTypeId;
 
     private Order order;
+
+    private IsNormalWork isNormalWork;
 
     private Integer page;
 
@@ -59,6 +62,7 @@ public class AdminWorkSearchDTO {
                 .childTypeId(request.getChildTypeId())
                 .vacationTypeId(request.getVacationTypeId())
                 .order(request.getOrder())
+                .isNormalWork(request.getIsNormalWork())
                 .page(page == null ? 1 : page)
                 .size(size == null ? 10 : size)
                 .build();
