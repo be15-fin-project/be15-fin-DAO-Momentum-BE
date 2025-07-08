@@ -243,11 +243,14 @@
             AND k.is_deleted = 'N'
             <choose>
                 <when test="request.startDate != null and request.endDate != null">
-                    AND k.deadline &gt;= #{request.startDate}
-                    AND k.created_at &lt;= #{request.endDate}
+                    AND #{request.startDate} &lt;= DATE(k.deadline)
+                    AND #{request.endDate} &gt;= DATE(k.created_at)
                 </when>
                 <when test="request.startDate != null">
-                    AND #{request.startDate} BETWEEN k.created_at AND k.deadline
+                    AND DATE(#{request.startDate}) BETWEEN DATE(k.created_at) AND DATE(k.deadline)
+                </when>
+                <when test="request.endDate != null">
+                    AND DATE(#{request.endDate}) BETWEEN DATE(k.created_at) AND DATE(k.deadline)
                 </when>
             </choose>
         ORDER BY
