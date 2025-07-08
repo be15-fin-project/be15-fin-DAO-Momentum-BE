@@ -15,4 +15,5 @@ public class DepartmentDetailDTO {
     private String name;
     private String contact;
     private LocalDate createdAt;
+    private Integer parentDeptId;
 }

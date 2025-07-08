@@ -18,7 +18,8 @@
         SELECT
                 name,
                 contact,
-                created_at
+                created_at,
+                parent_dept_id
         FROM
                 department
         WHERE
