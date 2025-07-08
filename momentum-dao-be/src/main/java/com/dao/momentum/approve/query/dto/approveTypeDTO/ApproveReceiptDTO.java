@@ -13,7 +13,7 @@ public class ApproveReceiptDTO {
 
     private String receiptType;
     private String storeName;
-    private String storeAddress;
+    private String address;
     private Integer amount;
     private LocalDate usedAt;
 

@@ -29,7 +29,7 @@ public class ReceiptFormStrategy implements FormDetailStrategy {
                 .receiptType(detail.getReceiptType())
                 .storeName(detail.getStoreName())
                 .amount(detail.getAmount())
-                .storeAddress(detail.getAddress())
+                .address(detail.getAddress())
                 .usedAt(detail.getUsedAt())
                 .build();
 
