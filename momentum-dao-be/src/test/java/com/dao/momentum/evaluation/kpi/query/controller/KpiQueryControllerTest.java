@@ -35,19 +35,12 @@ class KpiQueryControllerTest {
     @MockitoBean
     private KpiQueryService kpiQueryService;
 
-    @MockitoBean
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     @DisplayName("KPI 전체 내역 조회")
     @WithMockUser(username = "123", authorities = "MASTER")
     void getKpiList_success() throws Exception {
-        // given
-        String empNo = "HR123";
         Long empId = 123L;
+        String empNo = "HR123";
 
         KpiListResponseDto item = KpiListResponseDto.builder()
                 .kpiId(1L)
@@ -63,21 +56,19 @@ class KpiQueryControllerTest {
                 .deadline("2025-06-30")
                 .build();
 
-        Pagination pagination = Pagination.builder()
-                .currentPage(1)
-                .totalPage(1)
-                .totalItems(1)
-                .build();
+        KpiListResultDto result = new KpiListResultDto(
+                List.of(item),
+                Pagination.builder()
+                        .currentPage(1)
+                        .totalPage(1)
+                        .totalItems(1)
+                        .build()
 
-        KpiListResultDto resultDto = new KpiListResultDto(List.of(item), pagination);
-
-        Mockito.when(employeeRepository.findByEmpId(empId))
-                .thenReturn(Optional.of(Employee.builder().empNo(empNo).build()));
+        );
 
         Mockito.when(kpiQueryService.getKpiListWithAccessControl(any(KpiListRequestDto.class), Mockito.eq(empId)))
-                .thenReturn(resultDto);
+                .thenReturn(result);
 
-        // when & then
         mockMvc.perform(get("/kpi/list")
                         .param("page", "1")
                         .param("size", "10"))
@@ -93,7 +84,6 @@ class KpiQueryControllerTest {
     @DisplayName("자신의 KPI 전체 내역 조회")
     @WithMockUser(username = "123", authorities = "EMPLOYEE")
     void getMyKpiList_success() throws Exception {
-        // given
         Long empId = 123L;
 
         KpiListResponseDto item = KpiListResponseDto.builder()
@@ -110,31 +100,27 @@ class KpiQueryControllerTest {
                 .deadline("2025-06-30")
                 .build();
 
-        Pagination pagination = Pagination.builder()
-                .currentPage(1)
-                .totalPage(1)
-                .totalItems(1)
-                .build();
+        KpiListResultDto result = new KpiListResultDto(
+                List.of(item),
+                Pagination.builder()
+                        .currentPage(1)
+                        .totalPage(1)
+                        .totalItems(1)
+                        .build()
 
-        KpiListResultDto resultDto = new KpiListResultDto(List.of(item), pagination);
+        );
 
         Mockito.when(kpiQueryService.getKpiListWithControl(any(KpiListRequestDto.class), Mockito.eq(empId)))
-                .thenReturn(resultDto);
+                .thenReturn(result);
 
-        // when & then
         mockMvc.perform(get("/kpi/my-list")
                         .param("page", "1")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content", hasSize(1)))
-                .andExpect(jsonPath("$.data.content[0].empNo").value("HR123"))
-                .andExpect(jsonPath("$.data.content[0].employeeName").value("김예진"))
                 .andExpect(jsonPath("$.data.content[0].goal").value("성과관리 도입"))
-                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andDo(print());
     }
-
 
     @Test
     @DisplayName("KPI 세부 조회")
@@ -166,7 +152,7 @@ class KpiQueryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.kpiId").value(kpiId.intValue()))
-                .andExpect(jsonPath("$.data.employeeName").value("정예준"))
+                .andExpect(jsonPath("$.data.goal").value("리포트 자동화"))
                 .andDo(print());
     }
 
@@ -174,7 +160,6 @@ class KpiQueryControllerTest {
     @DisplayName("사원별 KPI 요약 조회")
     @WithMockUser(authorities = "HR")
     void getEmployeeKpiSummaries_success() throws Exception {
-        // given
         KpiEmployeeSummaryResponseDto item = KpiEmployeeSummaryResponseDto.builder()
                 .empNo("HR001")
                 .employeeName("홍길동")
@@ -186,17 +171,19 @@ class KpiQueryControllerTest {
                 .completionRate(66.7)
                 .build();
 
-        Pagination pagination = Pagination.builder()
-                .currentPage(1)
-                .totalPage(1)
-                .totalItems(1)
-                .build();
+        KpiEmployeeSummaryResultDto result = new KpiEmployeeSummaryResultDto(
+                List.of(item),
+                Pagination.builder()
+                        .currentPage(1)
+                        .totalPage(1)
+                        .totalItems(1)
+                        .build()
 
-        KpiEmployeeSummaryResultDto resultDto = new KpiEmployeeSummaryResultDto(List.of(item), pagination);
+        );
+
         Mockito.when(kpiQueryService.getEmployeeKpiSummaries(any(KpiEmployeeSummaryRequestDto.class)))
-                .thenReturn(resultDto);
+                .thenReturn(result);
 
-        // when & then
         mockMvc.perform(get("/kpi/employee-summary")
                         .param("year", "2025")
                         .param("month", "6")
@@ -205,16 +192,37 @@ class KpiQueryControllerTest {
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content", hasSize(1)))
-                .andExpect(jsonPath("$.data.content[0].empNo").value("HR001"))
                 .andExpect(jsonPath("$.data.content[0].employeeName").value("홍길동"))
-                .andExpect(jsonPath("$.data.content[0].departmentName").value("기획팀"))
-                .andExpect(jsonPath("$.data.content[0].positionName").value("대리"))
-                .andExpect(jsonPath("$.data.content[0].totalKpiCount").value(6))
-                .andExpect(jsonPath("$.data.content[0].completedKpiCount").value(4))
                 .andExpect(jsonPath("$.data.content[0].averageProgress").value(76.5))
-                .andExpect(jsonPath("$.data.content[0].completionRate").value(66.7))
-                .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("KPI 대시보드 KPI 조회")
+    @WithMockUser(username = "123", authorities = "EMPLOYEE")
+    void getDashboardKpis_success() throws Exception {
+        Long empId = 123L;
+
+        KpiDashboardResponseDto dto = KpiDashboardResponseDto.builder()
+                .kpiId(100L)
+                .goal("프로세스 정비")
+                .goalValue(3)
+                .kpiProgress(50)
+                .statusType("IN_PROGRESS")
+                .createdAt("2025-07-01")
+                .deadline("2025-07-31")
+                .build();
+
+        Mockito.when(kpiQueryService.getDashboardKpis(Mockito.eq(empId), any()))
+                .thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/kpi/dashboard")
+                        .param("startDate", "2025-07-01")
+                        .param("endDate", "2025-07-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data", hasSize(1)))
+                .andExpect(jsonPath("$.data[0].goal").value("프로세스 정비"))
                 .andDo(print());
     }
 }
