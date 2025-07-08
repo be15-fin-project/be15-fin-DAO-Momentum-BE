@@ -124,6 +124,7 @@ public class Kpi {
 
     public void withdraw() {
         this.isDeleted = UseStatus.Y;
+        this.statusId = Status.ACCEPTED.getId();
     }
 
 }
