@@ -36,42 +36,43 @@ class EvaluationTaskServiceImplTest {
 
         @Test
         @DisplayName("평가 제출 목록 조회 - 성공 (최신 라운드 자동 설정)")
-        void getTasks_useFixedRound_success() {
+        void getTasks_latestRoundAutoAssigned_success() {
             // given
             long empId = 53L;
-            int fixedRoundNo = 7;  // 고정된 roundNo로 7 설정
+            int latestRoundId = 3;
+            int latestRoundNo = 7;
+
             EvaluationTaskRequestDto req = EvaluationTaskRequestDto.builder()
-                    .roundId(fixedRoundNo)  // 고정된 roundNo 사용
+                    .roundId(null)  // null로 최신 회차 요청
                     .page(1)
                     .size(10)
                     .build();
 
-            // 평가자 역할 설정
-            given(mapper.findEvaluatorRole(empId)).willReturn(
-                    EvaluatorRoleDto.builder()
-                            .empId(empId)
-                            .deptId(10L)
-                            .isDeptHead(false)
-                            .isTeamLeader(false)
-                            .build()
-            );
+            EvaluatorRoleDto evaluator = EvaluatorRoleDto.builder()
+                    .empId(empId)
+                    .deptId(10L)
+                    .isDeptHead(false)
+                    .isTeamLeader(false)
+                    .build();
 
-            // Mock된 데이터 반환
-            EvaluationTaskResponseDto dto = EvaluationTaskResponseDto.builder()
-                    .roundNo(fixedRoundNo)  // 고정된 roundNo
+            given(mapper.findLatestRoundId()).willReturn(latestRoundId);
+            given(mapper.findRoundNoByRoundId(latestRoundId)).willReturn(latestRoundNo);
+            given(mapper.findEvaluatorRole(empId)).willReturn(evaluator);
+
+            EvaluationTaskResponseDto task = EvaluationTaskResponseDto.builder()
+                    .roundNo(latestRoundNo)
                     .typeName("SELF")
                     .formId(3)
                     .deptId(10)
                     .targetEmpNo("20250001")
                     .targetName("홍길동")
-                    .submitted(true)  // 평가 완료된 태스크
+                    .submitted(true)
                     .startAt(LocalDate.of(2025, 6, 1))
                     .build();
 
-            // findTasks에서 반환할 데이터를 Mock 설정
-            given(mapper.findTasks(eq(req), eq(empId), eq(fixedRoundNo), any(), eq(10), eq(0)))
-                    .willReturn(List.of(dto));  // 1개 항목 반환
-            given(mapper.countTasks(eq(req), eq(empId), eq(fixedRoundNo), any()))
+            given(mapper.findTasks(any(), eq(empId), eq(latestRoundNo), eq(evaluator), eq(10), eq(0)))
+                    .willReturn(List.of(task));
+            given(mapper.countTasks(any(), eq(empId), eq(latestRoundNo), eq(evaluator)))
                     .willReturn(1);
 
             // when
@@ -79,16 +80,15 @@ class EvaluationTaskServiceImplTest {
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.tasks()).hasSize(1)
-                    .first()
-                    .extracting(EvaluationTaskResponseDto::roundNo,
-                            EvaluationTaskResponseDto::typeName,
-                            EvaluationTaskResponseDto::submitted)
-                    .containsExactly(fixedRoundNo, "SELF", true);
-
-            assertThat(result.pagination().getCurrentPage()).isEqualTo(1);
+            assertThat(result.tasks()).hasSize(1);
+            assertThat(result.tasks().get(0).roundNo()).isEqualTo(latestRoundNo);
+            assertThat(result.tasks().get(0).submitted()).isTrue();
             assertThat(result.pagination().getTotalItems()).isEqualTo(1);
             assertThat(result.pagination().getTotalPage()).isEqualTo(1);
+
+            verify(mapper).findLatestRoundId();
+            verify(mapper).findRoundNoByRoundId(latestRoundId);
+            verify(mapper).findEvaluatorRole(empId);
         }
 
     }
