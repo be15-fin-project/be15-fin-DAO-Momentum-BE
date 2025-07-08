@@ -18,12 +18,19 @@ import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.work.command.application.validator.WorkCreateValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +41,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     private final DraftApproveMapper draftApproveMapper;
     private final ApproveDetailMapper approveDetailMapper;
     private final ApproveMapper approveMapper;
+    private final WorkCreateValidator workCreateValidator;
 
     /* 받은 결재 목록을 조회하는 메서드 */
     @Transactional(readOnly = true)
@@ -132,6 +140,12 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
         return getNormalApproveDetail(approveDTO);
     }
 
+    /* 팀장을 찾는 메소드  */
+    @Transactional(readOnly = true)
+    public EmployeeLeaderDto getEmployeeLeader(Long empId) {
+        return approveMapper.findEmployeeLeader(empId);
+    }
+
     /* 취소 결재인 경우 */
     private ApproveDetailResponse getCancelApproveDetail(ApproveDTO cancelDTO) {
         // 취소 결재 ID
@@ -156,12 +170,6 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
         return buildApproveDetailResponse(cancelDTO, parentDTO, approveFileDTO, lineList, refList, formDetail);
     }
 
-
-    @Transactional(readOnly = true)
-    public EmployeeLeaderDto getEmployeeLeader(Long empId) {
-        return approveMapper.findEmployeeLeader(empId);
-    }
-
     /* 일반 결재인 경우 */
     private ApproveDetailResponse getNormalApproveDetail(ApproveDTO approveDTO) {
         // 결재 아이디
@@ -181,7 +189,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
 
         // 먄약 초과 근무인 경우에는 시간 계산을 통해 연장, 야간, 휴일 근무 인지 저장하기
         if (approveType == ApproveType.OVERTIME && formDetail instanceof OvertimeDTO overtimeDTO) {
-            overtimeDTO.classifyWorkTypes();
+            overtimeClassify(overtimeDTO.getStartAt(), overtimeDTO.getEndAt());
         }
 
         return buildApproveDetailResponse(approveDTO, null, approveFileDTO, lineList, refList, formDetail);
@@ -235,5 +243,28 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
             case CANCEL -> approveDetailMapper.getCancelDetail(approveId)
                     .orElseThrow(() -> new NotFoundApproveException(ErrorCode.NOT_EXIST_CANCEL));
         };
+    }
+
+    /* 초과 근무를 확인하는 메소드 */
+    private List<String> overtimeClassify(LocalDateTime startAt, LocalDateTime endAt) {
+        Set<String> types = new HashSet<>();
+        LocalDateTime cursor = startAt;
+
+        while(cursor.isBefore(endAt)) {
+            LocalDate date = cursor.toLocalDate();
+            int hour = cursor.getHour();
+
+            if (workCreateValidator.isHoliday(date)) {
+                types.add("HOLIDAY");
+            } else if (hour >= 22 || hour < 6) {
+                types.add("NIGHT");
+            } else if (hour >= 18) {
+                types.add("OVERTIME");
+            }
+
+            cursor = cursor.plusMinutes(1);
+        }
+
+        return new ArrayList<>(types);
     }
 }
