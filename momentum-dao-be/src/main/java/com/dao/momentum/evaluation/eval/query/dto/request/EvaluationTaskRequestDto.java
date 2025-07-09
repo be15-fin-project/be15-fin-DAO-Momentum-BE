@@ -13,8 +13,8 @@ public record EvaluationTaskRequestDto(
         @Schema(description = "평가 양식 ID", example = "1")
         Integer formId,
 
-        @Schema(description = "회차 번호", example = "2")
-        Integer roundNo,
+        @Schema(description = "회차 ID", example = "2")
+        Integer roundId,
 
         @Schema(description = "페이지 번호 (1~)", example = "1")
         Integer page,
@@ -23,7 +23,6 @@ public record EvaluationTaskRequestDto(
         Integer size
 ) {
 
-    
     public EvaluationTaskRequestDto {
         if (page == null) { 
             page = 1;

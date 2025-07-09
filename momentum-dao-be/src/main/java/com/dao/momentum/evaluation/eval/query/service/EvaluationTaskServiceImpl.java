@@ -32,13 +32,13 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
         log.info("[EvaluationTaskServiceImpl] getTasks() 호출 시작 - empId={}, req={}", empId, req);
 
         // roundNo가 0이면 최신 회차로 자동 설정
-        if (req.roundNo() == null || req.roundNo() == 0) {
-            int latest = mapper.findLatestRoundNo();
+        if (req.roundId() == null || req.roundId() == 0) {
+            int latest = mapper.findLatestRoundId();
             if (latest == 0) {  // 최신 라운드가 없을 경우
                 throw new EvalException(ErrorCode.EVAL_ROUND_NOT_FOUND);
             }
             req = EvaluationTaskRequestDto.builder()
-                    .roundNo(latest)         // 최신 roundNo로 갱신
+                    .roundId(latest)         // 최신 roundNo로 갱신
                     .page(req.page())        // 기존 page 유지
                     .size(req.size())        // 기존 size 유지
                     .build();
@@ -51,7 +51,7 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
 
         // offset 계산 (getOffset 메서드 사용)
         int offset = req.getOffset(); // getOffset 메서드를 사용하여 계산된 offset
-        int roundNo = req.roundNo();
+        int roundNo = mapper.findRoundNoByRoundId(req.roundId());
         int size = req.size();
 
         // 평가 태스크 조회
@@ -87,7 +87,7 @@ public class EvaluationTaskServiceImpl implements EvaluationTaskService {
             // 요청 DTO 생성
             EvaluationTaskRequestDto req = EvaluationTaskRequestDto.builder()
                     .formId(0)        // formId를 0으로 설정 (모든 양식 포함)
-                    .roundNo(roundId)  // 해당 회차로 설정
+                    .roundId(roundId)  // 해당 회차로 설정
                     .page(1)           // 기본값 페이지 설정 (기본값을 사용)
                     .size(Integer.MAX_VALUE)  // 모든 결과를 조회 (최대 크기)
                     .build();

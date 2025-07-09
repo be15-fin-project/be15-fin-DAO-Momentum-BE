@@ -13,7 +13,8 @@ import com.dao.momentum.evaluation.eval.query.dto.response.EvaluationTaskRespons
 public interface EvaluationTaskMapper {
 
     //최신 라운드 번호 조회
-    int findLatestRoundNo();
+    int findLatestRoundId();
+    int findRoundNoByRoundId(@Param("roundId") Integer roundId);
 
     // 평가 태스크 목록 조회 (SELF, ORG, PEER 통합)
     List<EvaluationTaskResponseDto> findTasks(@Param("req") EvaluationTaskRequestDto req,
