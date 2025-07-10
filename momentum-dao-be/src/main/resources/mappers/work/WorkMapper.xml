@@ -111,6 +111,11 @@
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
+
+        <if test="request.isNormalWork != null and request.isNormalWork.name() != ''">
+            AND work.is_normal_work = #{request.isNormalWork}
+        </if>
+
         <if test="request.order == null or request.order.name() != 'DESC'">
             ORDER BY work.start_at ASC
         </if>
@@ -179,6 +184,10 @@
         </if>
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
+        </if>
+
+        <if test="request.isNormalWork != null and request.isNormalWork.name() != ''">
+            AND work.is_normal_work = #{request.isNormalWork}
         </if>
     </select>
 
