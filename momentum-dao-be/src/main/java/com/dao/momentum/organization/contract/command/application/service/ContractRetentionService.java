@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -51,19 +52,32 @@ public class ContractRetentionService {
 
         // 2년 전 기준 시점(cutoff) 계산
         LocalDateTime cutoff = targetDate.atStartOfDay().minusYears(YEAR_TO_SEARCH);
-
-        // 2년 이내의 첫 인상 이력 (업으면 동결로 간주)
-        Contract old = contractRepository
-                .findTop1ByEmpIdAndTypeAndCreatedAtAfterOrderByCreatedAtAsc(
-                        empId, ContractType.SALARY_AGREEMENT, cutoff).orElse(latest);
+        Contract old = findOldContract(empId, cutoff, latest);
 
         double rate = calculateIncreaseRate(old.getSalary(), latest.getSalary());
         return mapPenalty(rate);
     }
 
-
     private boolean isUnderThreeYears(LocalDate joinDate, LocalDate targetDate) {
         return Period.between(joinDate, targetDate).getYears() < 3;
+    }
+
+    /**
+     * 2년 전 시점까지 과거 계약 중 최신, 없으면 2년 내 첫 계약,
+     * 둘 다 없으면 최신(latest)으로 동결
+     */
+    private Contract findOldContract(long empId, LocalDateTime cutoff, Contract latest) {
+        Optional<Contract> beforeCutoff = contractRepository
+                .findTop1ByEmpIdAndTypeAndCreatedAtBeforeOrderByCreatedAtDesc(
+                        empId, ContractType.SALARY_AGREEMENT, cutoff);
+
+        Optional<Contract> afterCutoff = contractRepository
+                .findTop1ByEmpIdAndTypeAndCreatedAtAfterOrderByCreatedAtAsc(
+                        empId, ContractType.SALARY_AGREEMENT, cutoff);
+
+        return beforeCutoff.orElse(
+                afterCutoff.orElse(latest)
+        );
     }
 
     private double calculateIncreaseRate(BigDecimal oldSalary, BigDecimal newSalary) {

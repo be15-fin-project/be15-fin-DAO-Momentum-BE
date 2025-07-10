@@ -16,4 +16,6 @@ public interface ContractRepository {
     Optional<Contract> findTop1ByEmpIdAndTypeOrderByCreatedAtDesc(long empId, ContractType contractType);
 
     Optional<Contract> findTop1ByEmpIdAndTypeAndCreatedAtAfterOrderByCreatedAtAsc(long empId, ContractType contractType, LocalDateTime cutoff);
+
+    Optional<Contract> findTop1ByEmpIdAndTypeAndCreatedAtBeforeOrderByCreatedAtDesc(long empId, ContractType contractType, LocalDateTime cutoff);
 }
