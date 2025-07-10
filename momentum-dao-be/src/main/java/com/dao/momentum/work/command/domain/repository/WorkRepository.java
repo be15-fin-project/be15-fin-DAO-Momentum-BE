@@ -87,4 +87,18 @@ public interface WorkRepository {
                   ) THEN TRUE ELSE FALSE END
             """)
     boolean existsByEmpIdAndDateRangeAndWorkType(long empId, LocalDateTime searchStartAt, LocalDateTime searchEndAt, int typeId);
+
+    @Query("""
+            SELECT w
+            FROM Work w
+            JOIN WorkType wt ON w.typeId = wt.typeId
+            WHERE w.empId = :empId
+              AND FUNCTION('DATE', w.startAt) >= :startDate
+              AND FUNCTION('DATE', w.endAt) < :endDate
+            """)
+    List<Work> findAllByEmpIdAndDateAndTypeNames(
+            @Param("empId") long empId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
