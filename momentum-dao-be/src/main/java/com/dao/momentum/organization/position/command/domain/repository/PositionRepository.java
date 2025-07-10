@@ -2,12 +2,13 @@ package com.dao.momentum.organization.position.command.domain.repository;
 
 import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
-import jakarta.validation.constraints.NotBlank;
 
 import java.util.Optional;
 
 public interface PositionRepository {
-    boolean existsByName(@NotBlank String name);
+    boolean existsByName(String name);
+
+    boolean existsByNameAndIsDeleted(String name, IsDeleted isDeleted);
 
     Position save(Position position);
 
