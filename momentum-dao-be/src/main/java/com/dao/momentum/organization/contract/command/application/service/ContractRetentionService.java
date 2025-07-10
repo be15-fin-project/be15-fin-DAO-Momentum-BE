@@ -17,7 +17,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -53,13 +52,10 @@ public class ContractRetentionService {
         // 2년 전 기준 시점(cutoff) 계산
         LocalDateTime cutoff = targetDate.atStartOfDay().minusYears(YEAR_TO_SEARCH);
 
-        // 2년 이내의 첫 인상 이력 조회
-        Optional<Contract> maybePostCutoff = contractRepository
+        // 2년 이내의 첫 인상 이력 (업으면 동결로 간주)
+        Contract old = contractRepository
                 .findTop1ByEmpIdAndTypeAndCreatedAtAfterOrderByCreatedAtAsc(
-                        empId, ContractType.SALARY_AGREEMENT, cutoff);
-
-        // 2년 내 인상이 없으면 동결로 간주
-        Contract old = maybePostCutoff.orElse(latest);
+                        empId, ContractType.SALARY_AGREEMENT, cutoff).orElse(latest);
 
         double rate = calculateIncreaseRate(old.getSalary(), latest.getSalary());
         return mapPenalty(rate);
