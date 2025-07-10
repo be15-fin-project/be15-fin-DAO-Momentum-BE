@@ -125,13 +125,17 @@ public class AnnouncementCommandService {
     @Transactional
     public void delete(Long announcementId, UserDetails userDetails) {
         Long empId = Long.valueOf(userDetails.getUsername());
+        boolean isMaster = userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("MASTER"));
 
         // 공지사항 존재 여부 확인
         Announcement announcement = announcementRepository.findById(announcementId)
                         .orElseThrow(() -> new NoSuchAnnouncementException(ErrorCode.ANNOUNCEMENT_NOT_FOUND));
 
-        // 작성자 검증
-        announcement.validateAuthor(empId);
+        // 작성자 검증 (단, MASTER는 예외 허용)
+        if (!isMaster) {
+            announcement.validateAuthor(empId); // 작성자가 아니면 예외 발생
+        }
 
         // 공지사항에 첨부된 파일들 hard delete
         List<File> files = fileRepository.findAllByAnnouncementId(announcementId);
