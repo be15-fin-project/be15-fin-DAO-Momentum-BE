@@ -189,7 +189,8 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
 
         // 먄약 초과 근무인 경우에는 시간 계산을 통해 연장, 야간, 휴일 근무 인지 저장하기
         if (approveType == ApproveType.OVERTIME && formDetail instanceof OvertimeDTO overtimeDTO) {
-            overtimeClassify(overtimeDTO.getStartAt(), overtimeDTO.getEndAt());
+            List<String> calculatedWorkTypes = overtimeClassify(overtimeDTO.getStartAt(), overtimeDTO.getEndAt());
+            overtimeDTO.getWorkTypes().addAll(calculatedWorkTypes);
         }
 
         return buildApproveDetailResponse(approveDTO, null, approveFileDTO, lineList, refList, formDetail);
