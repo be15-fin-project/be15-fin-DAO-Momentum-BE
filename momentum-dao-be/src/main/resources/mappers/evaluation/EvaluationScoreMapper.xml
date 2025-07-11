@@ -5,16 +5,31 @@
 
 <mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.EvaluationScoreMapper">
 
-    <!-- 피평가자의 특정 평가 양식(formId) 점수 조회 -->
-    <select id="findScoresByFormIdAndTarget" resultType="int">
-        SELECT er.score
-        FROM eval_response er
+    <!-- 1. 시점 이전 가장 최신 평가 회차 ID 조회 -->
+    <select id="findLatestRoundIdBefore" resultType="long">
+        SELECT r.round_id
+        FROM eval_round r
+        JOIN eval_response er ON r.round_id = er.round_id
         WHERE er.form_id = #{formId}
-        AND er.target_id = #{empId}
+            AND (
+                r.year &lt; #{year}
+                OR (r.year = #{year} AND r.month &lt;= #{month})
+            )
+        ORDER BY r.year DESC, r.month DESC
+        LIMIT 1
     </select>
 
-    <!-- 최근 2회 인사 평가 회차 ID 조회 -->
-    <select id="findRecentHrRoundIdsByEmpId" resultType="long">
+    <!-- 2. roundId로 해당 사원의 점수 조회 -->
+    <select id="findScoreByRoundId" resultType="int">
+        SELECT er.score
+        FROM eval_response er
+        WHERE er.round_id = #{roundId}
+            AND er.target_id = #{empId}
+        LIMIT 1
+    </select>
+
+    <!-- 3. 시점 이전 최근 2개 인사 평가 회차 ID 조회 -->
+    <select id="findRecentHrRoundIdsBefore" resultType="long">
         SELECT DISTINCT r.round_id
         FROM eval_response er
         JOIN eval_form ef ON er.form_id = ef.form_id
@@ -23,11 +38,15 @@
         WHERE et.name = 'PEER'
             AND ef.name = 'HR_REVIEW'
             AND er.target_id = #{empId}
-        ORDER BY r.round_no DESC
+            AND (
+                r.year &lt; #{year}
+                OR (r.year = #{year} AND r.month &lt;= #{month})
+            )
+        ORDER BY r.year DESC, r.month DESC
         LIMIT 2
     </select>
 
-    <!-- 특정 회차의 인사 평가 점수 조회 (본인) -->
+    <!-- 4. 특정 회차에서 사원의 인사 평가 점수 -->
     <select id="findHrScoreByRoundIdAndEmpId" resultType="int">
         SELECT er.score
         FROM eval_response er
@@ -40,7 +59,7 @@
         LIMIT 1
     </select>
 
-    <!-- 특정 회차의 인사 평가 전체 점수 목록 조회 -->
+    <!-- 5. 특정 회차의 전체 인사 평가 점수 목록 -->
     <select id="findAllHrScoresByRoundId" resultType="int">
         SELECT er.score
         FROM eval_response er
@@ -51,7 +70,7 @@
             AND er.round_id = #{roundId}
     </select>
 
-    <!-- 특정 회차의 등급 비율 정보 조회 -->
+    <!-- 6. 특정 회차의 등급 비율 정보 -->
     <select id="findRateInfoByRoundId" resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
         SELECT rate_s AS rateS,
             rate_a AS rateA,

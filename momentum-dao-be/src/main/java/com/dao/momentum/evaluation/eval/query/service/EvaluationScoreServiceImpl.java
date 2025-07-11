@@ -17,39 +17,50 @@ public class EvaluationScoreServiceImpl implements EvaluationScoreService {
     private final EvaluationScoreMapper scoreMapper;
 
     @Override
-    public int getAdjustedScoreForForm(int formId, Long empId, double fullScore) {
-        List<Integer> scores = scoreMapper.findScoresByFormIdAndTarget(formId, empId);
-        double avg = scores.stream().mapToInt(i -> i).average().orElse(100);
+    public int getAdjustedScoreForForm(int formId, Long empId, double fullScore, int year, int month) {
+        Long roundId = scoreMapper.findLatestRoundIdBefore(formId, year, month);
+        if (roundId == null) return (int) Math.round(EvaluationScoreAdjuster.adjust(100.0, fullScore));
+
+        Integer score = scoreMapper.findScoreByRoundId(roundId, empId);
+        double base = (score != null) ? score : 100.0;
+        return (int) Math.round(EvaluationScoreAdjuster.adjust(base, fullScore));
+    }
+
+    @Override
+    public int getAdjustedScoreForForms(List<Integer> formIds, Long empId, double fullScore, int year, int month) {
+        List<Integer> scores = formIds.stream()
+                .map(formId -> {
+                    Long roundId = scoreMapper.findLatestRoundIdBefore(formId, year, month);
+                    return (roundId != null) ? scoreMapper.findScoreByRoundId(roundId, empId) : null;
+                })
+                .filter(score -> score != null)
+                .collect(Collectors.toList());
+
+        double avg = scores.stream().mapToInt(i -> i).average().orElse(100.0);
         return (int) Math.round(EvaluationScoreAdjuster.adjust(avg, fullScore));
     }
 
     @Override
-    public int getAdjustedScoreForForms(List<Integer> formIds, Long empId, double fullScore) {
-        List<Integer> all = formIds.stream()
-                .flatMap(f -> scoreMapper.findScoresByFormIdAndTarget(f, empId).stream())
-                .collect(Collectors.toList());
-        double avg = all.stream().mapToInt(i -> i).average().orElse(100);
-        return (int) Math.round(EvaluationScoreAdjuster.adjust(avg, fullScore));
-    }
-
-    @Override
-    public int getAverageAdjustedScoreForForms(List<Integer> formIds, Long empId, double totalScore) {
-        List<Integer> all = formIds.stream()
-                .flatMap(f -> scoreMapper.findScoresByFormIdAndTarget(f, empId).stream())
+    public int getAverageAdjustedScoreForForms(List<Integer> formIds, Long empId, double totalScore, int year, int month) {
+        List<Integer> scores = formIds.stream()
+                .map(formId -> {
+                    Long roundId = scoreMapper.findLatestRoundIdBefore(formId, year, month);
+                    return (roundId != null) ? scoreMapper.findScoreByRoundId(roundId, empId) : null;
+                })
+                .filter(score -> score != null)
                 .collect(Collectors.toList());
 
-        double avg = all.stream().mapToInt(i -> i).average().orElse(100.0);
+        double avg = scores.stream().mapToInt(i -> i).average().orElse(100.0);
         return (int) Math.round(EvaluationScoreAdjuster.adjust(avg, totalScore));
     }
 
-
     @Override
-    public int getHrGradeDropPenalty(Long empId) {
-        List<Long> recentRounds = scoreMapper.findRecentHrRoundIdsByEmpId(empId);
+    public int getHrGradeDropPenalty(Long empId, int year, int month) {
+        List<Long> recentRounds = scoreMapper.findRecentHrRoundIdsBefore(empId, year, month);
         if (recentRounds.size() < 2) return 0;
 
-        Long round1 = recentRounds.get(0);
-        Long round2 = recentRounds.get(1);
+        Long round1 = recentRounds.get(0); // 가장 최근
+        Long round2 = recentRounds.get(1); // 그 이전
 
         Integer myScore1 = scoreMapper.findHrScoreByRoundIdAndEmpId(round1, empId);
         Integer myScore2 = scoreMapper.findHrScoreByRoundIdAndEmpId(round2, empId);
@@ -66,7 +77,7 @@ public class EvaluationScoreServiceImpl implements EvaluationScoreService {
         String grade2 = calculateRelativeGrade(allScores2, myScore2, rateInfo2);
 
         int drop = getGradeDrop(grade1, grade2);
-        return -1 * drop; // 1등급 하락 시 -1점, 2등급 하락 시 -2점 ...
+        return -1 * drop; // 1등급 하락당 -1점
     }
 
     private String calculateRelativeGrade(List<Integer> allScores, int myScore, RateInfo rateInfo) {
