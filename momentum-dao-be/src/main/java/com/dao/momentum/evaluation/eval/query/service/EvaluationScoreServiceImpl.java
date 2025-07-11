@@ -69,15 +69,6 @@ public class EvaluationScoreServiceImpl implements EvaluationScoreService {
         return -1 * drop; // 1등급 하락 시 -1점, 2등급 하락 시 -2점 ...
     }
 
-    private int convertScore(int score, double maxScore) {
-        if (score >= 95) return (int) Math.round(maxScore * 0.2);
-        if (score >= 85) return 0;
-        if (score >= 75) return (int) Math.round(-maxScore * 0.25);
-        if (score >= 65) return (int) Math.round(-maxScore * 0.5);
-        if (score >= 55) return (int) Math.round(-maxScore * 0.75);
-        return (int) Math.round(-maxScore);
-    }
-
     private String calculateRelativeGrade(List<Integer> allScores, int myScore, RateInfo rateInfo) {
         if (allScores == null || allScores.isEmpty()) return "-";
 
