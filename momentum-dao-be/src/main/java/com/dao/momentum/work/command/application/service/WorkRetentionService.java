@@ -40,7 +40,7 @@ public class WorkRetentionService {
 
         int workedMonths = calculateWorkedMonths(joinDate, targetDate);
 
-        return minusByWorkedMonths(workedMonths);
+        return getPenaltyByWorkedMonths(workedMonths);
     }
 
     public int calculateWorkedMonths(LocalDate joinDate, LocalDate targetDate) {
@@ -55,7 +55,7 @@ public class WorkRetentionService {
         return (int) monthsBetween;
     }
 
-    private double minusByWorkedMonths(int workedMonths) {
+    private double getPenaltyByWorkedMonths(int workedMonths) {
         if (workedMonths <= 11) {
             return -7.5;
         }
