@@ -34,7 +34,7 @@ public class ContractRetentionService {
      * @return 0 또는 음수(-13 ~ 0)의 페널티 점수
      */
     @Transactional(readOnly = true)
-    public int getScoreBySalaryIncrements(long empId, LocalDate targetDate) {
+    public int calculateScoreBySalaryIncrements(long empId, LocalDate targetDate) {
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 

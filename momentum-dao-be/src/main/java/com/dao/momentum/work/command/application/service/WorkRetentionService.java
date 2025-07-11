@@ -32,7 +32,7 @@ public class WorkRetentionService {
     private final WorkCreateValidator workCreateValidator;
 
     // 최대 9점 감점
-    public double computeScoreByWorkedMonths(long empId, LocalDate targetDate) {
+    public double calculateScoreByWorkedMonths(long empId, LocalDate targetDate) {
         Employee emp = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
@@ -40,7 +40,7 @@ public class WorkRetentionService {
 
         int workedMonths = calculateWorkedMonths(joinDate, targetDate);
 
-        return minusByWorkedMonths(workedMonths);
+        return getPenaltyByWorkedMonths(workedMonths);
     }
 
     public int calculateWorkedMonths(LocalDate joinDate, LocalDate targetDate) {
@@ -55,7 +55,7 @@ public class WorkRetentionService {
         return (int) monthsBetween;
     }
 
-    private double minusByWorkedMonths(int workedMonths) {
+    private double getPenaltyByWorkedMonths(int workedMonths) {
         if (workedMonths <= 11) {
             return -7.5;
         }
@@ -81,7 +81,7 @@ public class WorkRetentionService {
      *  - 거기서 4주 전 월요일을 periodStart 로 잡아
      * 해당 기간의 무단결근 및 지각 스코어를 계산
      */
-    public int computeAbsenceAndLate(long empId, LocalDate targetDate) {
+    public int calculateScoreByAbsenceAndLate(long empId, LocalDate targetDate) {
         // 기간 계산
         LocalDate periodEnd = targetDate.with(TemporalAdjusters.previous(DayOfWeek.SUNDAY));
         LocalDate periodStart = periodEnd.minusWeeks(4).plusDays(1);
@@ -97,7 +97,7 @@ public class WorkRetentionService {
         long absenceCount = countAbsence(works, periodStart, periodEnd);
 
         // 최종 스코어
-        return Math.max(MIN_SCORE_BY_ATTENDANCE, calcAbsenceAndLateScore(absenceCount, lateCount));
+        return Math.max(MIN_SCORE_BY_ATTENDANCE, getPenaltyByAbsenceAndLate(absenceCount, lateCount));
     }
 
     /**
@@ -119,7 +119,7 @@ public class WorkRetentionService {
     }
 
     /** 무단결근당 -2점, 지각 3회당 -1점 */
-    private int calcAbsenceAndLateScore(long absenceCount, long lateCount) {
+    private int getPenaltyByAbsenceAndLate(long absenceCount, long lateCount) {
         int absenceWeight = -2;
         int lateWeight    = -1;
         int lateUnits     = (int)(lateCount / 3);
