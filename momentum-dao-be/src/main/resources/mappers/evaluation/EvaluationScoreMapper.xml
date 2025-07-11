@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.dao.momentum.evaluation.eval.query.mapper.EvaluationScoreMapper">
+
+    <!-- 피평가자의 특정 평가 양식(formId) 점수 조회 -->
+    <select id="findScoresByFormIdAndTarget" resultType="int">
+        SELECT er.score
+        FROM eval_response er
+        WHERE er.form_id = #{formId}
+        AND er.target_id = #{empId}
+    </select>
+
+    <!-- 최근 2회 인사 평가 회차 ID 조회 -->
+    <select id="findRecentHrRoundIdsByEmpId" resultType="long">
+        SELECT DISTINCT r.round_id
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        JOIN eval_round r ON er.round_id = r.round_id
+        WHERE et.name = 'PEER'
+            AND ef.name = 'HR_REVIEW'
+            AND er.target_id = #{empId}
+        ORDER BY r.round_no DESC
+        LIMIT 2
+    </select>
+
+    <!-- 특정 회차의 인사 평가 점수 조회 (본인) -->
+    <select id="findHrScoreByRoundIdAndEmpId" resultType="int">
+        SELECT er.score
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'PEER'
+            AND ef.name = 'HR_REVIEW'
+            AND er.round_id = #{roundId}
+            AND er.target_id = #{empId}
+        LIMIT 1
+    </select>
+
+    <!-- 특정 회차의 인사 평가 전체 점수 목록 조회 -->
+    <select id="findAllHrScoresByRoundId" resultType="int">
+        SELECT er.score
+        FROM eval_response er
+        JOIN eval_form ef ON er.form_id = ef.form_id
+        JOIN eval_type et ON ef.type_id = et.type_id
+        WHERE et.name = 'PEER'
+            AND ef.name = 'HR_REVIEW'
+            AND er.round_id = #{roundId}
+    </select>
+
+    <!-- 특정 회차의 등급 비율 정보 조회 -->
+    <select id="findRateInfoByRoundId" resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
+        SELECT rate_s AS rateS,
+            rate_a AS rateA,
+            rate_b AS rateB,
+            rate_c AS rateC,
+            rate_d AS rateD
+        FROM eval_round
+        WHERE round_id = #{roundId}
+    </select>
+
+</mapper>

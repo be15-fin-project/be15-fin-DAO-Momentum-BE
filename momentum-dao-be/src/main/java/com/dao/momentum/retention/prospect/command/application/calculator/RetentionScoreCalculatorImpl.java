@@ -2,17 +2,21 @@ package com.dao.momentum.retention.prospect.command.application.calculator;
 
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
+import com.dao.momentum.evaluation.eval.query.service.EvaluationScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
+
+    private final EvaluationScoreService evaluationScoreService;
 
     /**
      * 각 항목별 점수와 전체 점수를 계산하는 로직
@@ -56,10 +60,14 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         int jobScore = 20;
 
         // 1. 인사 평가
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(4, emp.getEmpId(), 10.0); // 인사 평가
 
         // 2. 평가 변화
+        jobScore += evaluationScoreService.getHrGradeDropPenalty(emp.getEmpId());
 
         // 3. 평가
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(5, emp.getEmpId(), 4.0);  // 조직 몰입
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(11, emp.getEmpId(), 4.0); // 조직 지원 인식
 
         return clampScore(jobScore, 20);
     }
@@ -71,6 +79,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 1. 연봉
 
         // 2. 복리후생
+        compScore += evaluationScoreService.getAdjustedScoreForForm(8, emp.getEmpId(), 7.0); // 복리후생 만족도
 
         return clampScore(compScore, 20);
     }
@@ -80,8 +89,10 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         int relationScore = 15;
 
         // 1. 다면 평가
+        relationScore += evaluationScoreService.getAdjustedScoreForForms(List.of(1, 2, 3), emp.getEmpId(), 8.0);
 
         // 2. 조직 문화 평가
+        relationScore += evaluationScoreService.getAdjustedScoreForForm(6, emp.getEmpId(), 5.0);
 
         // 3. 발령 이력
 
@@ -97,6 +108,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 2. KPI 미달성
 
         // 3. 조직 공정성 평가
+        growthScore += evaluationScoreService.getAdjustedScoreForForm(7, emp.getEmpId(), 4.0); // 조직 공정성 평가
 
         return clampScore(growthScore, 15);
     }
@@ -122,6 +134,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 2. 재택 근무
 
         // 3. 자가 진단
+        wlbScore += evaluationScoreService.getAdjustedScoreForForm(12, emp.getEmpId(), 3.0); // 직무 스트레스
+        wlbScore += evaluationScoreService.getAdjustedScoreForForm(10, emp.getEmpId(), 2.0); // 직원 참여도
 
         return clampScore(wlbScore, 15);
     }
