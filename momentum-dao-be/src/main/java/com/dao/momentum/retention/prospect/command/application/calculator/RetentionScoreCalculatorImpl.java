@@ -76,7 +76,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     private int calculateCompLevel(Integer year, Integer month, Employee emp) {
         int compScore = 20;
         long empId = emp.getEmpId();
-        LocalDate targetDate = LocalDate.of(year, month, 1);
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1); // 대상 달(과거 날짜)의 마지막 날
 
         // 1. 연봉 (최대 -13점)
         // 0 또는 감점을 적용한 음수이므로 더해준다. (예시: 20 + (-5) = 15)
@@ -91,7 +91,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     private int calculateRelationLevel(Integer year, Integer month, Employee emp) {
         int relationScore = 15;
         long empId = emp.getEmpId();
-        LocalDate targetDate = LocalDate.of(year, month, 1);
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
         // 1. 다면 평가
 
@@ -106,9 +106,10 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     /* 경력 개발 기회 계산 메소드 */
     private int calculateGrowthLevel(Integer year, Integer month, Employee emp) {
         int growthScore = 15;
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
         // 1. 승진 정체 (최대 -7점)
-        growthScore += appointRetentionService.calculateScoreByPromotion(emp.getEmpId(), LocalDate.of(year, month, 1));
+        growthScore += appointRetentionService.calculateScoreByPromotion(emp.getEmpId(), targetDate);
 
         // 2. KPI 미달성
 
@@ -120,15 +121,15 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     /* 근속 연수, 근태 계산 메소드 */
     private int calculateTenureLevel(Integer year, Integer month, Employee emp) {
         double tenureScore = 15;
-        LocalDate targetDate = LocalDate.of(year, month, 1);
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1);
         long empId = emp.getEmpId();
 
         // 1. 근속 연수 (최대 -9점)
-        tenureScore += workRetentionService.calculateScoreByWorkedMonths(empId, targetDate);
+        tenureScore += workRetentionService.calculateScoreByWorkedMonths(empId, targetDate.minusDays(1));
 
         // 2. 근태 이력 (최대 -6점)
-        // 메서드 로직 상 1개월 뒤가 필요 (6월 근속 지원 기능이라면 인자로 7월 1일을 받아야함)
-        tenureScore += workRetentionService.calculateScoreByAbsenceAndLate(empId, targetDate.plusMonths(1));
+        // 메서드 로직 상 대상 달 다음달의 1일이 필요 (이 값을 변수 targetDate로 정의)
+        tenureScore += workRetentionService.calculateScoreByAbsenceAndLate(empId, targetDate);
 
         return clampScore((int) tenureScore, 15);
     }
