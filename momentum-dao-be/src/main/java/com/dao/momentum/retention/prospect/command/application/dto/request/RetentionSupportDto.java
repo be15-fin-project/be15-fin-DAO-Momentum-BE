@@ -19,12 +19,12 @@ public record RetentionSupportDto(
         @Schema(description = "성장 만족도 (0~100)", example = "70")
         int growthLevel,
 
-        @Schema(description = "근속 연수", example = "3.5")
-        BigDecimal tenureLevel,
+        @Schema(description = "근속 만족도 (0~100)", example = "50")
+        int tenureLevel,
 
         @Schema(description = "워라밸 만족도 (0~100)", example = "90")
         int wlbLevel,
 
         @Schema(description = "최종 근속 전망 점수 (0~100)", example = "78")
-        int retentionScore
+        BigDecimal retentionScore
 ) {}
