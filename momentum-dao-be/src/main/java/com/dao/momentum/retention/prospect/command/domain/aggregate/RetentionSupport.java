@@ -59,9 +59,9 @@ public class RetentionSupport {
                 dto.compLevel(),
                 dto.relationLevel(),
                 dto.growthLevel(),
-                dto.tenureLevel(),
+                BigDecimal.valueOf(dto.tenureLevel()),
                 dto.wlbLevel(),
-                dto.retentionScore(),
+                dto.retentionScore().intValue(),
                 LocalDateTime.now()
         );
     }
