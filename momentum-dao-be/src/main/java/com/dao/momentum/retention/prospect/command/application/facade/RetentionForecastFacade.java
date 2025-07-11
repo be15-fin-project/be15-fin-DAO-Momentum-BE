@@ -62,7 +62,7 @@ public class RetentionForecastFacade {
         // 근속 지원 정보 계산 및 저장
         List<RetentionSupport> supports = employees.stream()
                 .map(emp -> {
-                    var dto = calculator.calculate(emp);
+                    var dto = calculator.calculate(request.year(), request.month(), emp); // 계산할 때 기준 년도와 기준 달이 필요하기 때문에 파라미터로 넘김
                     return RetentionSupport.of(round.getRoundId(), emp.getEmpId(), dto);
                 })
                 .toList();
