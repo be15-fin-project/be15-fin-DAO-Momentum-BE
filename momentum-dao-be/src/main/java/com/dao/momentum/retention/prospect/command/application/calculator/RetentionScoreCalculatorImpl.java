@@ -2,46 +2,176 @@ package com.dao.momentum.retention.prospect.command.application.calculator;
 
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
 
+    /**
+     * 각 항목별 점수와 전체 점수를 계산하는 로직
+     *  */
     @Override
-    public RetentionSupportDto calculate(Employee employee) {
-        int jobLevel = 80;
-        int compLevel = 75;
-        int relationLevel = 70;
-        int growthLevel = 65;
-        BigDecimal tenureLevel = calculateTenureYears(employee);
-        int wlbLevel = 85;
+    public RetentionSupportDto calculate(Integer year, Integer month, Employee employee) {
+        int jobLevel = calculateJobLevel(year, month, employee);           // 직무 만족도 : 최대 20점
+        int compLevel = calculateCompLevel(year, month, employee);         // 임금 및 복지 만족도 : 최대 20점
+        int relationLevel = calculateRelationLevel(year, month, employee); // 상사, 동료 관계 : 최대 15점
+        int growthLevel = calculateGrowthLevel(year, month, employee);     // 경력 개발 기회 : 최대 15점
+        int tenureLevel = calculateTenureLevel(year, month, employee);     // 근속 연수, 근태 : 최대 15점
+        int wlbLevel = calculateWlbLevel(year, month, employee);           // 워라밸, 초과 근무 : 최대 15점
 
-        int retentionScore = weightedScore(
-                jobLevel, compLevel, relationLevel, growthLevel, tenureLevel, wlbLevel
+        BigDecimal ageCoefficient = getAgeCoefficient(year, employee); // 보정 계수
+
+        // 총점 구하기
+        BigDecimal retentionScore = weightedScore(
+                jobLevel, compLevel, relationLevel, growthLevel, tenureLevel, wlbLevel, ageCoefficient
         );
 
+        // 각각의 총점을 100점으로 환산
+        // 총점이 20점 -> 최종 점수 * 5
+        // 총점이 15점 -> 최종 점수 * 20 / 3
         return new RetentionSupportDto(
-                jobLevel, compLevel, relationLevel, growthLevel, tenureLevel, wlbLevel, retentionScore
+                jobLevel * 5,
+                compLevel * 5,
+                (int) Math.round(relationLevel * 20.0 / 3),
+                (int) Math.round(growthLevel * 20.0 / 3),
+                (int) Math.round(tenureLevel * 20.0 / 3),
+                (int) Math.round(wlbLevel * 20.0 / 3),
+                retentionScore
         );
     }
 
-    private BigDecimal calculateTenureYears(Employee employee) {
-        long days = ChronoUnit.DAYS.between(employee.getJoinDate(), LocalDate.now());
-        return BigDecimal.valueOf(days).divide(BigDecimal.valueOf(365), 2, RoundingMode.HALF_UP);
+    /**
+     * 각각의 점수를 계산하는 로직
+     * */
+
+    /* 직무 만족도 계산 메소드 */
+    private int calculateJobLevel(Integer year, Integer month, Employee emp) {
+        int jobScore = 20;
+
+        // 1. 인사 평가
+
+        // 2. 평가 변화
+
+        // 3. 평가
+
+        return clampScore(jobScore, 20);
     }
 
-    private int weightedScore(int job, int comp, int relation, int growth, BigDecimal tenure, int wlb) {
-        double score = job * 0.25 +
-                comp * 0.20 +
-                relation * 0.15 +
-                growth * 0.15 +
-                tenure.doubleValue() * 0.15 * 20 +
-                wlb * 0.10;
-        return (int) Math.round(score);
+    /* 경렬 개발 기회 계산 메소드 */
+    private int calculateCompLevel(Integer year, Integer month, Employee emp) {
+        int compScore = 20;
+
+        // 1. 연봉
+
+        // 2. 복리후생
+
+        return clampScore(compScore, 20);
     }
+
+    /* 상사, 동료 관계 계산 메소드 */
+    private int calculateRelationLevel(Integer year, Integer month, Employee emp) {
+        int relationScore = 15;
+
+        // 1. 다면 평가
+
+        // 2. 조직 문화 평가
+
+        // 3. 발령 이력
+
+        return clampScore(relationScore, 15);
+    }
+
+    /* 경력 개발 기회 계산 메소드 */
+    private int calculateGrowthLevel(Integer year, Integer month, Employee emp) {
+        int growthScore = 15;
+
+        // 1. 승진
+
+        // 2. KPI 미달성
+
+        // 3. 조직 공정성 평가
+
+        return clampScore(growthScore, 15);
+    }
+
+    /* 근속 연수, 근태 계산 메소드 */
+    private int calculateTenureLevel(Integer year, Integer month, Employee emp) {
+        int tenureScore = 15;
+
+        // 1. 근속 연수
+
+        // 2. 근태 이력
+
+
+        return clampScore(tenureScore, 15);
+    }
+
+    /* 워라밸, 초과근무 계산 메소드 */
+    private int calculateWlbLevel(Integer year, Integer month, Employee emp) {
+        int wlbScore = 15;
+
+        // 1. 초과 근무
+
+        // 2. 재택 근무
+
+        // 3. 자가 진단
+
+        return clampScore(wlbScore, 15);
+    }
+
+    /* 최대, 최소 점수 보장 */
+    private int clampScore(int score, int max) {
+        return Math.max(0, Math.min(score, max));
+    }
+
+    /* 나이 보정 계수  : 한국식 나이로 계산함 */
+    private BigDecimal getAgeCoefficient(Integer year, Employee emp) {
+        int birthYear = emp.getBirthDate().getYear();
+        int age = year - birthYear + 1;
+
+        if (age >= 60) {
+            return BigDecimal.valueOf(1.3);
+        } else if (age >= 50) {
+            return BigDecimal.valueOf(1.1);
+        } else if (age >= 40) {
+            return BigDecimal.valueOf(0.85);
+        } else if (age >= 30) {
+            return BigDecimal.valueOf(1.0);
+        } else {
+            return BigDecimal.valueOf(1.3);
+        }
+    }
+
+    /**
+     *  총점 계산하는 로직
+     *  */
+    private BigDecimal weightedScore(
+            int jobLevel, int compLevel, int relationLevel, int growthLevel,
+            int tenureLevel, int wlbLevel, BigDecimal ageCoefficient
+    ) {
+        int totalScore = jobLevel + compLevel + relationLevel + growthLevel + tenureLevel + wlbLevel;
+
+        // 차감해야 하는 점수 : totalScore * 나이 보정 계수
+        BigDecimal deduction = BigDecimal.valueOf(totalScore)
+                .multiply(ageCoefficient)
+                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+
+        return BigDecimal.valueOf(100)
+                .subtract(deduction) // 100점에서 점수 차감하기
+                .max(BigDecimal.ZERO) // 최소 0점 보장
+                .min(BigDecimal.valueOf(100)) // 최대 100점 제한
+                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+    }
+
 }
+
+
+
+
