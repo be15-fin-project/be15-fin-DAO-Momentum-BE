@@ -23,4 +23,17 @@ public interface AppointRepository {
 """
     )
     long countAppointsByEmpIdAndRangeOfDateAndType(long empId, LocalDate startDate, LocalDate endDate, AppointType type);
+
+    @Query(
+            """
+    SELECT a
+    FROM Appoint a
+    WHERE a.empId = :empId
+    AND a.appointDate >= :startDate
+    AND a.appointDate <= :endDate
+    AND a.type = :type
+"""
+    )
+    List<Appoint> findAllAppointsByEmpIdAndRangeOfDateAndType(long empId, LocalDate startDate, LocalDate endDate, AppointType type);
+
 }
