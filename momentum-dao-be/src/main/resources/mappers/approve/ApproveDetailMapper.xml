@@ -140,7 +140,7 @@
             v.end_date,
             v.reason
         FROM vacation v
-        JOIN vacation_type vt ON v.vacation_id = vt.vacation_type_id
+        JOIN vacation_type vt ON v.vacation_type_id = vt.vacation_type_id
         WHERE approve_id = #{approveId}
     </select>
 
