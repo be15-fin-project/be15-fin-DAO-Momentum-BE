@@ -7,6 +7,7 @@ import com.dao.momentum.organization.position.command.application.dto.request.Po
 import com.dao.momentum.organization.position.command.application.dto.response.PositionCreateResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionDeleteResponse;
 import com.dao.momentum.organization.position.command.application.dto.response.PositionUpdateResponse;
+import com.dao.momentum.organization.position.command.domain.aggregate.IsDeleted;
 import com.dao.momentum.organization.position.command.domain.aggregate.Position;
 import com.dao.momentum.organization.position.command.domain.repository.PositionRepository;
 import com.dao.momentum.organization.position.exception.PositionException;
@@ -26,7 +27,7 @@ public class PositionCommandService {
 
     @Transactional
     public PositionCreateResponse createPositions(PositionCreateRequest request) {
-        if (positionRepository.existsByName(request.getName())) {
+        if (positionRepository.existsByNameAndIsDeleted(request.getName(),IsDeleted.N)) {
             throw new PositionException(ErrorCode.POSITION_ALREADY_EXISTS);
         }
 
@@ -62,7 +63,7 @@ public class PositionCommandService {
         );
 
         //직위명 검사
-        if(!position.getName().equals(request.getName()) && positionRepository.existsByName(request.getName())){
+        if(!position.getName().equals(request.getName()) && positionRepository.existsByNameAndIsDeleted(request.getName(),IsDeleted.N)){
             throw new PositionException(ErrorCode.POSITION_ALREADY_EXISTS);
         }
 
