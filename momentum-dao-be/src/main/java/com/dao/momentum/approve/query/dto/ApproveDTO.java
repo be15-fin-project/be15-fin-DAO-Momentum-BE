@@ -22,5 +22,6 @@ public class ApproveDTO {
     private LocalDateTime completeAt;
     private String employeeName;
     private String departmentName;
+    private String receivedType;
 
 }
