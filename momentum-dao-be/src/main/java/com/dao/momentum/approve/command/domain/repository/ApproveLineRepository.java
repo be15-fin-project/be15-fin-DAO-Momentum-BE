@@ -2,6 +2,7 @@ package com.dao.momentum.approve.command.domain.repository;
 
 import com.dao.momentum.approve.command.domain.aggregate.ApproveLine;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +17,7 @@ public interface ApproveLineRepository extends JpaRepository<ApproveLine, Long> 
 
     /* 결재 아이디로 해당 결재에 속한 결재선의 상태 가져오기 */
     @Query("SELECT a.statusId FROM ApproveLine a WHERE a.approveId = :approveId")
-    List<Integer> getApproveLinesByApproveId(Long approveId);
+    List<Integer> getApproveLinesStatusByApproveId(Long approveId);
 
     /* 이전 결재선 찾기 */
     @Query("SELECT a FROM ApproveLine a WHERE a.approveId = :approveId AND a.approveLineOrder < :currentOrder")
@@ -44,5 +45,13 @@ public interface ApproveLineRepository extends JpaRepository<ApproveLine, Long> 
         LIMIT 1
     """, nativeQuery = true)
     Optional<ApproveLine> findFirstLine(Long approveId);
+
+    /* 결재 아이디로 해당 결재에 속한 결재선의 아이디 가져오기 */
+    @Query("SELECT a.id FROM ApproveLine a WHERE a.approveId = :approveId")
+    List<Long> getApproveLinesByApproveId(Long approveId);
+
+    @Modifying
+    @Query("DELETE FROM ApproveLine al WHERE al.approveId = :approveId")
+    void deleteApproveLinesByApproveId(Long approveId);
 
 }

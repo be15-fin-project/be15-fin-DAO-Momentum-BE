@@ -11,4 +11,6 @@ public interface ApproveRepository extends JpaRepository<Approve, Long> {
 
     Optional<Approve> getApproveByApproveId(Long approveId);
 
+    void deleteApproveByApproveId(Long approveId);
+
 }
