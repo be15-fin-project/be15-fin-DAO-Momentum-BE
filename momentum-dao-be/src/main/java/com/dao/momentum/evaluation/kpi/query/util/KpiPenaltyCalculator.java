@@ -3,7 +3,7 @@ package com.dao.momentum.evaluation.kpi.query.util;
 public class KpiPenaltyCalculator {
 
     public static int calculateTotalPenalty(int startedCount, int emptyMonths, double avgProgress, int underAchievedCount) {
-        int penalty = 0;
+        double penalty = 0;
 
         // ① 등록 KPI 수
         if (startedCount <= 1) penalty -= 2;
