@@ -116,11 +116,11 @@
             AND work.is_normal_work = #{request.isNormalWork}
         </if>
 
-        <if test="request.order == null or request.order.name() != 'DESC'">
-            ORDER BY work.start_at ASC
-        </if>
-        <if test="request.order != null and request.order.name() == 'DESC'">
+        <if test="request.order == null or request.order.name() == 'DESC'">
             ORDER BY work.start_at DESC
+        </if>
+        <if test="request.order != null and request.order.name() != 'DESC'">
+            ORDER BY work.start_at ASC
         </if>
         LIMIT #{request.limit} OFFSET #{request.offset};
     </select>
