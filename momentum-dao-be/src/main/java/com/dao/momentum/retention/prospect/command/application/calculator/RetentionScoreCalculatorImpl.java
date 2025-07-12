@@ -1,8 +1,11 @@
 package com.dao.momentum.retention.prospect.command.application.calculator;
 
+import com.dao.momentum.organization.contract.command.application.service.ContractRetentionService;
+import com.dao.momentum.organization.employee.command.application.service.AppointRetentionService;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationScoreService;
+import com.dao.momentum.work.command.application.service.WorkRetentionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.time.LocalDate;
 
 @Slf4j
 @Component
@@ -17,6 +21,9 @@ import java.util.List;
 public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
 
     private final EvaluationScoreService evaluationScoreService;
+    private final ContractRetentionService contractRetentionService;
+    private final AppointRetentionService appointRetentionService;
+    private final WorkRetentionService workRetentionService;
 
     /**
      * 각 항목별 점수와 전체 점수를 계산하는 로직
@@ -72,13 +79,17 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         return clampScore(jobScore, 20);
     }
 
-    /* 경렬 개발 기회 계산 메소드 */
+    /* 경력 개발 기회 계산 메소드 */
     private int calculateCompLevel(Integer year, Integer month, Employee emp) {
         int compScore = 20;
+        long empId = emp.getEmpId();
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1); // 대상 달(과거 날짜)의 마지막 날
 
-        // 1. 연봉
+        // 1. 연봉 (최대 -13점)
+        // 0 또는 감점을 적용한 음수이므로 더해준다. (예시: 20 + (-5) = 15)
+        compScore += contractRetentionService.calculateScoreBySalaryIncrements(empId, targetDate);
 
-        // 2. 복리후생
+        // 2. 복리후생 (최대 -7점)
         compScore += evaluationScoreService.getAdjustedScoreForForm(8, emp.getEmpId(), 7.0, year, month);
 
         return clampScore(compScore, 20);
@@ -87,6 +98,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     /* 상사, 동료 관계 계산 메소드 */
     private int calculateRelationLevel(Integer year, Integer month, Employee emp) {
         int relationScore = 15;
+        long empId = emp.getEmpId();
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
         // 1. 다면 평가
         relationScore += evaluationScoreService.getAdjustedScoreForForms(List.of(1, 2, 3), emp.getEmpId(), 8.0, year, month);
@@ -94,7 +107,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 2. 조직 문화 평가
         relationScore += evaluationScoreService.getAdjustedScoreForForm(6, emp.getEmpId(), 5.0, year, month);
 
-        // 3. 발령 이력
+        // 3. 발령 이력 (최대 -2점)
+        relationScore += appointRetentionService.calculateScoreByDeptTransfer(empId, targetDate);
 
         return clampScore(relationScore, 15);
     }
@@ -102,8 +116,10 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     /* 경력 개발 기회 계산 메소드 */
     private int calculateGrowthLevel(Integer year, Integer month, Employee emp) {
         int growthScore = 15;
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
-        // 1. 승진
+        // 1. 승진 정체 (최대 -7점)
+        growthScore += appointRetentionService.calculateScoreByPromotion(emp.getEmpId(), targetDate);
 
         // 2. KPI 미달성
 
@@ -115,14 +131,18 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
 
     /* 근속 연수, 근태 계산 메소드 */
     private int calculateTenureLevel(Integer year, Integer month, Employee emp) {
-        int tenureScore = 15;
+        double tenureScore = 15;
+        LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1);
+        long empId = emp.getEmpId();
 
-        // 1. 근속 연수
+        // 1. 근속 연수 (최대 -9점)
+        tenureScore += workRetentionService.calculateScoreByWorkedMonths(empId, targetDate.minusDays(1));
 
-        // 2. 근태 이력
+        // 2. 근태 이력 (최대 -6점)
+        // 메서드 로직 상 대상 달 다음달의 1일이 필요 (이 값을 변수 targetDate로 정의)
+        tenureScore += workRetentionService.calculateScoreByAbsenceAndLate(empId, targetDate);
 
-
-        return clampScore(tenureScore, 15);
+        return clampScore((int) tenureScore, 15);
     }
 
     /* 워라밸, 초과근무 계산 메소드 */

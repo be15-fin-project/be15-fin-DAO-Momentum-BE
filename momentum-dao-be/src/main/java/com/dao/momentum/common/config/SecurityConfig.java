@@ -107,7 +107,9 @@ public class SecurityConfig {
     // 회원(로그인 사용자)만 접근 가능
     private void employeeEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-                "/employees/me"
+                "/employees/me",
+                "/remaining/refresh",
+                "/remaining/dayoff"
         ).authenticated();
 
 //        auths.requestMatchers(
