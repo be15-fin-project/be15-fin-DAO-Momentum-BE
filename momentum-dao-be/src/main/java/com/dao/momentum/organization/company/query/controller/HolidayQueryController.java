@@ -24,7 +24,7 @@ public class HolidayQueryController {
     @Operation(summary="관리자 회사 휴일 조회", description = "관리자는 회사의 휴일을 조회할 수 있다.")
     @GetMapping("/admin")
     public ResponseEntity<ApiResponse<HolidayGetResponse>> getHolidays(
-            @RequestBody HolidaySearchRequest request
+            @ModelAttribute HolidaySearchRequest request
             ) {
         HolidayGetResponse response = holidayQueryService.getHolidays(request);
 
