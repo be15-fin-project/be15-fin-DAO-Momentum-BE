@@ -5,15 +5,16 @@ import com.dao.momentum.retention.prospect.query.dto.request.RetentionStatistics
 import com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseriesRequestDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto;
-import com.dao.momentum.retention.prospect.query.dto.response.StabilityDistributionByDeptDto;
+import com.dao.momentum.retention.prospect.query.dto.request.StabilityRatioByDeptRaw;
+import com.dao.momentum.retention.prospect.query.dto.response.StabilityRatioSummaryDto;
 import com.dao.momentum.retention.prospect.query.service.RetentionStatisticsQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -30,7 +31,7 @@ class RetentionStatisticsQueryControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
     private RetentionStatisticsQueryService retentionStatisticsQueryService;
 
     @Test
@@ -63,15 +64,13 @@ class RetentionStatisticsQueryControllerTest {
     @DisplayName("부서별 근속 안정성 분포 조회 성공 - getStabilityDistribution_success")
     @WithMockUser(authorities = "MASTER")
     void getStabilityDistribution_success() throws Exception {
-        StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
+        StabilityRatioByDeptRaw dto = StabilityRatioByDeptRaw.builder()
                 .deptName("기획팀")
                 .positionName("대리")
-                .empCount(20)
-                .progress20(0)
-                .progress40(0)
-                .progress60(5)
-                .progress80(10)
-                .progress100(5)
+                .stableCount(15L)
+                .warningCount(5L)
+                .unstableCount(3L)
+                .totalCount(23L)
                 .build();
 
         Mockito.when(retentionStatisticsQueryService.getStabilityDistributionByDept(any(RetentionInsightRequestDto.class)))
@@ -84,10 +83,10 @@ class RetentionStatisticsQueryControllerTest {
                 .andExpect(jsonPath("$.data", hasSize(1)))
                 .andExpect(jsonPath("$.data[0].deptName").value("기획팀"))
                 .andExpect(jsonPath("$.data[0].positionName").value("대리"))
-                .andExpect(jsonPath("$.data[0].empCount").value(20))
-                .andExpect(jsonPath("$.data[0].progress60").value(5))
-                .andExpect(jsonPath("$.data[0].progress80").value(10))
-                .andExpect(jsonPath("$.data[0].progress100").value(5))
+                .andExpect(jsonPath("$.data[0].stableCount").value(15))
+                .andExpect(jsonPath("$.data[0].warningCount").value(5))
+                .andExpect(jsonPath("$.data[0].unstableCount").value(3))
+                .andExpect(jsonPath("$.data[0].totalCount").value(23))
                 .andDo(print());
     }
 
@@ -95,9 +94,7 @@ class RetentionStatisticsQueryControllerTest {
     @DisplayName("전체 근속 안정성 분포 조회 성공 - getOverallStabilityDistribution_success")
     @WithMockUser(authorities = "HR")
     void getOverallStabilityDistribution_success() throws Exception {
-        StabilityDistributionByDeptDto dto = StabilityDistributionByDeptDto.builder()
-                .deptName("전체")
-                .positionName(null)
+        StabilityRatioSummaryDto dto = StabilityRatioSummaryDto.builder()
                 .empCount(50)
                 .progress20(2)
                 .progress40(5)
@@ -113,9 +110,11 @@ class RetentionStatisticsQueryControllerTest {
                         .param("roundId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.deptName").value("전체"))
                 .andExpect(jsonPath("$.data.empCount").value(50))
                 .andExpect(jsonPath("$.data.progress20").value(2))
+                .andExpect(jsonPath("$.data.progress40").value(5))
+                .andExpect(jsonPath("$.data.progress60").value(10))
+                .andExpect(jsonPath("$.data.progress80").value(18))
                 .andExpect(jsonPath("$.data.progress100").value(15))
                 .andDo(print());
     }
