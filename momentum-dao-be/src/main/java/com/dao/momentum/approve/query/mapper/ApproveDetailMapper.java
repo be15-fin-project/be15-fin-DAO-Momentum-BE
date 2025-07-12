@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface ApproveDetailMapper {
 
     /* 모든 폼에서 공통적으로 조회되는 내용 */
-    Optional<ApproveDTO> getApproveDTO(Long approveId);
+    Optional<ApproveDTO> getApproveDTO(Long approveId, Long empId, boolean isAdmin);
 
     List<ApproveFileDTO> getApproveFiles(Long approveId);
 

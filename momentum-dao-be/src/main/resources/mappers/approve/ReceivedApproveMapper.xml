@@ -17,10 +17,10 @@
             e.name AS employee_name,
             d.name AS department_name,
             CASE
-            WHEN ali.emp_id IS NOT NULL THEN 'APPROVAL'
-            WHEN ar.emp_id IS NOT NULL THEN 'REFERENCE'
+                WHEN ali.emp_id IS NOT NULL THEN 'APPROVAL'
+                WHEN ar.emp_id IS NOT NULL THEN 'REFERENCE'
             ELSE NULL
-            END AS received_type
+        END AS received_type
 
         FROM approve a
         LEFT JOIN approve aa ON a.parent_approve_id = aa.approve_id
@@ -85,17 +85,17 @@
         <!-- 부서 -->
         <if test="req.deptId != null">
             AND e.dept_id IN (
-                WITH RECURSIVE dept_tree AS (
-                    SELECT dept_id
-                    FROM department
-                    WHERE dept_id = #{req.deptId}
-                    AND is_deleted = 'N'
-                        UNION ALL
-                    SELECT d.dept_id
-                    FROM department d
-                    INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
-                    WHERE d.is_deleted = 'N'
-                )
+            WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+            )
             SELECT dept_id FROM dept_tree
             )
         </if>
@@ -120,10 +120,11 @@
         JOIN employee e ON a.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
         JOIN status s ON a.status_id = s.status_id
-        JOIN approve_line al ON al.approve_id = a.approve_id
-        JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id
+        LEFT JOIN approve_line al ON al.approve_id = a.approve_id
+        LEFT JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id AND ali.emp_id = #{empId}
+        LEFT JOIN approve_ref ar ON a.approve_id = ar.approve_id AND ar.emp_id = #{empId}
 
-        WHERE ali.emp_id = #{empId}
+        WHERE (ali.emp_id IS NOT NULL OR ar.emp_id IS NOT NULL)
 
         <if test="req.tab != 'ALL'">
             <if test="req.tab == 'ATTENDANCE'">
@@ -171,17 +172,17 @@
 
         <if test="req.deptId != null">
             AND e.dept_id IN (
-                WITH RECURSIVE dept_tree AS (
-                    SELECT dept_id
-                    FROM department
-                    WHERE dept_id = #{req.deptId}
-                    AND is_deleted = 'N'
-                        UNION ALL
-                    SELECT d.dept_id
-                    FROM department d
-                    INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
-                    WHERE d.is_deleted = 'N'
-                )
+            WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{req.deptId}
+            AND is_deleted = 'N'
+            UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+            )
             SELECT dept_id FROM dept_tree
             )
         </if>
@@ -190,9 +191,9 @@
     <!-- 존재하는 회원인지 확인하기 위한 코드 -->
     <select id="existsByEmpId" resultType="boolean">
         SELECT CASE WHEN EXISTS (
-            SELECT 1
-            FROM employee
-            WHERE emp_id = #{empId}
+        SELECT 1
+        FROM employee
+        WHERE emp_id = #{empId}
         ) THEN TRUE ELSE FALSE END
     </select>
 

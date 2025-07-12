@@ -67,11 +67,13 @@ public class ApproveQueryController {
     @GetMapping("/documents/{documentId}")
     @Operation(summary = "결재 문서 상세 조회", description = "결재 문서를 상세 조회합니다.")
     public ResponseEntity<ApiResponse<ApproveDetailResponse>> getDraftApprovals(
-            @PathVariable Long documentId
+            @PathVariable Long documentId,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
 
         ApproveDetailResponse approveDetailResponse
-                = approveQueryService.getApproveDetail(documentId);
+                = approveQueryService.getApproveDetail(documentId, empId);
 
         return ResponseEntity.ok(ApiResponse.success(approveDetailResponse));
     }
