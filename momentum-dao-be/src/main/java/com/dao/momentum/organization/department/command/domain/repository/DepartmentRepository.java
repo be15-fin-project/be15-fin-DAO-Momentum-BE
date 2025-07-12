@@ -17,4 +17,7 @@ public interface DepartmentRepository {
     boolean existsByDeptIdAndIsDeleted(Integer deptId, IsDeleted isDeleted);
 
     boolean existsByParentDeptIdAndIsDeleted(Integer parentDeptId,IsDeleted isDeleted);
+
+    Optional<Integer> findParentDeptIdByDeptId(Integer deptId);
+
 }
