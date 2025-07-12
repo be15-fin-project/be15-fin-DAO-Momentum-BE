@@ -61,7 +61,7 @@ class RetentionSupportQueryServiceImplTest {
             assertThat(result).isNotNull();
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).retentionGrade()).isEqualTo("우수");
-            assertThat(result.items().get(0).stabilityType()).isEqualTo(StabilityType.WARNING);
+            assertThat(result.items().get(0).stabilityType()).isEqualTo(StabilityType.NORMAL);
             assertThat(result.pagination().getTotalItems()).isEqualTo(1L);
 
             verify(mapper).findRetentionForecasts(req, 3);

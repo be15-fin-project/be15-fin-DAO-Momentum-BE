@@ -101,10 +101,11 @@ class RetentionStatisticsQueryControllerTest {
     @WithMockUser(authorities = "HR")
     void getOverallStabilityDistribution_success() throws Exception {
         StabilityRatioSummaryDto dto = StabilityRatioSummaryDto.builder()
-                .stableCount(100L)
+                .goodCount(100L)
+                .normalCount(30L)
                 .warningCount(15L)
-                .unstableCount(9L)
-                .totalCount(124L)
+                .severeCount(9L)
+                .totalCount(154L)
                 .build();
 
         Mockito.when(retentionStatisticsQueryService.getOverallStabilityDistribution(any(RetentionInsightRequestDto.class)))
@@ -114,10 +115,11 @@ class RetentionStatisticsQueryControllerTest {
                         .param("roundId", "3"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.stableCount").value(100))
+                .andExpect(jsonPath("$.data.goodCount").value(100))
+                .andExpect(jsonPath("$.data.normalCount").value(30))
                 .andExpect(jsonPath("$.data.warningCount").value(15))
-                .andExpect(jsonPath("$.data.unstableCount").value(9))
-                .andExpect(jsonPath("$.data.totalCount").value(124))
+                .andExpect(jsonPath("$.data.severeCount").value(9))
+                .andExpect(jsonPath("$.data.totalCount").value(154))
                 .andDo(print());
     }
 

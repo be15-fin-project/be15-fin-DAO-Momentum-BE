@@ -110,10 +110,8 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
 
         log.info("API 호출 성공 - deleteContact, 삭제 완료 - retentionId={}", contact.getRetentionId());
 
-        return RetentionContactDeleteResponse.builder()
-                .retentionId(contact.getRetentionId())
-                .message("면담 요청이 성공적으로 삭제되었습니다.")
-                .build();
+        return new RetentionContactDeleteResponse(contact.getRetentionId(), "면담 요청이 성공적으로 삭제되었습니다.");
+
     }
 
     @Override

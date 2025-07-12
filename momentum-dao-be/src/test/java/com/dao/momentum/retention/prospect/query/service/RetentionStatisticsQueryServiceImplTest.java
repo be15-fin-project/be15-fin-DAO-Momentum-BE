@@ -89,20 +89,22 @@ class RetentionStatisticsQueryServiceImplTest {
                     .build();
 
             var dto = StabilityRatioSummaryDto.builder()
-                    .stableCount(100L)
+                    .goodCount(100L)
+                    .normalCount(30L)
                     .warningCount(15L)
-                    .unstableCount(9L)
-                    .totalCount(124L)
+                    .severeCount(9L)
+                    .totalCount(154L)
                     .build();
 
             when(mapper.findOverallStabilityRatio(req)).thenReturn(dto);
 
             var result = service.getOverallStabilityDistribution(req);
 
-            assertThat(result.stableCount()).isEqualTo(100);
-            assertThat(result.warningCount()).isEqualTo(15);
-            assertThat(result.unstableCount()).isEqualTo(9);
-            assertThat(result.totalCount()).isEqualTo(124);
+            assertThat(result.goodCount()).isEqualTo(100L);
+            assertThat(result.normalCount()).isEqualTo(30L);
+            assertThat(result.warningCount()).isEqualTo(15L);
+            assertThat(result.severeCount()).isEqualTo(9L);
+            assertThat(result.totalCount()).isEqualTo(154L);
         }
 
         @Test
