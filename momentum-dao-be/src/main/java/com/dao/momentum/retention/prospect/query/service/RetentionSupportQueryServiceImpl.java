@@ -27,15 +27,15 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
     @Override
     @Transactional(readOnly = true)
     public RetentionForecastResponseDto getRetentionForecasts(RetentionForecastRequestDto req) {
-        log.info("API 호출 시작 - getRetentionForecasts, 요청 파라미터: roundNo={}, stabilityType={}, page={}, size={}",
-                req.roundNo(), req.stabilityType(), req.page(), req.size());
+        log.info("API 호출 시작 - getRetentionForecasts, 요청 파라미터: roundId={}, stabilityType={}, page={}, size={}",
+                req.roundId(), req.stabilityType(), req.page(), req.size());
 
-        Integer roundNo = (req.roundNo() != null) ? req.roundNo() : mapper.findLatestRoundNo();
-        log.info("회차 조회 완료 - roundNo={}", roundNo);
+        Integer roundId = (req.roundId() != null) ? req.roundId() : mapper.findLatestRoundNo();
+        log.info("회차 조회 완료 - roundId={}", roundId);
 
         // 근속 전망 조회
-        List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundNo);
-        long total = mapper.countRetentionForecasts(req, roundNo);
+        List<RetentionSupportRaw> rawList = mapper.findRetentionForecasts(req, roundId);
+        long total = mapper.countRetentionForecasts(req, roundId);
 
         if (rawList == null) {
             log.error("근속 전망 조회 실패 - 데이터 없음, 요청 파라미터: {}", req);
@@ -64,7 +64,7 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
                 .totalPage((int) Math.ceil((double) total / req.size()))
                 .build();
 
-        log.info("근속 전망 결과 조회 완료 - roundNo={}, filteredCount={}", roundNo, filtered.size());
+        log.info("근속 전망 결과 조회 완료 - roundId={}, filteredCount={}", roundId, filtered.size());
 
         return RetentionForecastResponseDto.builder()
                 .items(filtered)

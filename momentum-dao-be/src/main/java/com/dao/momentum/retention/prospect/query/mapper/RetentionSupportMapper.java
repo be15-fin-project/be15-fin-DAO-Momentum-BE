@@ -13,12 +13,12 @@ public interface RetentionSupportMapper {
 
     List<RetentionSupportRaw> findRetentionForecasts(
             @Param("req") RetentionForecastRequestDto req,
-            @Param("roundNo") Integer roundNo
+            @Param("roundId") Integer roundId
     );
 
     long countRetentionForecasts(
             @Param("req") RetentionForecastRequestDto req,
-            @Param("roundNo") Integer roundNo
+            @Param("roundId") Integer roundId
     );
 
     Integer findLatestRoundNo();

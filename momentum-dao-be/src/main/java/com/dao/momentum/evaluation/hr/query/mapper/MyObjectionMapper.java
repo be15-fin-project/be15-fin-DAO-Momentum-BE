@@ -32,4 +32,7 @@ public interface MyObjectionMapper {
     WeightInfo findWeightInfo(@Param("resultId") Long resultId);
 
     List<FactorScoreDto> findFactorScores(@Param("resultId") Long resultId);
+
+    List<Integer> findAllScores(Long resultId);
+
 }

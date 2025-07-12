@@ -7,8 +7,8 @@ import lombok.Builder;
 @Builder
 @Schema(description = "근속 전망 조회 요청 DTO")
 public record RetentionForecastRequestDto(
-        @Schema(description = "조회할 회차 번호 (미입력 시 최신 회차로 처리)", example = "3")
-        Integer roundNo,
+        @Schema(description = "조회할 회차 Id (미입력 시 최신 회차로 처리)", example = "3")
+        Integer roundId,
 
         @Schema(description = "사번", example = "20240001")
         String empNo,
