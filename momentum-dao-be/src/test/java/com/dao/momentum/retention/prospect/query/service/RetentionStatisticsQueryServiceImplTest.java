@@ -8,6 +8,7 @@ import com.dao.momentum.retention.prospect.query.dto.request.RetentionTimeseries
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionAverageScoreDto;
 import com.dao.momentum.retention.prospect.query.dto.response.RetentionMonthlyStatDto;
 import com.dao.momentum.retention.prospect.query.dto.response.StabilityRatioByDeptDto;
+import com.dao.momentum.retention.prospect.query.dto.response.StabilityRatioSummaryDto;
 import com.dao.momentum.retention.prospect.query.mapper.RetentionStatisticsMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -46,7 +47,7 @@ class RetentionStatisticsQueryServiceImplTest {
 
             var dto = RetentionAverageScoreDto.builder()
                     .averageScore(75.5)
-                    .totalEmpCount(20)
+                    .totalEmpCount(20L)
                     .stabilitySafeRatio(40.0)
                     .stabilityRiskRatio(10.0)
                     .build();
@@ -87,24 +88,21 @@ class RetentionStatisticsQueryServiceImplTest {
                     .roundId(3)
                     .build();
 
-            var dto = StabilityRatioByDeptDto.builder()
-                    .deptName(null)
-                    .positionName(null)
-                    .empCount(100)
-                    .progress20(10)
-                    .progress40(20)
-                    .progress60(30)
-                    .progress80(25)
-                    .progress100(15)
+            var dto = StabilityRatioSummaryDto.builder()
+                    .stableCount(100L)
+                    .warningCount(15L)
+                    .unstableCount(9L)
+                    .totalCount(124L)
                     .build();
 
             when(mapper.findOverallStabilityRatio(req)).thenReturn(dto);
 
             var result = service.getOverallStabilityDistribution(req);
 
-            assertThat(result.empCount()).isEqualTo(100);
-            assertThat(result.progress40()).isEqualTo(20);
-            assertThat(result.progress80()).isEqualTo(25);
+            assertThat(result.stableCount()).isEqualTo(100);
+            assertThat(result.warningCount()).isEqualTo(15);
+            assertThat(result.unstableCount()).isEqualTo(9);
+            assertThat(result.totalCount()).isEqualTo(124);
         }
 
         @Test
@@ -126,7 +124,7 @@ class RetentionStatisticsQueryServiceImplTest {
         void getOverallStabilityDistribution_missingRoundId() {
             var req = RetentionInsightRequestDto.builder()
                     .roundId(null)
-                    .build(); // roundId = null
+                    .build();
 
             assertThatThrownBy(() -> service.getOverallStabilityDistribution(req))
                     .isInstanceOf(ProspectException.class)
@@ -146,7 +144,9 @@ class RetentionStatisticsQueryServiceImplTest {
                     .build();
 
             var dto = StabilityRatioByDeptDto.builder()
+                    .deptId(1)
                     .deptName("인사팀")
+                    .positionId(2)
                     .positionName("대리")
                     .empCount(12)
                     .progress20(2)
@@ -156,13 +156,12 @@ class RetentionStatisticsQueryServiceImplTest {
                     .progress100(1)
                     .build();
 
-            when(mapper.findStabilityRatioByDept(req)).thenReturn(List.of(dto));
+            when(mapper.findProgressDistributionByDept(req)).thenReturn(List.of(dto));
 
             var result = service.getStabilityDistributionByDept(req);
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).deptName()).isEqualTo("인사팀");
-            assertThat(result.get(0).positionName()).isEqualTo("대리");
             assertThat(result.get(0).progress60()).isEqualTo(4);
         }
 
@@ -173,7 +172,7 @@ class RetentionStatisticsQueryServiceImplTest {
                     .roundId(3)
                     .build();
 
-            when(mapper.findStabilityRatioByDept(req)).thenReturn(null); // ← service 내부 로직은 null만 예외 처리함
+            when(mapper.findProgressDistributionByDept(req)).thenReturn(null);
 
             assertThatThrownBy(() -> service.getStabilityDistributionByDept(req))
                     .isInstanceOf(ProspectException.class)
@@ -193,6 +192,7 @@ class RetentionStatisticsQueryServiceImplTest {
                     .build();
 
             var stat1 = RetentionMonthlyStatDto.builder()
+                    .year(2025)
                     .month(1)
                     .averageScore(74.1)
                     .stdDeviation(9.1)
@@ -204,7 +204,25 @@ class RetentionStatisticsQueryServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).averageScore()).isEqualTo(74.1);
+            assertThat(result.get(0).month()).isEqualTo(1);
         }
 
+        @Test
+        @DisplayName("연도 누락 시 현재 연도 자동 보정")
+        void getMonthlyRetentionStats_defaultYear() {
+            var stat1 = RetentionMonthlyStatDto.builder()
+                    .year(2025)
+                    .month(6)
+                    .averageScore(80.0)
+                    .stdDeviation(8.2)
+                    .build();
+
+            when(mapper.findMonthlyRetentionStats(any())).thenReturn(List.of(stat1));
+
+            var result = service.getMonthlyRetentionStats(RetentionTimeseriesRequestDto.builder().year(null).build());
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).averageScore()).isEqualTo(80.0);
+        }
     }
 }
