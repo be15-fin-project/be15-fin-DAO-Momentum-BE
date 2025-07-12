@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.YearMonth;
 
 import java.util.List;
 
@@ -44,6 +46,16 @@ public class RetentionForecastFacade {
         if (exists) {
             log.error("회차 이미 존재 - year={}, month={}", request.year(), request.month());
             throw new ProspectException(ErrorCode.RETENTION_ROUND_ALREADY_EXIST);
+        }
+
+    // 말일이 지났는지 체크
+        LocalDate today = LocalDate.now();
+        YearMonth targetYm = YearMonth.of(request.year(), request.month());
+        LocalDate lastDayOfMonth = targetYm.atEndOfMonth();
+
+        if (today.isBefore(lastDayOfMonth)) {
+            log.error("해당 월이 끝나지 않아 회차 생성 불가 - today={}, targetLastDay={}", today, lastDayOfMonth);
+            throw new ProspectException(ErrorCode.RETENTION_ROUND_NOT_READY); // 필요시 새로운 에러코드 정의
         }
 
         // 회차 번호 계산

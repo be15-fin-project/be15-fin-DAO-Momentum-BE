@@ -6,16 +6,16 @@ import lombok.Builder;
 @Builder
 @Schema(description = "월별 근속 지수 통계 DTO")
 public record RetentionMonthlyStatDto(
-        @Schema(description = "년도", example = "2025")
+
+        @Schema(description = "연도", example = "2025")
         int year,
 
-        @Schema(description = "월", example = "3")
+        @Schema(description = "월", example = "6")
         int month,
 
-        @Schema(description = "평균 근속 지수", example = "75.2")
+        @Schema(description = "해당 월 평균 근속 지수", example = "76.4")
         double averageScore,
 
-        @Schema(description = "표준편차", example = "10.4")
+        @Schema(description = "표준 편차", example = "8.32")
         double stdDeviation
-) {
-}
+) {}

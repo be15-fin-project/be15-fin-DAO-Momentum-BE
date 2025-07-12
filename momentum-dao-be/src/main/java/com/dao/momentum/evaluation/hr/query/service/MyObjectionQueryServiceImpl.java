@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,36 +39,60 @@ public class MyObjectionQueryServiceImpl implements MyObjectionQueryService {
             throw new HrException(ErrorCode.MY_OBJECTIONS_NOT_FOUND);
         }
 
-        // 3) 목록 처리 및 DTO 변환
-        List<MyObjectionItemDto> content = rawList.stream()
-                .map(raw -> MyObjectionItemDto.builder()
-                        .objectionId(raw.objectionId())
-                        .resultId(raw.resultId())
-                        .statusId(raw.statusId())
-                        .roundNo(raw.roundNo())
-                        .statusType(raw.statusType())
-                        .createdAt(raw.createdAt())
-                        .overallGrade(toGrade(raw.overallScore()))
-                        .build())
+        // 3) resultId 리스트 추출
+        List<Long> resultIds = rawList.stream()
+                .map(MyObjectionRaw::resultId)
                 .collect(Collectors.toList());
+
+        // 4) 각 resultId에 대한 rateInfo, 전체 점수 리스트 조회
+        // -> mapper 단에서 score + rateInfo + 전체 리스트까지 가져오는 구조로 통합하거나, 필요시 개별 조회
+        List<MyObjectionItemDto> content = rawList.stream()
+                .map(raw -> {
+                    RateInfo rateInfo = mapper.findRateInfo(raw.resultId());
+                    List<Integer> allScores = mapper.findAllScores(raw.resultId());
+
+                    String grade = calculateRelativeGrade(allScores, raw.overallScore(), rateInfo);
+
+                    return MyObjectionItemDto.builder()
+                            .objectionId(raw.objectionId())
+                            .resultId(raw.resultId())
+                            .statusId(raw.statusId())
+                            .roundNo(raw.roundNo())
+                            .statusType(raw.statusType())
+                            .createdAt(raw.createdAt())
+                            .overallGrade(grade)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
         log.info("이의 제기 목록 처리 완료 - 목록 항목 수={}", content.size());
 
-        // 4) 페이지네이션 정보 생성
+        // 5) 페이지네이션 생성
         Pagination pagination = buildPagination(req.page(), total);
-
-        log.info("페이지네이션 생성 완료 - currentPage={}, totalItems={}", pagination.getCurrentPage(), pagination.getTotalItems());
 
         return new MyObjectionListResultDto(content, pagination);
     }
 
     // 점수를 등급으로 변환하는 메서드
-    private String toGrade(int score) {
-        if (score >= 95) return "S";
-        if (score >= 85) return "A";
-        if (score >= 75) return "B";
-        if (score >= 60) return "C";
+    private String calculateRelativeGrade(List<Integer> allScores, int myScore, RateInfo rateInfo) {
+        if (allScores == null || allScores.isEmpty()) return "-";
+
+        // 점수 높은 순으로 정렬
+        List<Integer> sorted = allScores.stream()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+
+        int rank = sorted.indexOf(myScore) + 1;
+        int total = sorted.size();
+        double percentile = ((double) rank / total) * 100;
+
+        if (percentile <= rateInfo.rateS()) return "S";
+        if (percentile <= rateInfo.rateS() + rateInfo.rateA()) return "A";
+        if (percentile <= rateInfo.rateS() + rateInfo.rateA() + rateInfo.rateB()) return "B";
+        if (percentile <= rateInfo.rateS() + rateInfo.rateA() + rateInfo.rateB() + rateInfo.rateC()) return "C";
         return "D";
     }
+
 
     // 이의 제기 상세 내역을 조회하는 메서드
     @Override

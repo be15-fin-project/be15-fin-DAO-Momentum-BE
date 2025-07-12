@@ -1,9 +1,11 @@
 package com.dao.momentum.retention.prospect.command.application.calculator;
 
+import com.dao.momentum.evaluation.kpi.query.service.KpiRetentionService;
 import com.dao.momentum.organization.contract.command.application.service.ContractRetentionService;
 import com.dao.momentum.organization.employee.command.application.service.AppointRetentionService;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
+import com.dao.momentum.evaluation.eval.query.service.EvaluationScoreService;
 import com.dao.momentum.work.command.application.service.WorkRetentionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.time.LocalDate;
 
 @Slf4j
@@ -18,9 +21,11 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
 
+    private final EvaluationScoreService evaluationScoreService;
     private final ContractRetentionService contractRetentionService;
     private final AppointRetentionService appointRetentionService;
     private final WorkRetentionService workRetentionService;
+    private final KpiRetentionService kpiRetentionService;
 
     /**
      * 각 항목별 점수와 전체 점수를 계산하는 로직
@@ -64,10 +69,14 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         int jobScore = 20;
 
         // 1. 인사 평가
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(4, emp.getEmpId(), 10.0, year, month);
 
         // 2. 평가 변화
+        jobScore += evaluationScoreService.getHrGradeDropPenalty(emp.getEmpId(), year, month);
 
         // 3. 평가
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(5, emp.getEmpId(), 4.0, year, month);
+        jobScore += evaluationScoreService.getAdjustedScoreForForm(11, emp.getEmpId(), 4.0, year, month);
 
         return clampScore(jobScore, 20);
     }
@@ -83,6 +92,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         compScore += contractRetentionService.calculateScoreBySalaryIncrements(empId, targetDate);
 
         // 2. 복리후생 (최대 -7점)
+        compScore += evaluationScoreService.getAdjustedScoreForForm(8, emp.getEmpId(), 7.0, year, month);
 
         return clampScore(compScore, 20);
     }
@@ -94,8 +104,10 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
         // 1. 다면 평가
+        relationScore += evaluationScoreService.getAdjustedScoreForForms(List.of(1, 2, 3), emp.getEmpId(), 8.0, year, month);
 
         // 2. 조직 문화 평가
+        relationScore += evaluationScoreService.getAdjustedScoreForForm(6, emp.getEmpId(), 5.0, year, month);
 
         // 3. 발령 이력 (최대 -2점)
         relationScore += appointRetentionService.calculateScoreByDeptTransfer(empId, targetDate);
@@ -111,9 +123,11 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 1. 승진 정체 (최대 -7점)
         growthScore += appointRetentionService.calculateScoreByPromotion(emp.getEmpId(), targetDate);
 
-        // 2. KPI 미달성
+        // 2. KPI 감점
+        growthScore += kpiRetentionService.calculateTotalKpiPenalty(emp.getEmpId(), year, month);
 
         // 3. 조직 공정성 평가
+        growthScore += evaluationScoreService.getAdjustedScoreForForm(7, emp.getEmpId(), 4.0, year, month);
 
         return clampScore(growthScore, 15);
     }
@@ -143,6 +157,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 2. 재택 근무
 
         // 3. 자가 진단
+        wlbScore += evaluationScoreService.getAdjustedScoreForForm(12, emp.getEmpId(), 3.0, year, month);
+        wlbScore += evaluationScoreService.getAdjustedScoreForForm(10, emp.getEmpId(), 2.0, year, month);
 
         return clampScore(wlbScore, 15);
     }
@@ -177,19 +193,32 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
             int jobLevel, int compLevel, int relationLevel, int growthLevel,
             int tenureLevel, int wlbLevel, BigDecimal ageCoefficient
     ) {
-        int totalScore = jobLevel + compLevel + relationLevel + growthLevel + tenureLevel + wlbLevel;
+        // 각 항목의 최대 점수
+        final int MAX_JOB = 20, MAX_COMP = 20, MAX_REL = 15;
+        final int MAX_GROW = 15, MAX_TENURE = 15, MAX_WLB = 15;
 
-        // 차감해야 하는 점수 : totalScore * 나이 보정 계수
-        BigDecimal deduction = BigDecimal.valueOf(totalScore)
+        // 감점 합산
+        int totalPenalty =
+                (MAX_JOB - jobLevel) +
+                        (MAX_COMP - compLevel) +
+                        (MAX_REL - relationLevel) +
+                        (MAX_GROW - growthLevel) +
+                        (MAX_TENURE - tenureLevel) +
+                        (MAX_WLB - wlbLevel);
+
+        // 감점 × 보정 계수
+        BigDecimal deduction = BigDecimal.valueOf(totalPenalty)
                 .multiply(ageCoefficient)
-                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+                .setScale(1, RoundingMode.HALF_UP);
 
+        // 100점 만점에서 감점 차감
         return BigDecimal.valueOf(100)
-                .subtract(deduction) // 100점에서 점수 차감하기
-                .max(BigDecimal.ZERO) // 최소 0점 보장
-                .min(BigDecimal.valueOf(100)) // 최대 100점 제한
-                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+                .subtract(deduction)
+                .max(BigDecimal.ZERO)
+                .min(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
     }
+
 
 }
 
