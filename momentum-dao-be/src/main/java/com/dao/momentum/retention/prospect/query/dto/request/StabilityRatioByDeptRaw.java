@@ -6,8 +6,14 @@ import lombok.Builder;
 @Builder
 @Schema(description = "부서별 안정성 비율 원시 DTO")
 public record StabilityRatioByDeptRaw(
+        @Schema(description = "부서 ID", example = "기획팀")
+        Long deptId,
+
         @Schema(description = "부서명", example = "기획팀")
         String deptName,
+
+        @Schema(description = "직위 Id", example = "대리")
+        Long positionId,
 
         @Schema(description = "직위명", example = "대리")
         String positionName,

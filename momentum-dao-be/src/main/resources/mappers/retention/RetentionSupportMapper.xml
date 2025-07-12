@@ -38,7 +38,7 @@
         JOIN department d ON e.dept_id = d.dept_id
         JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
-        WHERE rr.round_no = #{roundNo}
+        WHERE rr.round_Id = #{roundId}
             <if test="req.empNo != null">
                 AND e.emp_no = #{req.empNo}
             </if>
@@ -50,9 +50,10 @@
             </if>
             <if test="req.stabilityType != null">
                 AND CASE
-                    WHEN rs.retention_score >= 80 THEN 'STABLE'
-                    WHEN rs.retention_score >= 60 THEN 'WARNING'
-                    ELSE 'UNSTABLE'
+                    WHEN rs.retention_score >= 80 THEN 'GOOD'
+                    WHEN rs.retention_score >= 60 THEN 'NORMAL'
+                    WHEN rs.retention_score >= 40 THEN 'WARNING'
+                    ELSE 'SEVERE'
                 END = #{req.stabilityType}
             </if>
 
@@ -80,7 +81,7 @@
         JOIN department d ON e.dept_id = d.dept_id
         JOIN position p ON e.position_id = p.position_id
         JOIN retention_round rr ON rs.round_id = rr.round_id
-        WHERE rr.round_no = #{roundNo}
+        WHERE rr.round_Id = #{roundId}
             <if test="req.empNo != null">
                 AND e.emp_no = #{req.empNo}
             </if>
@@ -92,9 +93,10 @@
             </if>
             <if test="req.stabilityType != null">
                 AND CASE
-                    WHEN rs.retention_score >= 80 THEN 'STABLE'
-                    WHEN rs.retention_score >= 60 THEN 'WARNING'
-                    ELSE 'UNSTABLE'
+                    WHEN rs.retention_score >= 80 THEN 'GOOD'
+                    WHEN rs.retention_score >= 60 THEN 'NORMAL'
+                    WHEN rs.retention_score >= 40 THEN 'WARNING'
+                ELSE 'SEVERE'
                 END = #{req.stabilityType}
             </if>
 
@@ -205,9 +207,10 @@
 
             -- 안정성 유형
             CASE
-                WHEN rs.retention_score &gt;= 80 THEN 'STABLE'
-                WHEN rs.retention_score &gt;= 60 THEN 'WARNING'
-                ELSE 'UNSTABLE'
+                WHEN rs.retention_score >= 80 THEN 'GOOD'
+                WHEN rs.retention_score >= 60 THEN 'NORMAL'
+                WHEN rs.retention_score >= 40 THEN 'WARNING'
+                ELSE 'SEVERE'
             END AS stabilityType
 
         FROM retention_support rs

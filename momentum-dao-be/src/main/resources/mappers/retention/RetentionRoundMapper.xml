@@ -40,7 +40,7 @@
             </if>
         </where>
         GROUP BY r.round_id, r.round_no, r.year, r.month
-        ORDER BY r.round_no DESC
+        ORDER BY r.year DESC, r.month DESC
         LIMIT #{req.size} OFFSET #{req.getOffset}
     </select>
 

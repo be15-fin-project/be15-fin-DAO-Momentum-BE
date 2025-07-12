@@ -4,18 +4,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 @Builder
-@Schema(description = "근속 전망 평균 점수 및 안정성 요약 DTO")
+@Schema(description = "평균 근속 지수 및 전체 통계 DTO")
 public record RetentionAverageScoreDto(
-        @Schema(description = "평균 점수", example = "72.6")
+
+        @Schema(description = "평균 근속 지수", example = "78.5")
         Double averageScore,
 
-        @Schema(description = "총 사원 수", example = "123")
-        Integer totalEmpCount,
+        @Schema(description = "전체 사원 수", example = "124")
+        Long totalEmpCount,
 
-        @Schema(description = "안정형 비율 (%)", example = "46.7")
+        @Schema(description = "안정군 비율 (%)", example = "82.1")
         Double stabilitySafeRatio,
 
-        @Schema(description = "위험군 비율 (%)", example = "15.2")
+        @Schema(description = "위험군 비율 (%)", example = "17.9")
         Double stabilityRiskRatio
-) {
-}
+) {}

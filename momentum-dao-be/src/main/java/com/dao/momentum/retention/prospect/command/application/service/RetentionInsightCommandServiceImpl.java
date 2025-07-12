@@ -46,9 +46,10 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
 
         // 모든 점수 정렬 및 백분위수 임계값 계산
         List<Integer> allScores = supports.stream()
-                .map(RetentionSupport::getRetentionScore)
+                .map(s -> s.getRetentionScore().intValue())
                 .sorted(Comparator.reverseOrder())
                 .toList();
+
 
         int[] thresholds = getPercentileThresholds(allScores);
 
@@ -72,7 +73,10 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
             Integer positionId = Integer.valueOf(split[1]);
 
             int empCount = list.size();
-            int avg = (int) list.stream().mapToInt(RetentionSupport::getRetentionScore).average().orElse(0);
+            int avg = (int) list.stream()
+                    .mapToInt(s -> s.getRetentionScore().intValue())
+                    .average()
+                    .orElse(0);
 
             int[] progressCounts = distributeScoresByThreshold(list, thresholds);
 
@@ -113,7 +117,7 @@ public class RetentionInsightCommandServiceImpl implements RetentionInsightComma
     private int[] distributeScoresByThreshold(List<RetentionSupport> group, int[] thresholds) {
         int[] counts = new int[5];
         for (RetentionSupport support : group) {
-            int score = support.getRetentionScore();
+            int score = support.getRetentionScore().intValue();
             if (score >= thresholds[0]) counts[4]++;
             else if (score >= thresholds[1]) counts[3]++;
             else if (score >= thresholds[2]) counts[2]++;

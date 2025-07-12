@@ -38,14 +38,14 @@ public class RetentionSupport {
     @Column(name = "growth_level", nullable = false)
     private Integer growthLevel;
 
-    @Column(name = "tenure_level", nullable = false, precision = 4, scale = 2)
-    private BigDecimal tenureLevel;
+    @Column(name = "tenure_level", nullable = false)
+    private Integer tenureLevel;
 
     @Column(name = "wlb_level", nullable = false)
     private Integer wlbLevel;
 
-    @Column(name = "retention_score", nullable = false)
-    private Integer retentionScore;
+    @Column(name = "retention_score", nullable = false, precision = 4, scale = 2)
+    private BigDecimal retentionScore;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
@@ -59,9 +59,9 @@ public class RetentionSupport {
                 dto.compLevel(),
                 dto.relationLevel(),
                 dto.growthLevel(),
-                BigDecimal.valueOf(dto.tenureLevel()),
+                dto.tenureLevel(),
                 dto.wlbLevel(),
-                dto.retentionScore().intValue(),
+                dto.retentionScore(),
                 LocalDateTime.now()
         );
     }

@@ -5,7 +5,7 @@ import lombok.Builder;
 
 @Builder
 @Schema(description = "근속 안정성 유형 분포 DTO")
-public record StabilityDistributionByDeptDto(
+public record StabilityRatioByDeptDto(
         @Schema(description = "부서 ID", example = "인사팀")
         Integer deptId,
 
