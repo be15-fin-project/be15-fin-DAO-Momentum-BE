@@ -25,7 +25,7 @@ public interface ApproveQueryService {
     );
 
     /* 결재 상세 조회 메서드 */
-    ApproveDetailResponse getApproveDetail(Long approveId);
+    ApproveDetailResponse getApproveDetail(Long approveId, Long empId);
 
 
     /* 사원의 팀장 조회 메서드 */

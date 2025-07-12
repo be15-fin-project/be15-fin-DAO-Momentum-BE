@@ -3,7 +3,6 @@ package com.dao.momentum.approve.query.service;
 import com.dao.momentum.approve.command.domain.aggregate.ApproveType;
 import com.dao.momentum.approve.exception.NotExistTabException;
 import com.dao.momentum.approve.query.dto.*;
-import com.dao.momentum.approve.query.dto.approveTypeDTO.ApproveCancelDTO;
 import com.dao.momentum.approve.query.dto.approveTypeDTO.ApproveProposalDTO;
 import com.dao.momentum.approve.query.dto.request.ApproveListRequest;
 import com.dao.momentum.approve.query.dto.request.DraftApproveListRequest;
@@ -16,6 +15,8 @@ import com.dao.momentum.approve.query.mapper.ApproveMapper;
 import com.dao.momentum.approve.query.mapper.ReceivedApproveMapper;
 import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.organization.employee.query.dto.response.EmployeeRoleDTO;
+import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,9 @@ class ApproveQueryServiceImplTest {
 
     @Mock
     private ApproveMapper approveMapper;
+
+    @Mock
+    private UserRoleMapper userRoleMapper;
 
     @InjectMocks
     private ApproveQueryServiceImpl approveService;
@@ -161,7 +165,14 @@ class ApproveQueryServiceImplTest {
     @Test
     @DisplayName("결재 상세 조회 테스트")
     void testGetNormalApproveDetail() {
+        Long empId = 100L;
         Long approveId = 1L;
+
+        List<EmployeeRoleDTO> roles = List.of(
+                EmployeeRoleDTO.builder()
+                        .userRoleId(1)
+                        .build()
+        );
 
         ApproveDTO approveDTO = ApproveDTO.builder()
                 .approveId(1L)
@@ -195,13 +206,14 @@ class ApproveQueryServiceImplTest {
                 .content("결재 더미 데이터")
                 .build();
 
-        when(approveDetailMapper.getApproveDTO(approveId)).thenReturn(Optional.of(approveDTO));
+        when(userRoleMapper.getEmployeeRoles(empId)).thenReturn(roles);
+        when(approveDetailMapper.getApproveDTO(approveId, empId, true)).thenReturn(Optional.of(approveDTO));
         when(approveDetailMapper.getApproveLines(approveId)).thenReturn(lineList);
         when(approveDetailMapper.getApproveLineList(any())).thenReturn(lineListDetail);
         when(approveDetailMapper.getApproveRefs(approveId)).thenReturn(refList);
         when(approveDetailMapper.getProposalDetail(approveId)).thenReturn(Optional.of(formDetail));
 
-        ApproveDetailResponse result = approveService.getApproveDetail(approveId);
+        ApproveDetailResponse result = approveService.getApproveDetail(approveId, empId);
 
         assertNotNull(result);
         assertEquals(approveDTO, result.getApproveDTO());

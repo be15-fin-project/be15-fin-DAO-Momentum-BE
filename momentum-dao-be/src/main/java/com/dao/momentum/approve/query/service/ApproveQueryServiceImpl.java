@@ -18,6 +18,8 @@ import com.dao.momentum.approve.query.mapper.DraftApproveMapper;
 import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.organization.employee.query.dto.response.EmployeeRoleDTO;
+import com.dao.momentum.organization.employee.query.mapper.UserRoleMapper;
 import com.dao.momentum.work.command.application.validator.WorkCreateValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +42,7 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     private final ApproveDetailMapper approveDetailMapper;
     private final ApproveMapper approveMapper;
     private final WorkCreateValidator workCreateValidator;
+    private final UserRoleMapper userRoleMapper;
 
     /* 받은 결재 목록을 조회하는 메서드 */
     @Transactional(readOnly = true)
@@ -127,13 +128,18 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     /* 결재 상세 목록 조회 하기 */
     @Transactional(readOnly = true)
     @Override
-    public ApproveDetailResponse getApproveDetail(Long approveId) {
-        ApproveDTO approveDTO = approveDetailMapper.getApproveDTO(approveId)
+    public ApproveDetailResponse getApproveDetail(Long approveId, Long empId) {
+        List<EmployeeRoleDTO> employeeRoleDTO = userRoleMapper.getEmployeeRoles(empId);
+
+        boolean isAdmin = employeeRoleDTO.stream()
+                .anyMatch(role -> role.getUserRoleId() == 1);
+
+        ApproveDTO approveDTO = approveDetailMapper.getApproveDTO(approveId, empId, isAdmin)
                 .orElseThrow(() -> new NotFoundApproveException(ErrorCode.NOT_EXIST_APPROVE));
 
         // 취소 결재인 경우
         if (approveDTO.getApproveType() == ApproveType.CANCEL) {
-            return getCancelApproveDetail(approveDTO);
+            return getCancelApproveDetail(approveDTO, empId);
         }
 
         // 일반 결재인 경우 (취소 제외)
@@ -147,14 +153,19 @@ public class ApproveQueryServiceImpl implements ApproveQueryService {
     }
 
     /* 취소 결재인 경우 */
-    private ApproveDetailResponse getCancelApproveDetail(ApproveDTO cancelDTO) {
+    private ApproveDetailResponse getCancelApproveDetail(ApproveDTO cancelDTO, Long empId) {
         // 취소 결재 ID
         Long cancelApproveId = cancelDTO.getApproveId();
         // 해당 결재의 부모 ID
         Long parentId = cancelDTO.getParentApproveId();
 
+        List<EmployeeRoleDTO> employeeRoleDTO = userRoleMapper.getEmployeeRoles(empId);
+
+        boolean isAdmin = employeeRoleDTO.stream()
+                .anyMatch(role -> role.getUserRoleId() == 1);
+
         // 1. 부모 결재 DTO 조회 하기
-        ApproveDTO parentDTO = approveDetailMapper.getApproveDTO(parentId)
+        ApproveDTO parentDTO = approveDetailMapper.getApproveDTO(parentId, empId, isAdmin)
                 .orElseThrow(() -> new NotFoundApproveException(ErrorCode.NOT_EXIST_APPROVE));
 
         // 2. 결재 첨부 파일

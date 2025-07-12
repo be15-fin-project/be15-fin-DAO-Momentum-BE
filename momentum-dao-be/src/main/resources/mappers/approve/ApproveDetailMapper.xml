@@ -16,12 +16,37 @@
             a.create_at,
             a.complete_at,
             e.name AS employee_name,
-            d.name AS department_name
+            d.name AS department_name,
+
+            CASE
+                WHEN a.emp_id = #{empId} THEN 'WRITER'
+                WHEN ali.emp_id IS NOT NULL THEN 'APPROVAL'
+                WHEN ar.emp_id IS NOT NULL THEN 'REFERENCE'
+                WHEN #{isAdmin} = TRUE THEN 'MASTER'
+            ELSE NULL
+            END AS received_type
+
         FROM approve a
         JOIN employee e ON a.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
         JOIN status s ON a.status_id = s.status_id
+
+        LEFT JOIN approve_line al ON al.approve_id = a.approve_id
+        LEFT JOIN approve_line_list ali
+        ON ali.approve_line_id = al.approve_line_id
+        AND ali.emp_id = #{empId}
+
+        LEFT JOIN approve_ref ar
+        ON ar.approve_id = a.approve_id
+        AND ar.emp_id = #{empId}
+
         WHERE a.approve_id = #{approveId}
+        AND (
+            a.emp_id = #{empId}
+            OR ali.emp_id IS NOT NULL
+            OR ar.emp_id IS NOT NULL
+            OR #{isAdmin} = TRUE
+        )
     </select>
 
     <!-- 결재 내역 파일 조회 -->
