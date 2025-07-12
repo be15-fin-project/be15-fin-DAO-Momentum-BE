@@ -15,16 +15,23 @@
             a.create_at,
             a.complete_at,
             e.name AS employee_name,
-            d.name AS department_name
+            d.name AS department_name,
+            CASE
+            WHEN ali.emp_id IS NOT NULL THEN 'APPROVAL'
+            WHEN ar.emp_id IS NOT NULL THEN 'REFERENCE'
+            ELSE NULL
+            END AS received_type
+
         FROM approve a
         LEFT JOIN approve aa ON a.parent_approve_id = aa.approve_id
         JOIN employee e ON a.emp_id = e.emp_id
         JOIN department d ON e.dept_id = d.dept_id
         JOIN status s ON a.status_id = s.status_id
-        JOIN approve_line al ON al.approve_id = a.approve_id
-        JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id
+        LEFT JOIN approve_line al ON al.approve_id = a.approve_id
+        LEFT JOIN approve_line_list ali ON al.approve_line_id = ali.approve_line_id AND ali.emp_id = #{empId}
+        LEFT JOIN approve_ref ar ON a.approve_id = ar.approve_id AND ar.emp_id = #{empId}
 
-        WHERE ali.emp_id = #{empId}
+        WHERE (ali.emp_id IS NOT NULL OR ar.emp_id IS NOT NULL)
 
         <!-- 탭 조건 -->
         <if test="req.tab != 'ALL'">
