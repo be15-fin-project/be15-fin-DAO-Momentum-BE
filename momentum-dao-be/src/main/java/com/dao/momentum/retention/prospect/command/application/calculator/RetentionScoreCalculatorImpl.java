@@ -1,5 +1,6 @@
 package com.dao.momentum.retention.prospect.command.application.calculator;
 
+import com.dao.momentum.evaluation.kpi.query.service.KpiRetentionService;
 import com.dao.momentum.organization.contract.command.application.service.ContractRetentionService;
 import com.dao.momentum.organization.employee.command.application.service.AppointRetentionService;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
@@ -24,6 +25,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     private final ContractRetentionService contractRetentionService;
     private final AppointRetentionService appointRetentionService;
     private final WorkRetentionService workRetentionService;
+    private final KpiRetentionService kpiRetentionService;
 
     /**
      * 각 항목별 점수와 전체 점수를 계산하는 로직
@@ -121,7 +123,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 1. 승진 정체 (최대 -7점)
         growthScore += appointRetentionService.calculateScoreByPromotion(emp.getEmpId(), targetDate);
 
-        // 2. KPI 미달성
+        // 2. KPI 감점
+        growthScore += kpiRetentionService.calculateTotalKpiPenalty(emp.getEmpId(), year, month);
 
         // 3. 조직 공정성 평가
         growthScore += evaluationScoreService.getAdjustedScoreForForm(7, emp.getEmpId(), 4.0, year, month);

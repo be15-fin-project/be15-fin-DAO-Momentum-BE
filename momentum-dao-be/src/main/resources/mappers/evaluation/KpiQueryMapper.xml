@@ -264,5 +264,29 @@
             </if>
     </select>
 
+    <select id="getKpiPenaltyStats"
+            parameterType="map"
+            resultType="map">
+        SELECT
+            COUNT(CASE WHEN k.created_at BETWEEN #{startDate} AND #{endDate} THEN 1 END) AS startedCount,
+            6 - COUNT(DISTINCT DATE_FORMAT(k.created_at, '%Y-%m')) AS emptyMonths,
+            ROUND(AVG(CASE
+                    WHEN (k.deadline BETWEEN #{startDate} AND #{endDate}
+                    OR k.created_at BETWEEN #{startDate} AND #{endDate})
+                    AND k.status_id = 2 THEN k.kpi_progress
+                    ELSE NULL
+                    END) AS avgProgress
+                ) AS avgProgress,
+            COUNT(CASE
+                WHEN k.deadline BETWEEN #{startDate} AND #{endDate}
+                AND k.deadline &lt; #{now}
+                AND k.kpi_progress &lt; 100
+                AND k.status_id = 2 THEN 1
+                END) AS underAchievedCount
+        FROM kpi k
+        WHERE k.emp_id = #{empId}
+        AND k.is_deleted = 'N'
+    </select>
+
 
 </mapper>

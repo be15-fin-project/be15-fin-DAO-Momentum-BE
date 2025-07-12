@@ -10,7 +10,9 @@ import com.dao.momentum.evaluation.kpi.query.dto.response.KpiDetailResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface KpiQueryMapper {
@@ -33,4 +35,11 @@ public interface KpiQueryMapper {
             @Param("empId") Long empId,
             @Param("request") KpiDashboardRequestDto request
     );
+
+    // 근속 전망을 위한 KPI 추가
+    Map<String, Object> getKpiPenaltyStats(@Param("empId") Long empId,
+                                           @Param("startDate") LocalDate startDate,
+                                           @Param("endDate") LocalDate endDate,
+                                           @Param("now") LocalDate now);
+
 }
