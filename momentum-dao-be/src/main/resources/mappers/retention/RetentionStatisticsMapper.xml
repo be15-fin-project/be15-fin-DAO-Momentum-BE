@@ -33,7 +33,7 @@
             ROUND(
                 SUM(
                     CASE
-                    WHEN rs.retention_score &gt;= 60 THEN 1
+                    WHEN rs.retention_score &gt;= 70 THEN 1
                     ELSE 0 END
                 ) * 100.0 / COUNT(*), 1
             ) AS stabilitySafeRatio,
@@ -41,7 +41,7 @@
             ROUND(
                 SUM(
                     CASE
-                    WHEN rs.retention_score &lt; 60 THEN 1
+                    WHEN rs.retention_score &lt; 50 THEN 1
                     ELSE 0 END
                 ) * 100.0 / COUNT(*), 1
             ) AS stabilityRiskRatio
