@@ -20,10 +20,19 @@
 
             CASE
                 WHEN a.emp_id = #{empId} THEN 'WRITER'
-                WHEN ali.emp_id IS NOT NULL THEN 'APPROVAL'
-                WHEN ar.emp_id IS NOT NULL THEN 'REFERENCE'
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM approve_line al2
+                    JOIN approve_line_list ali2 ON al2.approve_line_id = ali2.approve_line_id
+                    WHERE al2.approve_id = a.approve_id AND ali2.emp_id = #{empId}
+                    ) THEN 'APPROVAL'
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM approve_ref ar2
+                    WHERE ar2.approve_id = a.approve_id AND ar2.emp_id = #{empId}
+                    ) THEN 'REFERENCE'
                 WHEN #{isAdmin} = TRUE THEN 'MASTER'
-            ELSE NULL
+                ELSE NULL
             END AS received_type
 
         FROM approve a
@@ -31,21 +40,21 @@
         JOIN department d ON e.dept_id = d.dept_id
         JOIN status s ON a.status_id = s.status_id
 
-        LEFT JOIN approve_line al ON al.approve_id = a.approve_id
-        LEFT JOIN approve_line_list ali
-        ON ali.approve_line_id = al.approve_line_id
-        AND ali.emp_id = #{empId}
-
-        LEFT JOIN approve_ref ar
-        ON ar.approve_id = a.approve_id
-        AND ar.emp_id = #{empId}
-
         WHERE a.approve_id = #{approveId}
         AND (
             a.emp_id = #{empId}
-            OR ali.emp_id IS NOT NULL
-            OR ar.emp_id IS NOT NULL
-            OR #{isAdmin} = TRUE
+            OR EXISTS (
+                SELECT 1
+                FROM approve_line al2
+                JOIN approve_line_list ali2 ON al2.approve_line_id = ali2.approve_line_id
+                WHERE al2.approve_id = a.approve_id AND ali2.emp_id = #{empId}
+            )
+        OR EXISTS (
+                SELECT 1
+                FROM approve_ref ar2
+                WHERE ar2.approve_id = a.approve_id AND ar2.emp_id = #{empId}
+            )
+        OR #{isAdmin} = TRUE
         )
     </select>
 
