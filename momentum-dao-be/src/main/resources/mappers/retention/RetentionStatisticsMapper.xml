@@ -30,8 +30,21 @@
         SELECT
             ROUND(AVG(rs.retention_score), 2) AS averageScore,
             COUNT(*) AS totalEmpCount,
-            ROUND(SUM(CASE WHEN rs.retention_score &gt;= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS stabilitySafeRatio,
-            ROUND(SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS stabilityRiskRatio
+            ROUND(
+                SUM(
+                    CASE
+                    WHEN rs.retention_score &gt;= 60 THEN 1
+                    ELSE 0 END
+                ) * 100.0 / COUNT(*), 1
+            ) AS stabilitySafeRatio,
+
+            ROUND(
+                SUM(
+                    CASE
+                    WHEN rs.retention_score &lt; 60 THEN 1
+                    ELSE 0 END
+                ) * 100.0 / COUNT(*), 1
+            ) AS stabilityRiskRatio
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
         <where>
@@ -57,10 +70,24 @@
         </if>
 
         SELECT
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS goodCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS normalCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 40 AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END) AS severeCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END
+            ) AS goodCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &gt;= 60
+                AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END
+            ) AS normalCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &gt;= 40
+                AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END
+            ) AS warningCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END
+            ) AS severeCount,
             COUNT(*) AS totalCount
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
@@ -92,10 +119,23 @@
             d.name AS deptName,
             p.position_id AS positionId,
             p.name AS positionName,
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS goodCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS normalCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 40 AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END) AS severeCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END
+            ) AS goodCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &gt;= 60
+                AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END
+            ) AS normalCount,
+            SUM(
+                CASE WHEN rs.retention_score &gt;= 40
+                AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END
+            ) AS warningCount,
+            SUM(
+                CASE
+                WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END
+            ) AS severeCount,
             COUNT(*) AS totalCount
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id

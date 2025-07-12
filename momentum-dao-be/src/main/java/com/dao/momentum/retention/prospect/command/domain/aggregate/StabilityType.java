@@ -35,12 +35,13 @@ public enum StabilityType {
     }
 
     public static StabilityType fromScore(int score) {
-        StabilityType result = SEVERE;
-        for (StabilityType type : values()) {
-            if (score >= type.threshold) {
-                result = type;
+        StabilityType[] types = values();
+        for (int i = types.length - 1; i >= 0; i--) {
+            if (score >= types[i].threshold) {
+                return types[i];
             }
         }
-        return result;
+        return SEVERE;
     }
+
 }
