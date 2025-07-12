@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 
 public interface JpaDepartmentRepository extends DepartmentRepository, JpaRepository<Department, Integer> {
@@ -39,4 +40,8 @@ public interface JpaDepartmentRepository extends DepartmentRepository, JpaReposi
     List<Department> findActiveLeafDepartments();
 
     List<Department> findAllByIsDeleted(IsDeleted isDeleted);
+
+    @Query("SELECT d.parentDeptId FROM Department d WHERE d.deptId = :deptId")
+    Optional<Integer> findParentDeptIdByDeptId(@Param("deptId") Integer deptId);
+
 }

@@ -97,9 +97,8 @@ public class RetentionSupportQueryServiceImpl implements RetentionSupportQuerySe
         return "미흡";
     }
 
+
     private StabilityType convertScoreToStabilityType(int score) {
-        if (score >= 80) return StabilityType.STABLE;
-        if (score >= 60) return StabilityType.WARNING;
-        return StabilityType.UNSTABLE;
+        return StabilityType.fromScore(score);
     }
 }

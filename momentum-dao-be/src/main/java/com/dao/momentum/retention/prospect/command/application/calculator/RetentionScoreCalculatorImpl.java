@@ -193,19 +193,32 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
             int jobLevel, int compLevel, int relationLevel, int growthLevel,
             int tenureLevel, int wlbLevel, BigDecimal ageCoefficient
     ) {
-        int totalScore = jobLevel + compLevel + relationLevel + growthLevel + tenureLevel + wlbLevel;
+        // 각 항목의 최대 점수
+        final int MAX_JOB = 20, MAX_COMP = 20, MAX_REL = 15;
+        final int MAX_GROW = 15, MAX_TENURE = 15, MAX_WLB = 15;
 
-        // 차감해야 하는 점수 : totalScore * 나이 보정 계수
-        BigDecimal deduction = BigDecimal.valueOf(totalScore)
+        // 감점 합산
+        int totalPenalty =
+                (MAX_JOB - jobLevel) +
+                        (MAX_COMP - compLevel) +
+                        (MAX_REL - relationLevel) +
+                        (MAX_GROW - growthLevel) +
+                        (MAX_TENURE - tenureLevel) +
+                        (MAX_WLB - wlbLevel);
+
+        // 감점 × 보정 계수
+        BigDecimal deduction = BigDecimal.valueOf(totalPenalty)
                 .multiply(ageCoefficient)
-                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+                .setScale(1, RoundingMode.HALF_UP);
 
+        // 100점 만점에서 감점 차감
         return BigDecimal.valueOf(100)
-                .subtract(deduction) // 100점에서 점수 차감하기
-                .max(BigDecimal.ZERO) // 최소 0점 보장
-                .min(BigDecimal.valueOf(100)) // 최대 100점 제한
-                .setScale(1, RoundingMode.HALF_UP); // 소수점 한자리까지 반올림
+                .subtract(deduction)
+                .max(BigDecimal.ZERO)
+                .min(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
     }
+
 
 }
 

@@ -48,7 +48,7 @@ class RetentionSupportQueryControllerTest {
                 .deptName("인사팀")
                 .positionName("과장")
                 .retentionGrade("우수")
-                .stabilityType(StabilityType.WARNING)
+                .stabilityType(StabilityType.WARNING)  // label: "주의"
                 .summaryComment("직무:우수, 관계:보통")
                 .roundNo(3)
                 .build();
@@ -79,7 +79,7 @@ class RetentionSupportQueryControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.items", hasSize(1)))
                 .andExpect(jsonPath("$.data.items[0].empName").value("김예진"))
-                .andExpect(jsonPath("$.data.items[0].stabilityType").value("주의형"))
+                .andExpect(jsonPath("$.data.items[0].stabilityType").value("주의"))  // ← 수정됨
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andDo(print());
     }
@@ -97,7 +97,7 @@ class RetentionSupportQueryControllerTest {
                 .deptName("개발팀")
                 .positionName("사원")
                 .retentionGrade("양호")
-                .stabilityType(StabilityType.WARNING)
+                .stabilityType(StabilityType.WARNING)  // label: "주의"
                 .roundNo(2)
                 .build();
 
@@ -109,7 +109,9 @@ class RetentionSupportQueryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.empName").value("박예린"))
-                .andExpect(jsonPath("$.data.stabilityType").value("주의형"))
+                .andExpect(jsonPath("$.data.stabilityType").value("주의"))  // ← 수정됨
                 .andDo(print());
     }
+
+
 }

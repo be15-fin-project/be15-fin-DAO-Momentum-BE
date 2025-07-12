@@ -11,4 +11,7 @@ public interface DeptHeadRepository {
     Integer deleteByDeptId(int deptId);
 
     DeptHead save(DeptHead deptHead);
+
+    Optional<DeptHead> findByEmpId(Long empId);
+
 }
