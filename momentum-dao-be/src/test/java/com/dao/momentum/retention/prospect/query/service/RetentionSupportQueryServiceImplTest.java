@@ -76,7 +76,7 @@ class RetentionSupportQueryServiceImplTest {
                     .page(1)
                     .size(10)
                     .roundNo(3)
-                    .stabilityType(StabilityType.STABLE)
+                    .stabilityType(StabilityType.GOOD)
                     .build();
 
             RetentionSupportRaw raw = RetentionSupportRaw.builder()
@@ -128,7 +128,7 @@ class RetentionSupportQueryServiceImplTest {
             // then
             assertThat(result.items()).hasSize(1);
             assertThat(result.items().get(0).retentionGrade()).isEqualTo("탁월");
-            assertThat(result.items().get(0).stabilityType()).isEqualTo(StabilityType.STABLE);
+            assertThat(result.items().get(0).stabilityType()).isEqualTo(StabilityType.GOOD);
         }
 
         @Test

@@ -57,9 +57,10 @@
         </if>
 
         SELECT
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS goodCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS normalCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 40 AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS warningCount,
+            SUM(CASE WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END) AS severeCount,
             COUNT(*) AS totalCount
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
@@ -91,9 +92,10 @@
             d.name AS deptName,
             p.position_id AS positionId,
             p.name AS positionName,
-            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS stableCount,
-            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS warningCount,
-            SUM(CASE WHEN rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS unstableCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 80 THEN 1 ELSE 0 END) AS goodCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 60 AND rs.retention_score &lt; 80 THEN 1 ELSE 0 END) AS normalCount,
+            SUM(CASE WHEN rs.retention_score &gt;= 40 AND rs.retention_score &lt; 60 THEN 1 ELSE 0 END) AS warningCount,
+            SUM(CASE WHEN rs.retention_score &lt; 40 THEN 1 ELSE 0 END) AS severeCount,
             COUNT(*) AS totalCount
         FROM retention_support rs
         JOIN employee e ON rs.emp_id = e.emp_id
@@ -144,8 +146,8 @@
                 AND i.position_id = #{req.positionId}
             </if>
         </where>
-        GROUP BY i.dept_id, i.position_id
-        ORDER BY d.dept_id, p.position_id
+        GROUP BY i.dept_id
+        ORDER BY d.dept_id
     </select>
 
     <!-- 월별 근속 지수 추이 -->

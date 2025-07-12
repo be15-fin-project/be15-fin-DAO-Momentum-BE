@@ -205,9 +205,10 @@
 
             -- 안정성 유형
             CASE
-                WHEN rs.retention_score &gt;= 80 THEN 'STABLE'
-                WHEN rs.retention_score &gt;= 60 THEN 'WARNING'
-                ELSE 'UNSTABLE'
+                WHEN rs.retention_score >= 80 THEN 'GOOD'
+                WHEN rs.retention_score >= 60 THEN 'NORMAL'
+                WHEN rs.retention_score >= 40 THEN 'WARNING'
+                ELSE 'SEVERE'
             END AS stabilityType
 
         FROM retention_support rs
