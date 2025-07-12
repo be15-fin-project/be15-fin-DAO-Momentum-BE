@@ -39,16 +39,6 @@
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
-        <if test="request.userRole != null">
-            <choose>
-                <when test="request.userRole.name() == 'EMPLOYEE'">
-                    AND ur.user_role_name IS NULL
-                </when>
-                <otherwise>
-                    AND ur.user_role_name = #{request.userRole}
-                </otherwise>
-            </choose>
-        </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}
         </if>
@@ -56,6 +46,16 @@
             AND emp.join_date &lt;= #{request.searchEndDate}
         </if>
         GROUP BY emp.emp_id
+        <if test="request.userRole != null">
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    HAVING userRolesInString IS NULL
+                </when>
+                <otherwise>
+                    HAVING FIND_IN_SET(#{request.userRole}, userRolesInString)
+                </otherwise>
+            </choose>
+        </if>
         <choose>
             <when test="request.sortBy != null and request.sortBy.name() == 'POSITION'">
                 ORDER BY -pos.level
@@ -74,6 +74,8 @@
     </select>
 
     <select id="countEmployees" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM (
         WITH RECURSIVE dept_tree AS (
         SELECT dept_id
         FROM department
@@ -86,8 +88,8 @@
         WHERE d.is_deleted = 'N'
         )
 
-        SELECT
-            COUNT(DISTINCT emp.emp_id)
+        SELECT emp.emp_id,
+        GROUP_CONCAT(ur.user_role_name) AS userRolesInString
         FROM employee AS emp
         LEFT JOIN department AS dept ON emp.dept_id = dept.dept_id
         JOIN position AS pos ON emp.position_id = pos.position_id
@@ -100,22 +102,24 @@
         <if test="request.positionId != null">
             AND pos.position_id = #{request.positionId}
         </if>
-        <if test="request.userRole != null">
-            <choose>
-                <when test="request.userRole.name() == 'EMPLOYEE'">
-                    AND ur.user_role_name IS NULL
-                </when>
-                <otherwise>
-                    AND ur.user_role_name = #{request.userRole}
-                </otherwise>
-            </choose>
-        </if>
         <if test="request.searchStartDate != null">
             AND emp.join_date &gt;= #{request.searchStartDate}
         </if>
         <if test="request.searchEndDate != null">
             AND emp.join_date &lt;= #{request.searchEndDate}
         </if>
+        GROUP BY emp.emp_id
+        <if test="request.userRole != null">
+            <choose>
+                <when test="request.userRole.name() == 'EMPLOYEE'">
+                    HAVING GROUP_CONCAT(ur.user_role_name) IS NULL
+                </when>
+                <otherwise>
+                    HAVING FIND_IN_SET(#{request.userRole}, GROUP_CONCAT(ur.user_role_name))
+                </otherwise>
+            </choose>
+        </if>
+        ) AS cnt
     </select>
 
     <select id="getEmployeeDetails" resultType="com.dao.momentum.organization.employee.query.dto.response.EmployeeDTO">
