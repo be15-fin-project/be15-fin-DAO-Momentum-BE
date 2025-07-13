@@ -17,4 +17,6 @@ public interface EvalScoreService {
     void deleteByResultId(Long resultId);
 
     void saveAll(List<EvalScore> scoreEntities);
+
+    void updateOrCreateScore(Long resultId, Integer propertyId, Integer score);
 }

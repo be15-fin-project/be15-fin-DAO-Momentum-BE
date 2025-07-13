@@ -116,4 +116,23 @@ public class EvalScoreServiceImpl implements EvalScoreService {
             throw new EvalException(ErrorCode.EVAL_SAVE_ALL_FAILED);
         }
     }
+
+    @Override
+    public void updateOrCreateScore(Long resultId, Integer propertyId, Integer score) {
+        evalScoreRepository.findByResultIdAndPropertyId(resultId, propertyId)
+                .ifPresentOrElse(
+                        existing -> {
+                            existing.updateScore(score);
+                            evalScoreRepository.save(existing);
+                        },
+                        () -> {
+                            EvalScore newScore = EvalScore.builder()
+                                    .resultId(resultId)
+                                    .propertyId(propertyId)
+                                    .score(score)
+                                    .build();
+                            evalScoreRepository.save(newScore);
+                        }
+                );
+    }
 }

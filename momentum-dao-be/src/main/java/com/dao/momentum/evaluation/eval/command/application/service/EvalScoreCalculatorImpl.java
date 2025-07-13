@@ -49,12 +49,12 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
                         .collect(Collectors.toMap(EvalFactorScoreDto::propertyId, EvalFactorScoreDto::score));
 
                 result = (
-                        scoreMap.getOrDefault(1, 0) * weight.getPerformWt() +
-                                scoreMap.getOrDefault(2, 0) * weight.getTeamWt() +
-                                scoreMap.getOrDefault(3, 0) * weight.getAttitudeWt() +
-                                scoreMap.getOrDefault(4, 0) * weight.getGrowthWt() +
-                                scoreMap.getOrDefault(5, 0) * weight.getEngagementWt() +
-                                scoreMap.getOrDefault(6, 0) * weight.getResultWt()
+                        scoreMap.getOrDefault(41, 0) * weight.getPerformWt() +
+                        scoreMap.getOrDefault(42, 0) * weight.getTeamWt() +
+                        scoreMap.getOrDefault(43, 0) * weight.getAttitudeWt() +
+                        scoreMap.getOrDefault(44, 0) * weight.getGrowthWt() +
+                        scoreMap.getOrDefault(45, 0) * weight.getEngagementWt() +
+                        scoreMap.getOrDefault(46, 0) * weight.getResultWt()
                 ) / 100;
 
             } else {
@@ -78,12 +78,12 @@ public class EvalScoreCalculatorImpl implements EvalScoreCalculator {
         log.info("[EvalScoreCalculatorImpl] calculateOverallScore() 호출 시작");
 
         int result = (
-                scoreMap.getOrDefault(1, 0) * weight.getPerformWt() +
-                        scoreMap.getOrDefault(2, 0) * weight.getTeamWt() +
-                        scoreMap.getOrDefault(3, 0) * weight.getAttitudeWt() +
-                        scoreMap.getOrDefault(4, 0) * weight.getGrowthWt() +
-                        scoreMap.getOrDefault(5, 0) * weight.getEngagementWt() +
-                        scoreMap.getOrDefault(6, 0) * weight.getResultWt()
+                scoreMap.getOrDefault(41, 0) * weight.getPerformWt() +
+                scoreMap.getOrDefault(42, 0) * weight.getTeamWt() +
+                scoreMap.getOrDefault(43, 0) * weight.getAttitudeWt() +
+                scoreMap.getOrDefault(44, 0) * weight.getGrowthWt() +
+                scoreMap.getOrDefault(45, 0) * weight.getEngagementWt() +
+                scoreMap.getOrDefault(46, 0) * weight.getResultWt()
         ) / 100;
 
         log.info("최종 종합 점수 계산 완료 - score={}", result);
