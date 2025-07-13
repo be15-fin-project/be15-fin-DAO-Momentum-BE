@@ -66,7 +66,9 @@ class HrObjectionServiceImplTest {
                     .build();
             Long empId = 1001L;
 
-            given(objectionRepository.existsByResultId(dto.resultId())).willReturn(true);
+            // 중복 제출 상태이지만 평가 결과는 존재한다고 가정
+            given(objectionRepository.existsByResultIdAndIsDeleted(dto.resultId(), UseStatus.N)).willReturn(true);
+            given(objectionRepository.existsEvaluation(dto.resultId())).willReturn(true); // 이 설정도 꼭 필요
 
             assertThatThrownBy(() -> service.create(dto, empId))
                     .isInstanceOf(HrException.class)
