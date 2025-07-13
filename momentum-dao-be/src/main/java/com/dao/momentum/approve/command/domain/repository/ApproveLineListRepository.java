@@ -2,6 +2,7 @@ package com.dao.momentum.approve.command.domain.repository;
 
 import com.dao.momentum.approve.command.domain.aggregate.ApproveLineList;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -22,5 +23,12 @@ public interface ApproveLineListRepository extends JpaRepository<ApproveLineList
 
     /* 결재선 아이디로 해당 결재선의 결재자 목록 가져오기 */
     List<ApproveLineList> findByApproveLineId(Long approveLineId);
+
+    @Modifying
+    @Query("DELETE FROM ApproveLineList all WHERE all.approveLineId = :approveLineId")
+    void deleteApproveLineListByApproveLineId(Long approveLineId);
+
+    @Query("SELECT al.statusId FROM ApproveLineList al WHERE al.approveLineId IN :approveLineIds")
+    List<Integer> getAllStatusesByApproveLineIds(List<Long> approveLineIds);
 
 }

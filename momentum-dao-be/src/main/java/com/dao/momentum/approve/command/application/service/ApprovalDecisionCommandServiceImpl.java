@@ -191,7 +191,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
 
     /* 마지막 결재선이 승인되었다면 결재를 승인으로 처리*/
     private void updateApproveStatusIfFinalApprovalLine(Approve approve) {
-        List<Integer> approveLines = approveLineRepository.getApproveLinesByApproveId(approve.getApproveId());
+        List<Integer> approveLines = approveLineRepository.getApproveLinesStatusByApproveId(approve.getApproveId());
 
         boolean allApproved = approveLines.stream()
                 .allMatch(statusId -> statusId == APPROVED);
