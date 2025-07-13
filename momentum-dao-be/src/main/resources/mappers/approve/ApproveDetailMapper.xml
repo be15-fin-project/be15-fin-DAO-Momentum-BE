@@ -100,6 +100,7 @@
     <!-- 결재 참조자 조회 -->
     <select id="getApproveRefs" resultType="com.dao.momentum.approve.query.dto.ApproveRefDTO">
         SELECT
+            ar.emp_id,
             CONCAT(e.name, ' ', p.name) AS employee_display_name,
             d.name AS department_name,
             ar.is_confirmed
