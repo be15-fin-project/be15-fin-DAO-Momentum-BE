@@ -73,13 +73,15 @@
 
     <!-- 6. 특정 회차의 등급 비율 정보 -->
     <select id="findRateInfoByRoundId" resultType="com.dao.momentum.evaluation.hr.query.dto.response.RateInfo">
-        SELECT rate_s AS rateS,
+        SELECT
+            rate_s AS rateS,
             rate_a AS rateA,
             rate_b AS rateB,
             rate_c AS rateC,
             rate_d AS rateD
-        FROM eval_round
+        FROM hr_rate
         WHERE round_id = #{roundId}
     </select>
+
 
 </mapper>

@@ -25,6 +25,9 @@
             <if test="req.roundId != null">
                 AND r.round_id = #{req.roundId}
             </if>
+            <if test="req.isDeleted != null">
+                AND o.is_deleted = #{req.isDeleted}
+            </if>
         ORDER BY o.objection_id DESC
         LIMIT #{req.size} OFFSET #{req.getOffset}
     </select>
@@ -41,6 +44,9 @@
             </if>
             <if test="req.roundId != null">
                 AND r.round_id = #{req.roundId}
+            </if>
+            <if test="req.isDeleted != null">
+                AND o.is_deleted = #{req.isDeleted}
             </if>
     </select>
 

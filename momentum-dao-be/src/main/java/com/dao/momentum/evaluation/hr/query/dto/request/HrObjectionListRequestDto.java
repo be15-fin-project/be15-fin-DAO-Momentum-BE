@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.hr.query.dto.request;
 
+import com.dao.momentum.common.dto.UseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -20,6 +21,9 @@ public record HrObjectionListRequestDto(
 
         @Schema(description = "이의제기 생성일 종료일 (yyyy-MM-dd)", example = "2025-06-30", nullable = true)
         String endDate,
+
+        @Schema(description = "삭제 여부 (Y, N)", example = "Y")
+        UseStatus isDeleted,
 
         @Schema(description = "페이지 번호 (1부터 시작)", example = "1", defaultValue = "1")
         Integer page,

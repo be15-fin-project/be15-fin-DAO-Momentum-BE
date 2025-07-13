@@ -31,6 +31,7 @@ public class HrObjectionQueryServiceImpl implements HrObjectionQueryService {
                 .roundNo(req.roundNo())
                 .startDate(req.startDate())
                 .endDate(req.endDate())
+                .isDeleted(req.isDeleted())
                 .page(req.page())
                 .size(req.size())
                 .build();
