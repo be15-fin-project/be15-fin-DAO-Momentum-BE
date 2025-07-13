@@ -6,17 +6,18 @@ import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.organization.employee.query.service.ManagerFinderService;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactResponseUpdateDto;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactDeleteResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponseUpdateResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.*;
 import com.dao.momentum.retention.interview.command.domain.aggregate.RetentionContact;
 import com.dao.momentum.retention.interview.command.domain.repository.RetentionContactRepository;
 import com.dao.momentum.retention.interview.exception.InterviewException;
+import com.dao.momentum.retention.prospect.command.domain.aggregate.RetentionSupport;
+import com.dao.momentum.retention.prospect.command.domain.repository.RetentionSupportRepository;
+import com.dao.momentum.retention.prospect.exception.ProspectException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,11 @@ import java.time.LocalDateTime;
 public class RetentionContactCommandServiceImpl implements RetentionContactCommandService {
 
     private final RetentionContactRepository repository;
+    private final RetentionSupportRepository supportRepository;
     private final NotificationKafkaProducer notificationKafkaProducer;
     private final EmployeeRepository employeeRepository;
+    private final ManagerFinderService managerFinderService;
+
 
     @Override
     @Transactional
@@ -164,4 +168,44 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
                 .feedback(contact.getFeedback())
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RetentionContactManagerInfoResponse getManagerInfoByRetentionId(Long retentionId) {
+        log.info("API 호출 시작 - getManagerInfoByRetentionId, retentionId={}", retentionId);
+
+        // 1. 근속 전망(retention_support) 정보 조회
+        RetentionSupport support = supportRepository.findById(retentionId)
+                .orElseThrow(() -> new ProspectException(ErrorCode.RETENTION_FORECAST_NOT_FOUND));
+
+        Long empId = support.getEmpId();
+
+        // 2. 사원 정보 조회
+        Employee employee = employeeRepository.findByEmpId(empId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        Integer targetDeptId = employee.getDeptId();
+
+        // 3. 상급자 ID 조회
+        Long managerId = managerFinderService.findManagerIdForEmp(employee)
+                .filter(id -> !id.equals(empId))
+                .orElseThrow(() -> new InterviewException(ErrorCode.RETENTION_CONTACT_MANAGER_NOT_FOUND));
+
+        // 4. 상급자 정보 조회
+        Employee manager = employeeRepository.findByEmpId(managerId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        Integer managerDeptId = manager.getDeptId();
+
+        log.info("대상자 및 상급자 조회 성공 - targetId={}, managerId={}, targetDeptId={}, managerDeptId={}",
+                empId, managerId, targetDeptId, managerDeptId);
+
+        return RetentionContactManagerInfoResponse.builder()
+                .targetId(empId)
+                .targetDeptId(targetDeptId)
+                .managerId(managerId)
+                .managerDeptId(managerDeptId)
+                .build();
+    }
+
 }

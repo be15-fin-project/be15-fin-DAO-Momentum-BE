@@ -1,6 +1,7 @@
 package com.dao.momentum.evaluation.hr.command.application.service;
 
 
+import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.command.application.dto.response.HrObjectionDeleteResponse;
 
@@ -32,10 +33,10 @@ public class HrObjectionServiceImpl implements HrObjectionService {
                 empId, dto.resultId(), dto);
 
         // 1. 중복 제출 방지
-        if (objectionRepository.existsByResultId(dto.resultId())) {
-            log.error("이미 제출된 이의 제기 - resultId={}", dto.resultId());
+        if (objectionRepository.existsByResultIdAndIsDeleted(dto.resultId(), UseStatus.N)) {
             throw new HrException(ErrorCode.ALREADY_SUBMITTED_OBJECTION);
         }
+
 
         // 2. 평가 결과 존재 확인
         if (!objectionRepository.existsEvaluation(dto.resultId())) {
@@ -80,8 +81,8 @@ public class HrObjectionServiceImpl implements HrObjectionService {
             throw new HrException(ErrorCode.HR_OBJECTION_CANNOT_DELETE);
         }
 
-        objection.markAsDeleted();
-        log.info("이의 제기 삭제 완료 - objectionId={}, 삭제 시각={}", objectionId, LocalDateTime.now());
+        objection.withDraw(2);
+        log.info("이의 제기 상태 변경 완료 (삭제 처리) - objectionId={}, 삭제 시각={}", objectionId, LocalDateTime.now());
 
         return HrObjectionDeleteResponse.builder()
                 .objectionId(objectionId)

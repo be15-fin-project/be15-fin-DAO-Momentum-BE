@@ -62,18 +62,15 @@ public class HrObjectionProcessFacade {
         Integer roundId = evalResponseService.getRoundIdByResultId(resultId);
         log.info("resultId={}에 해당하는 roundId={}", resultId, roundId);
 
-        // Step 3: 요인별 점수 저장
+        // Step 3: 요인별 점수 저장 또는 업데이트
         Map<Integer, Integer> scoreMap = request.factorScores().stream()
                 .collect(Collectors.toMap(EvalFactorScoreDto::propertyId, EvalFactorScoreDto::score));
 
-        log.info("요인별 점수 저장 시작 - resultId={}, scoreMap={}", resultId, scoreMap);
-
-        evalScoreService.deleteByResultId(resultId);
-        log.info("기존 점수 삭제 완료 - resultId={}", resultId);
+        log.info("요인별 점수 저장 또는 업데이트 시작 - resultId={}, scoreMap={}", resultId, scoreMap);
 
         scoreMap.forEach((propertyId, score) -> {
-            evalScoreService.save(EvalFactorScoreDto.toEntity(resultId, propertyId, score));
-            log.info("점수 저장 완료 - resultId={}, propertyId={}, score={}", resultId, propertyId, score);
+            evalScoreService.updateOrCreateScore(resultId, propertyId, score);
+            log.info("점수 저장 또는 업데이트 완료 - resultId={}, propertyId={}, score={}", resultId, propertyId, score);
         });
 
         // Step 4: 가중치 기반 종합 점수 계산

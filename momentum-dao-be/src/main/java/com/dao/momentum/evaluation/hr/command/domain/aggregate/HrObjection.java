@@ -57,10 +57,6 @@ public class HrObjection {
                 .build();
     }
 
-    public void markAsDeleted() {
-        this.isDeleted = UseStatus.Y;
-    }
-
     // 처리 승인 메서드
     public void approve(String reason) {
         this.statusId = 2; // 예: 2 = 승인
@@ -75,4 +71,8 @@ public class HrObjection {
         this.responseAt = LocalDateTime.now();
     }
 
+    public void withDraw(int statusId) {
+        this.isDeleted = UseStatus.Y;
+        this.statusId = statusId;
+    }
 }

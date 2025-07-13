@@ -40,12 +40,12 @@ class EvalScoreCalculatorImplTest {
         void calculateScore_withWeights_success() {
             // Arrange
             EvalSubmitRequest request = new EvalSubmitRequest(1, 4, 1003L, "Test Reason", List.of(
-                    new EvalFactorScoreDto(1, 80),
-                    new EvalFactorScoreDto(2, 90),
-                    new EvalFactorScoreDto(3, 70),
-                    new EvalFactorScoreDto(4, 60),
-                    new EvalFactorScoreDto(5, 100),
-                    new EvalFactorScoreDto(6, 50)
+                    new EvalFactorScoreDto(41, 80),  // perform
+                    new EvalFactorScoreDto(42, 90),  // team
+                    new EvalFactorScoreDto(43, 70),  // attitude
+                    new EvalFactorScoreDto(44, 60),  // growth
+                    new EvalFactorScoreDto(45, 100), // engagement
+                    new EvalFactorScoreDto(46, 50)   // result
             ));
 
             HrWeight weight = HrWeight.builder()
@@ -128,12 +128,12 @@ class EvalScoreCalculatorImplTest {
         void calculateOverallScore_success() {
             // Arrange
             Map<Integer, Integer> scoreMap = Map.of(
-                    1, 80,  // perform
-                    2, 90,  // team
-                    3, 70,  // attitude
-                    4, 60,  // growth
-                    5, 100, // engagement
-                    6, 50   // result
+                    41, 80,  // perform
+                    42, 90,  // team
+                    43, 70,  // attitude
+                    44, 60,  // growth
+                    45, 100, // engagement
+                    46, 50   // result
             );
 
             HrWeight weight = HrWeight.builder()
@@ -157,8 +157,8 @@ class EvalScoreCalculatorImplTest {
         void calculateOverallScore_missingFactors_defaultsToZero() {
             // Arrange
             Map<Integer, Integer> scoreMap = Map.of(
-                    1, 80,
-                    2, 90 // 나머지 3~6번 요인 없음 → 0으로 처리
+                    41, 80,
+                    42, 90 // 나머지 43~46번 요인 없음 → 0으로 처리
             );
 
             HrWeight weight = HrWeight.builder()
@@ -177,5 +177,6 @@ class EvalScoreCalculatorImplTest {
             // 계산: (80*10 + 90*20 + 0 + 0 + 0 + 0)/100 = (800 + 1800) / 100 = 26
             assertThat(finalScore).isEqualTo(26);
         }
+
     }
 }

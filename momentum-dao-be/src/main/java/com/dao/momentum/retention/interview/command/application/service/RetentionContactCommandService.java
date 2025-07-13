@@ -4,10 +4,7 @@ import com.dao.momentum.retention.interview.command.application.dto.request.Rete
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactResponseUpdateDto;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactDeleteResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponseUpdateResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.*;
 
 public interface RetentionContactCommandService {
     RetentionContactResponse createContact(RetentionContactCreateDto dto);
@@ -17,4 +14,7 @@ public interface RetentionContactCommandService {
     RetentionContactResponseUpdateResponse reportResponse(RetentionContactResponseUpdateDto dto);
 
     RetentionContactFeedbackUpdateResponse giveFeedback(RetentionContactFeedbackUpdateDto dto);
+
+    RetentionContactManagerInfoResponse getManagerInfoByRetentionId(Long retentionId);
+
 }

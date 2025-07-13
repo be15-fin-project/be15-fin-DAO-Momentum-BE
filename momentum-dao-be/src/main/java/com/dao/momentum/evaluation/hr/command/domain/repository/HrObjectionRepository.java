@@ -1,5 +1,6 @@
 package com.dao.momentum.evaluation.hr.command.domain.repository;
 
+import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.evaluation.hr.command.domain.aggregate.HrObjection;
 import org.springframework.data.repository.query.Param;
 
@@ -17,4 +18,5 @@ public interface HrObjectionRepository {
 
     Optional<Long> findResultIdByObjectionId(@Param("objectionId") Long objectionId);
 
+    boolean existsByResultIdAndIsDeleted(Long resultId, UseStatus isDeleted);
 }

@@ -2,10 +2,7 @@ package com.dao.momentum.retention.interview.command.application.controller;
 
 import com.dao.momentum.common.dto.ApiResponse;
 import com.dao.momentum.retention.interview.command.application.dto.request.*;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactDeleteResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponseUpdateResponse;
-import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
+import com.dao.momentum.retention.interview.command.application.dto.response.*;
 import com.dao.momentum.retention.interview.command.application.service.RetentionContactCommandService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -88,4 +85,13 @@ public class RetentionContactCommandController {
         RetentionContactFeedbackUpdateResponse response = contactCommandService.giveFeedback(dto);
         return ApiResponse.success(response);
     }
+
+    @GetMapping("/{retentionId}/request")
+    public ApiResponse<RetentionContactManagerInfoResponse> getManagerInfoByRetentionId(
+            @PathVariable Long retentionId
+    ) {
+        RetentionContactManagerInfoResponse response = contactCommandService.getManagerInfoByRetentionId(retentionId);
+        return ApiResponse.success(response);
+    }
+
 }
