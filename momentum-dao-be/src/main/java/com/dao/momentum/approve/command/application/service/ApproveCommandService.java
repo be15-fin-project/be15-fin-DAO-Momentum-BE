@@ -10,4 +10,5 @@ public interface ApproveCommandService {
 
     void viewAsReference(Long approveId, Long empId);
 
+    void deleteApproval(Long approveId, Long empId);
 }

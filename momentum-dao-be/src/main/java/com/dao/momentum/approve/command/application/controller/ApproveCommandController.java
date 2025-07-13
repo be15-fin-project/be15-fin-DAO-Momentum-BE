@@ -78,4 +78,17 @@ public class ApproveCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @DeleteMapping("/documents/{documentId}")
+    @Operation(summary = "결재 회수", description = "결재 내역을 회수 합니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteApproval(
+            @PathVariable Long documentId ,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+
+        approveCommandService.deleteApproval(documentId, empId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
