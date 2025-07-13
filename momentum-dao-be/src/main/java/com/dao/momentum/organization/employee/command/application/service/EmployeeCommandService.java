@@ -48,8 +48,6 @@ public class EmployeeCommandService {
 
     @Transactional
     public void createEmployee(EmployeeRegisterRequest request) {
-//        List<Integer> userRoleIds;
-
         Employee employee = modelMapper.map(request, Employee.class);
 
         if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -63,15 +61,6 @@ public class EmployeeCommandService {
 
         employee.setPassword(passwordEncoder.encode(randomPassword));
         employeeRepository.save(employee);
-
-//        try {
-//            userRoleIds = userRoleRepository.findIdsByUserRoleNames(Arrays.stream(request.getEmployeeRoles()).toList());
-//        } catch (Exception e) {
-//            throw new EmployeeException(ErrorCode.INVALID_CREDENTIALS);
-//        }
-//        for (int userRoleId : userRoleIds) {
-//            employeeRolesRepository.save(new EmployeeRoles(null, employee.getEmpId(), userRoleId));
-//        }
 
         String passwordResetToken = getPasswordResetToken(employee.getEmpId());
 

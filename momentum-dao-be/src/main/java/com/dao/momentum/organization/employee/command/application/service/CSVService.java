@@ -116,7 +116,7 @@ public class CSVService {
         List<EmployeeRegisterRequest> requests = new ArrayList<>();
         for (int i = 1; i < rows.size(); i++) {
             String[] cols = rows.get(i);
-            if (isEmptyRow(cols)) continue;
+            if (isEmptyRow(cols)) continue; // ",,,,," 행이 남아있으면 무시
             int line = i + 1;
             if (cols.length != headers.size()) {
                 throw new EmployeeException(
@@ -130,7 +130,7 @@ public class CSVService {
 
     private List<String> normalizeHeader(String[] header) {
         return Arrays.stream(header)
-                .map(h -> h == null ? "" : h.replace("\uFEFF", "").trim())
+                .map(h -> h == null ? "" : h.replace("\uFEFF", "").trim()) // BOM 처리
                 .toList();
     }
 
@@ -177,9 +177,9 @@ public class CSVService {
                 .map(LocalDate::parse)
                 .orElse(LocalDate.now());
 
-        int jy = joinDate.getYear();
-        int jm = joinDate.getMonthValue();
-        int ty = LocalDate.now().getYear();
+        int joinYear = joinDate.getYear();
+        int joinMonth = joinDate.getMonthValue();
+        int targetYear = LocalDate.now().getYear();
 
         return EmployeeRegisterRequest.builder()
                 .name(cols[idx.get("이름")])
@@ -194,35 +194,39 @@ public class CSVService {
                 .birthDate(LocalDate.parse(cols[idx.get("생년월일")]))
                 .remainingDayoffHours(parseIntOrDefault(
                         cols[idx.get("부여 연차 시간")],
-                        vacationTimeCommandService.computeDayoffHours(jy, jm, ty)
+                        vacationTimeCommandService.computeDayoffHours(joinYear, joinMonth, targetYear)
                 ))
                 .remainingRefreshDays(parseIntOrDefault(
                         cols[idx.get("부여 리프레시 휴가 일수")],
-                        vacationTimeCommandService.computeRefreshDays(jy, ty)
+                        vacationTimeCommandService.computeRefreshDays(joinYear, targetYear)
                 ))
                 .build();
     }
 
-    private Integer parseDeptId(String name) {
-        if (name == null || name.isBlank()) return null;
+    private Integer parseDeptId(String deptName) {
+        if (deptName == null || deptName.isBlank()) return null;
+
+        com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted isActive = com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted.N;
+
         Department dept = departmentRepository.findByNameAndIsDeleted(
-                        name, com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted.N)
+                        deptName, isActive)
                 .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
         return dept.getDeptId();
     }
 
-    private Integer parsePositionId(String name) {
+    private Integer parsePositionId(String positionName) {
         Position pos = positionRepository.findByNameAndIsDeleted(
-                        name, IsDeleted.N)
+                        positionName, IsDeleted.N)
                 .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
         return pos.getPositionId();
     }
 
     private Status parseStatus(String input) {
-        if (input == null || input.isBlank() || "재직".equals(input)) {
+        if (input == null || input.isBlank()) {
             return Status.EMPLOYED;
         }
         return switch (input) {
+            case "재직" -> Status.EMPLOYED;
             case "휴직" -> Status.ON_LEAVE;
             case "퇴사" -> Status.RESIGNED;
             default -> throw new EmployeeException(ErrorCode.INVALID_STATUS);

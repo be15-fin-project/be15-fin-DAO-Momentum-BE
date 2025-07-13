@@ -41,9 +41,6 @@ public class EmployeeRegisterRequest {
     @NotNull
     private Integer positionId;
 
-//    @NotNull
-//    private String [] employeeRoles;
-
     @NotNull
     private Status status;
 
