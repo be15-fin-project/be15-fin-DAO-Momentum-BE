@@ -276,17 +276,4 @@
         SELECT MAX(round_no) FROM eval_round
     </select>
 
-
-    <!-- 전체 점수 조회 -->
-    <!-- 동일 round의 전체 대상자 평가 점수 조회 -->
-    <select id="findAllScores"
-            parameterType="long"
-            resultType="int">
-        SELECT score
-        FROM eval_response
-        WHERE round_id = (
-            SELECT round_id FROM eval_response WHERE result_id = #{resultId}
-        )
-    </select>
-
 </mapper>

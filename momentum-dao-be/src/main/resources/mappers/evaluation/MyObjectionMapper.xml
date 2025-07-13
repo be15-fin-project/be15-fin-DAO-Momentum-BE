@@ -124,6 +124,16 @@
         WHERE er.result_id = #{resultId}
     </select>
 
+    <!-- 전체 점수 조회 -->
+    <select id="findAllScores"
+            parameterType="long"
+            resultType="int">
+        SELECT score
+        FROM eval_response
+        WHERE round_id = (
+        SELECT round_id FROM eval_response WHERE result_id = #{resultId}
+        )
+    </select>
 
 
 </mapper>
