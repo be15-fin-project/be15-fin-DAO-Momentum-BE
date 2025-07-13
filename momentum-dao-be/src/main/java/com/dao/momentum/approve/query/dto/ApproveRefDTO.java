@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class ApproveRefDTO {
 
+    private String empId;
     private String employeeDisplayName;
     private String departmentName;
     private String isConfirmed;

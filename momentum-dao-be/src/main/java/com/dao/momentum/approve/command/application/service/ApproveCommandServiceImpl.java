@@ -15,6 +15,7 @@ import com.dao.momentum.file.command.domain.repository.FileRepository;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
+import com.dao.momentum.work.command.domain.repository.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -35,6 +37,16 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     private final ApproveLineRepository approveLineRepository;
     private final ApproveLineListRepository approveLineListRepository;
     private final ApproveRefRepository approveRefRepository;
+
+    private final ApproveReceiptRepository receiptRepository;
+    private final ApproveProposalRepository proposalRepository;
+    private final ApproveCancelRepository cancelRepository;
+    private final WorkCorrectionRepository workCorrectionRepository;
+    private final OvertimeRepository overtimeRepository;
+    private final RemoteWorkRepository remoteWorkRepository;
+    private final VacationRepository vacationRepository;
+    private final BusinessTripRepository businessTripRepository;
+
     private final FileRepository fileRepository;
     private final EmployeeRepository employeeRepository;
     private final NotificationKafkaProducer notificationKafkaProducer;
@@ -137,6 +149,63 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
 
         // 2. 참조 테이블 참조 상태 변경하기
         approveRef.updateRefStatus();
+    }
+
+    /*
+    * 결재 문서 삭제하기 (모든 결재자가 확인하지 않은 경우 : '대기' 상태인 경우)
+    * */
+    @Transactional
+    public void deleteApproval(Long approveId, Long empId) {
+
+        Approve approve = approveRepository.getApproveByApproveId(approveId)
+                .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_APPROVE));
+
+        if(!Objects.equals(approve.getEmpId(), empId)) {
+            throw new ApproveException(ErrorCode.NO_DELETE_PERMISSION);
+        }
+
+        // 1. 결재선 조회하기
+        List<Long> approveLineIds
+                = approveLineRepository.getApproveLinesByApproveId(approveId);
+
+        // 2. 결재선에 지정되어 있는 결재자의 상태 조회하기
+        List<Integer> statusIds = approveLineListRepository
+                .getAllStatusesByApproveLineIds(approveLineIds);
+
+        // 3. 모든 결재자가 대기 상태인지 확인
+        boolean allPending = statusIds.stream()
+                .allMatch(statusId -> statusId == 1);
+
+        if (!allPending) {
+            throw new ApproveException(ErrorCode.ALREADY_START_APPROVAL);
+        }
+
+        // 4. 결재 관련 문서(8가지) 삭제하기
+        receiptRepository.deleteApproveReceiptByApprovalId(approveId);
+        proposalRepository.deleteApproveProposalByApprovalId(approveId);
+        cancelRepository.deleteApproveCancelByApproveId(approveId);
+        workCorrectionRepository.deleteWorkCorrectionByApproveId(approveId);
+        overtimeRepository.deleteOvertimeByApproveId(approveId);
+        remoteWorkRepository.deleteRemoteWorkByApproveId(approveId);
+        vacationRepository.deleteVacationByApproveId(approveId);
+        businessTripRepository.deleteBusinessTripByApproveId(approveId);
+
+        // 5. 결재선 결재자 삭제하기
+        for(Long approveLineId : approveLineIds) {
+            approveLineListRepository.deleteApproveLineListByApproveLineId(approveLineId);
+        }
+
+        // 6. 결재선 삭제하기
+        approveLineRepository.deleteApproveLinesByApproveId(approveId);
+
+        // 7. 참조자 삭제하기
+        approveRefRepository.deleteApproveRefByApprovalId(approveId);
+
+        // 8. 파일 삭제하기
+        fileRepository.deleteByApprovalId(approveId);
+
+        // 9. 결재 삭제하기
+        approveRepository.deleteApproveByApproveId(approveId);
     }
 
     /*

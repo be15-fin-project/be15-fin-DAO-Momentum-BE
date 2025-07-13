@@ -2,7 +2,6 @@ package com.dao.momentum.organization.employee.command.application.dto.request;
 
 import com.dao.momentum.organization.employee.command.domain.aggregate.Gender;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
-import com.dao.momentum.organization.employee.command.domain.aggregate.UserRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
-
 
 import java.time.LocalDate;
 
@@ -42,9 +40,6 @@ public class EmployeeRegisterRequest {
 
     @NotNull
     private Integer positionId;
-
-    @NotNull
-    private String [] employeeRoles;
 
     @NotNull
     private Status status;
