@@ -35,6 +35,7 @@ public class KpiRequestQueryServiceImpl implements KpiRequestQueryService {
                 .empNo(requestDto.empNo())
                 .startDate(requestDto.startDate())
                 .endDate(requestDto.endDate())
+                .isDeleted(requestDto.isDeleted())
                 .page(requestDto.page())
                 .size(requestDto.size())
                 .build();
