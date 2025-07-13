@@ -14,7 +14,7 @@ public class AppointCreateRequest {
 
     private int positionId;
 
-    private int deptId;
+    private Integer deptId;
 
     @NotNull
     private AppointType type;

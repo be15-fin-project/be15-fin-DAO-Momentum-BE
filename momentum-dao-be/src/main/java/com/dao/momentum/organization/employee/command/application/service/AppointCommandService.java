@@ -9,7 +9,6 @@ import com.dao.momentum.organization.employee.command.application.dto.response.A
 import com.dao.momentum.organization.employee.command.domain.aggregate.Appoint;
 import com.dao.momentum.organization.employee.command.domain.aggregate.AppointType;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
-import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.dao.momentum.organization.employee.command.domain.repository.AppointRepository;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -27,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -40,27 +41,39 @@ public class AppointCommandService {
 
     private final EmployeeCommandService employeeCommandService;
 
+    @Transactional
     public AppointCreateResponse createAppoint(UserDetails userDetails, AppointCreateRequest request) {
         long adminId = Long.parseLong(userDetails.getUsername());
         employeeCommandService.validateActiveAdmin(adminId);
 
         long empId = request.getEmpId();
-        int afterPositionId = request.getPositionId();
-        int afterDeptId = request.getDeptId();
-
         Employee emp = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        int currentPositionId = emp.getPositionId();
+        Integer currentDeptId = emp.getDeptId();
 
-        int beforePositionId = emp.getPositionId();
-        Position beforePosition = positionRepository.findByPositionId(beforePositionId)
+        LocalDate today = LocalDate.now();
+        // 1) 이미 등록되었지만 아직 적용되지 않은 발령이 있으면 등록 차단
+        List<Appoint> pendingAppoints = appointRepository.findAllPendingAppoints(empId, today, currentPositionId, currentDeptId);
+
+        if (!pendingAppoints.isEmpty()) {
+            throw new EmployeeException(ErrorCode.PENDING_APPOINT_EXISTS);
+        }
+
+        int afterPositionId = request.getPositionId();
+        Integer afterDeptId = request.getDeptId();
+
+        Position beforePosition = positionRepository.findByPositionId(currentPositionId)
                 .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
 
         Position afterPosition = positionRepository.findByPositionId(afterPositionId)
                 .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
 
-        int beforeDeptId = emp.getDeptId();
-        Department afterDept = departmentRepository.findById(afterDeptId)
-                .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
+        Department afterDept = null;
+        if (afterDeptId != null) {
+            afterDept = departmentRepository.findById(afterDeptId)
+                    .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
+        }
 
         AppointType type = request.getType();
 
@@ -70,16 +83,15 @@ public class AppointCommandService {
         }
 
         LocalDate appointDate = request.getAppointDate();
-        LocalDate today = LocalDate.now();
         if (appointDate.isBefore(today)) {
             throw new EmployeeException(ErrorCode.INVALID_APPOINT_DATE);
         }
 
         Appoint appoint = Appoint.builder()
                 .empId(empId)
-                .beforePosition(beforePositionId)
+                .beforePosition(currentPositionId)
                 .afterPosition(afterPositionId)
-                .beforeDepartment(beforeDeptId)
+                .beforeDepartment(currentDeptId)
                 .afterDepartment(afterDeptId)
                 .type(type)
                 .appointDate(appointDate)
@@ -108,13 +120,22 @@ public class AppointCommandService {
         LocalDate today = LocalDate.now();
         long countApplied = 0;
 
+        List<Long> invalidAppointIds = new ArrayList<>();
         List<Appoint> pendingAppoints = appointRepository.findByAppointDateLessThanEqual(today);
         for (Appoint appoint : pendingAppoints) {
             long empId = appoint.getEmpId();
             Employee emp = employeeRepository.findByEmpId(empId)
                     .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
-            boolean isApplied = emp.getDeptId() == appoint.getAfterDepartment() && emp.getPositionId() == appoint.getAfterPosition(); // 결과가 같다면 이미 처리 완료된 발령
+            // 2) 발령 테이블 before 정보와 현재 정보가 일치해야만 처리
+            boolean isInvalidAppoint = !Objects.equals(appoint.getBeforeDepartment(), emp.getDeptId()) || appoint.getBeforePosition() != emp.getPositionId();
+
+            if (isInvalidAppoint) {
+                invalidAppointIds.add(appoint.getAppointId());
+                continue;
+            }
+
+            boolean isApplied = Objects.equals(emp.getDeptId(), appoint.getAfterDepartment()) && emp.getPositionId() == appoint.getAfterPosition(); // 결과가 같다면 이미 처리 완료된 발령
 
             if (!isApplied) {
                 countApplied++;
@@ -125,6 +146,9 @@ public class AppointCommandService {
         LocalDateTime end = LocalDateTime.now();
         long duration = Duration.between(start, end).toSeconds();
         log.info("[발령 등록 Batch System] 발령 등록 완료 - {}명, 소요 시간 - {}초", countApplied, duration);
+        if (!invalidAppointIds.isEmpty()) {
+            log.warn("[발령 등록 Batch System] 처리되지 않은 유효하지 않은 발령 ID 목록: {}", invalidAppointIds);
+        }
     }
 
     private void validatePromotion(Employee emp, Position beforePosition, Position afterPosition, Department afterDept) {
@@ -138,20 +162,23 @@ public class AppointCommandService {
             throw new EmployeeException(ErrorCode.INVALID_POSITION_FOR_PROMOTION);
         }
 
-        int beforeDeptId = emp.getDeptId();
+        Integer beforeDeptId = emp.getDeptId();
+        Integer afterDeptId = (afterDept != null) ? afterDept.getDeptId() : null;
 
-        if (beforeDeptId != afterDept.getDeptId()) {
+        if (!Objects.equals(beforeDeptId, afterDeptId)) {
             throw new EmployeeException(ErrorCode.INVALID_DEPARTMENT_FOR_PROMOTION);
         }
-
     }
 
     private void validateTransfer(Employee emp, Department afterDept, Position afterPosition) {
-        int beforeDeptId = emp.getDeptId();
-
+        Integer beforeDeptId = emp.getDeptId();
+        Integer afterDeptId = null;
+        if (afterDept != null) {
+            afterDeptId = afterDept.getDeptId();
+        }
         validateActivePosition(afterPosition);
 
-        if (beforeDeptId == afterDept.getDeptId()) {
+        if (Objects.equals(beforeDeptId, afterDeptId)) {
             throw new EmployeeException(ErrorCode.INVALID_DEPARTMENT_FOR_TRANSFER);
         }
     }

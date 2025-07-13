@@ -181,8 +181,8 @@
         JOIN employee AS emp ON app.emp_id = emp.emp_id
         JOIN position AS bpos ON app.before_position = bpos.position_id
         JOIN position AS apos ON app.after_position = apos.position_id
-        JOIN department AS bdep ON app.before_department = bdep.dept_id
-        JOIN department AS adep ON app.after_department = adep.dept_id
+        LEFT JOIN department AS bdep ON app.before_department = bdep.dept_id
+        LEFT JOIN department AS adep ON app.after_department = adep.dept_id
         <where>
             <if test="request.deptId != null">
                 adep.dept_id = #{request.deptId}
@@ -224,8 +224,8 @@
         JOIN employee AS emp ON app.emp_id = emp.emp_id
         JOIN position AS bpos ON app.before_position = bpos.position_id
         JOIN position AS apos ON app.after_position = apos.position_id
-        JOIN department AS bdep ON app.before_department = bdep.dept_id
-        JOIN department AS adep ON app.after_department = adep.dept_id
+        LEFT JOIN department AS bdep ON app.before_department = bdep.dept_id
+        LEFT JOIN department AS adep ON app.after_department = adep.dept_id
         <where>
             <if test="request.deptId != null">
                 adep.dept_id = #{request.deptId}

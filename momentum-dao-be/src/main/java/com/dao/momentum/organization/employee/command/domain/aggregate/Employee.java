@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -79,8 +80,8 @@ public class Employee {
         }
     }
 
-    public void fromAppoint(int afterDeptId, int afterPositionId) {
-        if (this.deptId != afterDeptId) {
+    public void fromAppoint(Integer afterDeptId, int afterPositionId) {
+        if (!Objects.equals(this.deptId, afterDeptId)) {
             this.deptId = afterDeptId;
         }
         if (this.positionId != afterPositionId) {

@@ -36,13 +36,13 @@ public class AppointDTO {
     private String afterPositionName;
 
     @Schema(description = "기존 부서 ID", example = "11")
-    private int beforeDepartment;
+    private Integer beforeDepartment;
 
     @Schema(description = "기존 부서명", example = "마게팅팀")
     private String beforeDeptName;
 
     @Schema(description = "발령 부서 ID", example = "12")
-    private int afterDepartment;
+    private Integer afterDepartment;
 
     @Schema(description = "발령 부서 이름", example = "기획팀")
     private String afterDeptName;

@@ -22,9 +22,9 @@ public class Appoint {
 
     private int afterPosition;
 
-    private int beforeDepartment;
+    private Integer beforeDepartment;
 
-    private int afterDepartment;
+    private Integer afterDepartment;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -34,7 +34,7 @@ public class Appoint {
     private LocalDate appointDate;
 
     @Builder
-    public Appoint(long empId, int beforePosition, int afterPosition, int beforeDepartment, int afterDepartment, AppointType type, LocalDate appointDate) {
+    public Appoint(long empId, int beforePosition, int afterPosition, Integer beforeDepartment, Integer afterDepartment, AppointType type, LocalDate appointDate) {
         this.empId = empId;
         this.beforePosition = beforePosition;
         this.afterPosition = afterPosition;
