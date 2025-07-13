@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 // 구현체
 @Repository
@@ -17,5 +18,10 @@ public class RetentionSupportRepositoryImpl implements RetentionSupportRepositor
     @Override
     public void saveAllSupports(List<RetentionSupport> supports) {
         jpaRepository.saveAll(supports);
+    }
+
+    @Override
+    public Optional<RetentionSupport> findById(Long retentionId) {
+        return jpaRepository.findById(retentionId);
     }
 }
