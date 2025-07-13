@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,9 +47,9 @@ class RetentionInsightCommandServiceImplTest {
         void generateInsights_success() {
             // given
             List<RetentionSupport> supports = List.of(
-                    RetentionSupport.builder().empId(101L).retentionScore(70).build(),
-                    RetentionSupport.builder().empId(102L).retentionScore(90).build(),
-                    RetentionSupport.builder().empId(103L).retentionScore(50).build()
+                    RetentionSupport.builder().empId(101L).retentionScore(BigDecimal.valueOf(70)).build(),
+                    RetentionSupport.builder().empId(102L).retentionScore(BigDecimal.valueOf(90)).build(),
+                    RetentionSupport.builder().empId(103L).retentionScore(BigDecimal.valueOf(50)).build()
             );
 
             List<Employee> employees = List.of(emp1, emp2, emp3);
@@ -78,7 +79,7 @@ class RetentionInsightCommandServiceImplTest {
         void generateInsights_missingEmployee_skipsSupport() {
             // given
             List<RetentionSupport> supports = List.of(
-                    RetentionSupport.builder().empId(999L).retentionScore(88).build()
+                    RetentionSupport.builder().empId(999L).retentionScore(BigDecimal.valueOf(88)).build()
             );
 
             when(employeeRepository.findAllById(Set.of(999L))).thenReturn(Collections.emptyList());
@@ -95,8 +96,8 @@ class RetentionInsightCommandServiceImplTest {
         void generateInsights_allSupportsSkipped() {
             // given
             List<RetentionSupport> supports = List.of(
-                    RetentionSupport.builder().empId(999L).retentionScore(80).build(),
-                    RetentionSupport.builder().empId(998L).retentionScore(60).build()
+                    RetentionSupport.builder().empId(999L).retentionScore(BigDecimal.valueOf(80)).build(),
+                    RetentionSupport.builder().empId(998L).retentionScore(BigDecimal.valueOf(60)).build()
             );
 
             when(employeeRepository.findAllById(anySet())).thenReturn(Collections.emptyList());

@@ -39,7 +39,7 @@ class RetentionSupportQueryServiceImplTest {
             RetentionForecastRequestDto req = RetentionForecastRequestDto.builder()
                     .page(1)
                     .size(10)
-                    .roundNo(3)
+                    .roundId(3)
                     .build();
 
             RetentionSupportRaw raw = RetentionSupportRaw.builder()
@@ -75,7 +75,7 @@ class RetentionSupportQueryServiceImplTest {
             RetentionForecastRequestDto req = RetentionForecastRequestDto.builder()
                     .page(1)
                     .size(10)
-                    .roundNo(3)
+                    .roundId(3)
                     .stabilityType(StabilityType.GOOD)
                     .build();
 
@@ -106,7 +106,7 @@ class RetentionSupportQueryServiceImplTest {
             RetentionForecastRequestDto req = RetentionForecastRequestDto.builder()
                     .page(1)
                     .size(10)
-                    .roundNo(null)
+                    .roundId(null)
                     .build();
 
             RetentionSupportRaw raw = RetentionSupportRaw.builder()
@@ -138,7 +138,7 @@ class RetentionSupportQueryServiceImplTest {
             RetentionForecastRequestDto req = RetentionForecastRequestDto.builder()
                     .page(1)
                     .size(10)
-                    .roundNo(3)
+                    .roundId(3)
                     .build();
 
             when(mapper.findRetentionForecasts(req, 3)).thenReturn(Collections.emptyList());
