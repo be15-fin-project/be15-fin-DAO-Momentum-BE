@@ -58,10 +58,8 @@ public class CSVService {
         // 1) 파싱 & 검증
         List<EmployeeRegisterRequest> requests = parseAndValidate(file);
 
-        List<Long> empIds = new ArrayList<>();
-        List<String> resetTokens = new ArrayList<>();
-
-        // 2) 저장 루프
+        // 2) 저장 및 토큰 수집
+        Map<Employee, String> emailMap = new LinkedHashMap<>();
         for (EmployeeRegisterRequest req : requests) {
             Employee emp = modelMapper.map(req, Employee.class);
 
@@ -76,15 +74,27 @@ public class CSVService {
             emp.setPassword(passwordEncoder.encode(rawPwd));
 
             employeeRepository.save(emp);
-            empIds.add(emp.getEmpId());
-            resetTokens.add(employeeCommandService.getPasswordResetToken(emp.getEmpId()));
+            // 저장 직후 토큰 생성
+            String token = employeeCommandService.getPasswordResetToken(emp.getEmpId());
+            emailMap.put(emp, token);
         }
 
-        // 3) 이메일 발송 루프
-        for (int i = 0; i < empIds.size(); i++) {
-            Employee emp = employeeRepository.findByEmpId(empIds.get(i))
-                    .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
-            emailService.sendPasswordResetEmail(emp, resetTokens.get(i));
+        // 3) 이메일 사전 검증
+        for (Employee emp : emailMap.keySet()) {
+            if (!employeeRepository.existsByEmpId(emp.getEmpId())) {
+                throw new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND);
+            }
+        }
+
+        // 4) 일괄 이메일 발송
+        for (Map.Entry<Employee, String> entry : emailMap.entrySet()) {
+            emailService.sendPasswordResetEmail(entry.getKey(), entry.getValue());
+        }
+
+        // 5) 결과 응답
+        List<Long> empIds = new ArrayList<>();
+        for (Employee emp : emailMap.keySet()) {
+            empIds.add(emp.getEmpId());
         }
 
         log.info("사원 CSV 등록 성공 - 요청자 ID: {}, 등록된 사원 ID: {}", adminId, empIds);
@@ -148,7 +158,6 @@ public class CSVService {
     }
 
     private void validateRequiredFields(String[] cols, Map<String, Integer> idxMap, int line) {
-        // 필수 컬럼 목록
         List<String> required = List.of(
                 "이름", "이메일 주소", "직위명",
                 "성별", "주소", "연락처", "생년월일"
