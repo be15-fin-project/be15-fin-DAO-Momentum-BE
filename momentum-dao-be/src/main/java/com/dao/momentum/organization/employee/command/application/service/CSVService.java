@@ -5,6 +5,7 @@ import com.dao.momentum.email.service.EmailService;
 import com.dao.momentum.organization.department.command.domain.aggregate.Department;
 import com.dao.momentum.organization.department.command.domain.repository.DepartmentRepository;
 import com.dao.momentum.organization.department.exception.DepartmentException;
+import com.dao.momentum.organization.employee.command.application.dto.request.EmployeeRegisterRequest;
 import com.dao.momentum.organization.employee.command.application.dto.response.EmployeeCSVResponse;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Gender;
@@ -19,6 +20,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -42,12 +44,11 @@ public class CSVService {
     private final EmployeeCommandService employeeCommandService;
     private final VacationTimeCommandService vacationTimeCommandService;
     private final PasswordEncoder passwordEncoder;
-
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
     private final EmailService emailService;
-
+    private final ModelMapper modelMapper;
 
     @Transactional
     public EmployeeCSVResponse createEmployees(MultipartFile file, UserDetails userDetails) {
@@ -55,223 +56,201 @@ public class CSVService {
         employeeCommandService.validateActiveAdmin(adminId);
 
         // 1) 파싱 & 검증
-        List<Employee> entities = parseAndValidate(file);
+        List<EmployeeRegisterRequest> requests = parseAndValidate(file);
 
-        // 2) 저장
-        entities.forEach(
-                entity -> {
-                    if (entity.getEmpNo() == null || entity.getEmpNo().isBlank()) {
-                        entity.setEmpNo(employeeCommandService.generateNextEmpNo());
-                    }
-                    employeeRepository.save(entity);
+        // 2) 저장 및 토큰 수집
+        Map<Employee, String> emailMap = new LinkedHashMap<>();
+        for (EmployeeRegisterRequest req : requests) {
+            Employee emp = modelMapper.map(req, Employee.class);
 
-                    String passwordResetToken = employeeCommandService.getPasswordResetToken(entity.getEmpId());
+            // 중복 이메일 체크
+            if (employeeRepository.findByEmail(req.getEmail()).isPresent()) {
+                throw new EmployeeException(ErrorCode.EMPLOYEE_ALREADY_EXISTS);
+            }
 
-                    emailService.sendPasswordResetEmail(entity, passwordResetToken);
-                });
+            // 사번 생성 및 비밀번호 설정
+            emp.setEmpNo(employeeCommandService.generateNextEmpNo());
+            String rawPwd = employeeCommandService.generateRandomPassword();
+            emp.setPassword(passwordEncoder.encode(rawPwd));
 
-        List<Long> empIds = entities.stream().map(Employee::getEmpId).toList();
+            employeeRepository.save(emp);
+            // 저장 직후 토큰 생성
+            String token = employeeCommandService.getPasswordResetToken(emp.getEmpId());
+            emailMap.put(emp, token);
+        }
 
-        // 3) 응답 DTO 반환
-        log.info("사원 CSV 등록 성공 - 요청자 ID: {}, 요청일시: {}, 등록된 사원 ID: {}", adminId, LocalDateTime.now(), empIds);
+        // 3) 이메일 사전 검증
+        for (Employee emp : emailMap.keySet()) {
+            if (!employeeRepository.existsByEmpId(emp.getEmpId())) {
+                throw new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND);
+            }
+        }
+
+        // 4) 일괄 이메일 발송
+        for (Map.Entry<Employee, String> entry : emailMap.entrySet()) {
+            emailService.sendPasswordResetEmail(entry.getKey(), entry.getValue());
+        }
+
+        // 5) 결과 응답
+        List<Long> empIds = new ArrayList<>();
+        for (Employee emp : emailMap.keySet()) {
+            empIds.add(emp.getEmpId());
+        }
+
+        log.info("사원 CSV 등록 성공 - 요청자 ID: {}, 등록된 사원 ID: {}", adminId, empIds);
         return EmployeeCSVResponse.builder()
                 .empIds(empIds)
                 .message("사원 CSV 등록 성공")
                 .build();
     }
 
-    /**
-     * CSV 파싱 → 검증 → Entity 리스트 반환
-     */
-    public List<Employee> parseAndValidate(MultipartFile file) {
+    public List<EmployeeRegisterRequest> parseAndValidate(MultipartFile file) {
         List<String[]> rows = readAllRows(file);
 
-        String[] header = rows.get(0);
-        validateHeader(header);
+        // 1) 헤더 정리 및 인덱스 맵 생성
+        List<String> headers = normalizeHeader(rows.get(0));
+        validateHeader(headers);
+        Map<String, Integer> idxMap = buildIndexMap(headers);
 
-        List<Employee> entities = new ArrayList<>();
+        // 2) 각 행 처리
+        List<EmployeeRegisterRequest> requests = new ArrayList<>();
         for (int i = 1; i < rows.size(); i++) {
-            int line = i + 1;
             String[] cols = rows.get(i);
-
             if (isEmptyRow(cols)) continue; // ",,,,," 행이 남아있으면 무시
-
-            validateRow(cols, header, line);
-
-            entities.add(toEntity(cols));
+            int line = i + 1;
+            if (cols.length != headers.size()) {
+                throw new EmployeeException(
+                        ErrorCode.INVALID_COLUMN_COUNT, line, cols.length, headers.size());
+            }
+            validateRequiredFields(cols, idxMap, line);
+            requests.add(toRequest(cols, idxMap));
         }
-        return entities;
+        return requests;
     }
 
-    // BOM 처리
-    private String normalize(String s) {
-        return s == null
-                ? null
-                : s.replace("\uFEFF", "").trim();
+    private List<String> normalizeHeader(String[] header) {
+        return Arrays.stream(header)
+                .map(h -> h == null ? "" : h.replace("\uFEFF", "").trim()) // BOM 처리
+                .toList();
+    }
+
+    private void validateHeader(List<String> headers) {
+        List<String> expected = List.of(
+                "이름", "이메일 주소", "부서명", "직위명",
+                "성별", "주소", "연락처", "입사일",
+                "재직 상태", "생년월일", "부여 연차 시간", "부여 리프레시 휴가 일수"
+        );
+        if (!headers.equals(expected)) {
+            log.warn("헤더 정보 불일치 - input: {} expected: {}", headers, expected);
+            throw new EmployeeException(ErrorCode.INVALID_CSV_HEADER);
+        }
+    }
+
+    private Map<String, Integer> buildIndexMap(List<String> headers) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        IntStream.range(0, headers.size())
+                .forEach(i -> map.put(headers.get(i), i));
+        return map;
     }
 
     private boolean isEmptyRow(String[] cols) {
         return cols == null || Arrays.stream(cols).allMatch(c -> c == null || c.isBlank());
     }
 
-    // 1) 전체 행 읽기
-    private List<String[]> readAllRows(MultipartFile file) {
-        try (
-                InputStream is = file.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-                CSVReader csv = new CSVReader(reader)
-        ) {
-            List<String[]> rows = csv.readAll();
-            if (rows.isEmpty()) {
-                log.warn("입력할 데이터 없음");
-                throw new EmployeeException(ErrorCode.EMPTY_DATA_PROVIDED);
-            }
-            return rows;
-        } catch (IOException e) {
-            log.warn("CSV 파일 읽기 실패");
-            throw new EmployeeException(ErrorCode.CSV_READ_FAILED, e);
-        } catch (CsvException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 2) 헤더 검증
-    private void validateHeader(String[] header) {
-        String[] expected = {
-                "사번", "이름", "이메일 주소", "부서명", "직위명",
-                "성별", "주소", "연락처", "입사일", "상태",
-                "생년월일", "잔여 연차 시간", "잔여 리프레시 휴가 일수"
-        };
-
-        String[] cleaned = Arrays.stream(header)
-                .map(this::normalize)
-                .toArray(String[]::new);
-
-        if (!Arrays.equals(expected, cleaned)) {
-            log.warn("헤더 정보 불일치 - input: {}, expected: {}", Arrays.toString(cleaned), Arrays.toString(expected));
-            throw new EmployeeException(ErrorCode.INVALID_CSV_HEADER);
-        }
-    }
-
-    // 3) 각 행 검증
-    private void validateRow(String[] cols, String[] header, int line) {
-        if (cols.length != header.length) {
-            log.warn("열 개수 불일치 - provided: {}개, expected: {}개", cols.length, header.length);
-            throw new EmployeeException(
-                    ErrorCode.INVALID_COLUMN_COUNT,
-                    line, cols.length, header.length
-            );
-        }
-        for (int idx = 0; idx < cols.length; idx++) {
-            // 사번, 부서명, 입사일, 상태, 잔여 연차 시간, 잔여 리프레시 휴가 일수
-            Set<Integer> optionalFields = new HashSet<>(Arrays.asList(0, 3, 8, 9, 11, 12));
-
-            if (optionalFields.contains(idx)) continue;
-            if (cols[idx] == null || cols[idx].isBlank()) {
+    private void validateRequiredFields(String[] cols, Map<String, Integer> idxMap, int line) {
+        List<String> required = List.of(
+                "이름", "이메일 주소", "직위명",
+                "성별", "주소", "연락처", "생년월일"
+        );
+        for (String key : required) {
+            String val = cols[idxMap.get(key)];
+            if (val == null || val.isBlank()) {
                 throw new EmployeeException(
-                        ErrorCode.REQUIRED_VALUE_NOT_FOUND,
-                        line, header[idx]
-                );
+                        ErrorCode.REQUIRED_VALUE_NOT_FOUND, line, key);
             }
         }
     }
 
-    // 4) Entity 변환
-    private Employee toEntity(String[] cols) {
-        LocalDateTime now = LocalDateTime.now();
-
-        String deptName = cols[3];
-        Integer deptId = parseDeptId(deptName);
-
-        String positionName = cols[4];
-        int positionId = parsePositionId(positionName);
-
-        LocalDate joinDate = provideDefaultJoinDate(cols[8]);
-
-        Status status = parseStatus(cols[9]);
+    private EmployeeRegisterRequest toRequest(String[] cols, Map<String, Integer> idx) {
+        LocalDate joinDate = Optional.ofNullable(cols[idx.get("입사일")])
+                .filter(s -> !s.isBlank())
+                .map(LocalDate::parse)
+                .orElse(LocalDate.now());
 
         int joinYear = joinDate.getYear();
         int joinMonth = joinDate.getMonthValue();
-        int targetYear = now.getYear();
+        int targetYear = LocalDate.now().getYear();
 
-        int dayoffHours = computeDayoffHours(cols[11], joinYear, joinMonth, targetYear);
-        int refreshDays = computeRefreshDays(cols[12], joinYear, targetYear);
-
-        return Employee.builder()
-                .empNo(cols[0])
-                .name(cols[1])
-                .email(cols[2])
-                .password(
-                        passwordEncoder.encode(
-                                employeeCommandService.generateRandomPassword()
-                        )
-                )
-                .deptId(deptId)
-                .positionId(positionId)
-                .gender(Gender.valueOf(cols[5]))
-                .address(cols[6])
-                .contact(cols[7])
+        return EmployeeRegisterRequest.builder()
+                .name(cols[idx.get("이름")])
+                .email(cols[idx.get("이메일 주소")])
+                .deptId(parseDeptId(cols[idx.get("부서명")] ))
+                .positionId(parsePositionId(cols[idx.get("직위명")] ))
+                .gender(Gender.valueOf(cols[idx.get("성별")] ))
+                .address(cols[idx.get("주소")])
+                .contact(cols[idx.get("연락처")])
                 .joinDate(joinDate)
-                .status(status)
-                .birthDate(LocalDate.parse(cols[10]))
-                .remainingDayoffHours(dayoffHours)
-                .remainingRefreshDays(refreshDays)
-                .createdAt(now)
+                .status(parseStatus(cols[idx.get("재직 상태")]))
+                .birthDate(LocalDate.parse(cols[idx.get("생년월일")]))
+                .remainingDayoffHours(parseIntOrDefault(
+                        cols[idx.get("부여 연차 시간")],
+                        vacationTimeCommandService.computeDayoffHours(joinYear, joinMonth, targetYear)
+                ))
+                .remainingRefreshDays(parseIntOrDefault(
+                        cols[idx.get("부여 리프레시 휴가 일수")],
+                        vacationTimeCommandService.computeRefreshDays(joinYear, targetYear)
+                ))
                 .build();
     }
 
     private Integer parseDeptId(String deptName) {
-        Integer deptId = null;
-        com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted isActive
-                = com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted.N;
+        if (deptName == null || deptName.isBlank()) return null;
 
-        if (deptName != null && !deptName.isBlank()) {
-            Department dept = departmentRepository.findByNameAndIsDeleted(deptName, isActive)
-                    .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
-            deptId = dept.getDeptId();
-        }
-        return deptId;
+        com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted isActive = com.dao.momentum.organization.department.command.domain.aggregate.IsDeleted.N;
+
+        Department dept = departmentRepository.findByNameAndIsDeleted(
+                        deptName, isActive)
+                .orElseThrow(() -> new DepartmentException(ErrorCode.DEPARTMENT_NOT_FOUND));
+        return dept.getDeptId();
     }
 
-    private int parsePositionId(String positionName) {
-        Position position = positionRepository.findByNameAndIsDeleted(positionName, IsDeleted.N)
+    private Integer parsePositionId(String positionName) {
+        Position pos = positionRepository.findByNameAndIsDeleted(
+                        positionName, IsDeleted.N)
                 .orElseThrow(() -> new PositionException(ErrorCode.POSITION_NOT_FOUND));
-        return position.getPositionId();
-    }
-
-    private LocalDate provideDefaultJoinDate(String input) {
-        LocalDate joinDate = LocalDate.now();
-        if (input != null && !input.isBlank()) {
-            joinDate = LocalDate.parse(input);
-        }
-        return joinDate;
+        return pos.getPositionId();
     }
 
     private Status parseStatus(String input) {
-        if (input == null) {
+        if (input == null || input.isBlank()) {
             return Status.EMPLOYED;
         }
-
         return switch (input) {
-            case "", "재직" -> Status.EMPLOYED;
+            case "재직" -> Status.EMPLOYED;
             case "휴직" -> Status.ON_LEAVE;
             case "퇴사" -> Status.RESIGNED;
             default -> throw new EmployeeException(ErrorCode.INVALID_STATUS);
         };
     }
 
-    private int computeDayoffHours(String input, int joinYear, int joinMonth, int targetYear) {
-        if (input == null || input.isBlank()) {
-            return vacationTimeCommandService.computeDayoffHours(joinYear, joinMonth, targetYear);
-        }
-        return Integer.parseInt(input);
+    private int parseIntOrDefault(String val, int def) {
+        if (val == null || val.isBlank()) return def;
+        return Integer.parseInt(val);
     }
 
-    private int computeRefreshDays(String input, int joinYear, int targetYear) {
-        if (input == null || input.isBlank()) {
-            return vacationTimeCommandService.computeRefreshDays(joinYear, targetYear);
+    private List<String[]> readAllRows(MultipartFile file) {
+        try (InputStream is = file.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+             CSVReader csv = new CSVReader(reader)) {
+            List<String[]> rows = csv.readAll();
+            if (rows.isEmpty()) {
+                throw new EmployeeException(ErrorCode.EMPTY_DATA_PROVIDED);
+            }
+            return rows;
+        } catch (IOException e) {
+            throw new EmployeeException(ErrorCode.CSV_READ_FAILED, e);
+        } catch (CsvException e) {
+            throw new RuntimeException(e);
         }
-        return Integer.parseInt(input);
     }
-
 }

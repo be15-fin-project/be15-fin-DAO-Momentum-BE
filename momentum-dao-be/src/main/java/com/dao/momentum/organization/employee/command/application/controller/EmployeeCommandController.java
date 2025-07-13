@@ -29,8 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/employees")
 @Tag(name = "사원 관리", description = "사원 정보 등록, 수정, 삭제 API")
 public class EmployeeCommandController {
-    private static final String CSV_KEY = "csv/0b66fc14-61fa-4a80-a502-18714e2081c1/employees.csv";
-    private static final String CSV_FILENAME = "employees.csv";
+    private static final String CSV_KEY = "csv/0b66fc14-61fa-4a80-a502-18714e2081c1/employees_template.csv";
+    private static final String CSV_FILENAME = "employees_template.csv";
 
     private final EmployeeCommandService employeeService;
     private final FileService fileService;
