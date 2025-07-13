@@ -10,18 +10,19 @@
             parameterType="map"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationItemDto">
 
-        WITH target_data AS (
+        WITH all_data AS (
             SELECT
                 er.result_id,
                 er.round_id,
                 r.round_no,
                 er.score,
-                er.created_at
+                er.created_at,
+                er.target_id
             FROM eval_response er
             JOIN eval_round r ON er.round_id = r.round_id
             JOIN eval_form f ON er.form_id = f.form_id
-            WHERE er.target_id = #{empId}
-                AND f.name = 'HR_REVIEW'
+            WHERE f.name = 'HR_REVIEW'
+                AND er.score IS NOT NULL
                 <if test="req.roundId != null">
                     AND r.round_id = #{req.roundId}
                 </if>
@@ -31,12 +32,12 @@
                 <if test="req.endDate != null">
                     <![CDATA[AND r.start_at <= #{req.endDate}]]>
                 </if>
-        ),
+            ),
         ranked AS (
             SELECT
-                t.*,
-                ROW_NUMBER() OVER (PARTITION BY t.round_id ORDER BY t.score DESC) AS ranking
-            FROM target_data t
+                *,
+                RANK() OVER (PARTITION BY round_id ORDER BY score DESC, result_id ASC) AS ranking
+            FROM all_data
         ),
         rate_data AS (
             SELECT
@@ -51,6 +52,7 @@
             JOIN (
                 SELECT round_id, COUNT(*) AS total_count
                 FROM eval_response
+                WHERE score IS NOT NULL
                 GROUP BY round_id
             ) cnt ON cnt.round_id = hr.round_id
         ),
@@ -59,6 +61,7 @@
                 r.result_id,
                 r.round_no,
                 r.created_at,
+                r.target_id,
                 CASE
                     WHEN r.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
                     WHEN r.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
@@ -77,11 +80,10 @@
             CASE
             WHEN o.objection_id IS NOT NULL THEN TRUE
             ELSE FALSE
-            END            AS objectionSubmitted
+            END AS objectionSubmitted
         FROM graded g
-        LEFT JOIN hr_objection o
-        ON o.result_id = g.result_id
-        AND o.is_deleted = 'N'
+        LEFT JOIN hr_objection o ON o.result_id = g.result_id AND o.is_deleted = 'N'
+        WHERE g.target_id = #{empId}
         ORDER BY g.created_at DESC
         LIMIT #{req.getOffset}, #{req.size}
 
@@ -131,75 +133,86 @@
 
 
     <!-- 인사 상세 조회 -->
-    <!-- 평가 기본 정보 -->
     <select id="findEvaluationContent"
             parameterType="map"
             resultType="com.dao.momentum.evaluation.hr.query.dto.response.HrEvaluationDetailDto">
-        WITH base AS (
-            SELECT
-                er.result_id,
-                er.round_id,
-                er.eval_id,
-                er.score,
-                DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
-                e.emp_no,
-                e.name
-            FROM eval_response er
-            JOIN employee e ON e.emp_id = er.eval_id
-            WHERE er.result_id = #{resultId}
-            AND er.target_id = #{empId}
-        ),
-        ranked AS (
-            SELECT
-                result_id,
-                round_id,
-                ROW_NUMBER() OVER (PARTITION BY round_id ORDER BY score DESC) AS ranking
-            FROM eval_response
-            WHERE round_id = (SELECT round_id FROM base LIMIT 1)
-        ),
-        rate_data AS (
-            SELECT
-                hr.round_id,
-                hr.rate_s,
-                hr.rate_a,
-                hr.rate_b,
-                hr.rate_c,
-                hr.rate_d,
-                cnt.total_count
-            FROM hr_rate hr
-            JOIN (
-                SELECT round_id, COUNT(*) AS total_count
-                FROM eval_response
-                WHERE round_id = (SELECT round_id FROM base LIMIT 1)
-                GROUP BY round_id
-            ) cnt ON cnt.round_id = hr.round_id
-            WHERE hr.round_id = (SELECT round_id FROM base LIMIT 1)
-        ),
-        evaluated AS (
-            SELECT
-                b.result_id,
-                b.emp_no,
-                b.name,
-                b.createdAt,
-                CASE
-                    WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
-                    WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
-                    WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a + rd.rate_b) / 100) THEN 'B'
-                    WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a + rd.rate_b + rd.rate_c) / 100) THEN 'C'
-                    ELSE 'D'
-                END AS overall_grade
-            FROM base b
-            JOIN ranked rk ON rk.result_id = b.result_id
-            JOIN rate_data rd ON b.round_id = rd.round_id
-        )
-        SELECT
-            result_id      AS resultId,
-            emp_no         AS empNo,
-            name           AS empName,
-            createdAt      AS evaluatedAt,
-            overall_grade  AS overallGrade
-        FROM evaluated
+        WITH
+            -- 1. result_id로부터 round_id, 평가자 정보 조회
+            base AS (
+                SELECT
+                    er.result_id,
+                    er.round_id,
+                    er.eval_id,
+                    er.target_id,
+                    er.score,
+                    DATE_FORMAT(er.created_at, '%Y-%m-%d') AS createdAt,
+                    e.emp_no,
+                    e.name
+                FROM eval_response er
+                JOIN employee e ON e.emp_id = er.eval_id
+                WHERE er.result_id = #{resultId}
+                    AND er.target_id = #{empId}
+            ),
 
+            -- 2. 해당 round_id의 전체 평가 결과에 대해 랭킹 부여
+            ranked AS (
+                SELECT
+                    er.result_id,
+                    er.round_id,
+                    ROW_NUMBER() OVER (PARTITION BY er.round_id ORDER BY er.score DESC) AS ranking
+                FROM eval_response er
+                JOIN eval_form f ON er.form_id = f.form_id
+                WHERE er.round_id = (SELECT round_id FROM base)
+                    AND er.score IS NOT NULL
+                    AND f.name = 'HR_REVIEW'
+            ),
+
+            -- 3. 등급 기준 비율 + 전체 인원 수 가져오기
+            rate_data AS (
+                SELECT
+                    hr.round_id,
+                    hr.rate_s,
+                    hr.rate_a,
+                    hr.rate_b,
+                    hr.rate_c,
+                    hr.rate_d,
+                    cnt.total_count
+                FROM hr_rate hr
+                JOIN (
+                    SELECT round_id, COUNT(*) AS total_count
+                    FROM eval_response
+                    WHERE round_id = (SELECT round_id FROM base)
+                    GROUP BY round_id
+                ) cnt ON cnt.round_id = hr.round_id
+                WHERE hr.round_id = (SELECT round_id FROM base)
+            ),
+
+            -- 4. 등급 계산
+            evaluated AS (
+                SELECT
+                    b.result_id,
+                    b.emp_no,
+                    b.name,
+                    b.createdAt,
+                    CASE
+                        WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * rd.rate_s / 100) THEN 'S'
+                        WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a) / 100) THEN 'A'
+                        WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a + rd.rate_b) / 100) THEN 'B'
+                        WHEN rk.ranking <![CDATA[<=]]> FLOOR(rd.total_count * (rd.rate_s + rd.rate_a + rd.rate_b + rd.rate_c) / 100) THEN 'C'
+                        ELSE 'D'
+                    END AS overall_grade
+                FROM base b
+                JOIN ranked rk ON rk.result_id = b.result_id
+                JOIN rate_data rd ON b.round_id = rd.round_id
+            )
+
+        SELECT
+            result_id     AS resultId,
+            emp_no        AS empNo,
+            name          AS empName,
+            createdAt     AS evaluatedAt,
+            overall_grade AS overallGrade
+        FROM evaluated
     </select>
 
     <!-- 등급 비율 조회 -->
@@ -261,19 +274,6 @@
     <select id="findLatestRoundNo"
             resultType="int">
         SELECT MAX(round_no) FROM eval_round
-    </select>
-
-
-    <!-- 전체 점수 조회 -->
-    <!-- 동일 round의 전체 대상자 평가 점수 조회 -->
-    <select id="findAllScores"
-            parameterType="long"
-            resultType="int">
-        SELECT score
-        FROM eval_response
-        WHERE round_id = (
-            SELECT round_id FROM eval_response WHERE result_id = #{resultId}
-        )
     </select>
 
 </mapper>

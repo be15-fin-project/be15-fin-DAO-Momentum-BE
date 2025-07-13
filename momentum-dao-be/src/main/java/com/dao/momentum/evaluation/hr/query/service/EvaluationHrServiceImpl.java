@@ -25,46 +25,48 @@ public class EvaluationHrServiceImpl implements EvaluationHrService {
     @Override
     @Transactional(readOnly = true)
     public HrEvaluationListResultDto getHrEvaluations(long empId, MyHrEvaluationListRequestDto req) {
-        log.info("[EvaluationHrServiceImpl] getHrEvaluations() 호출 시작 - empId={}, 요청 파라미터={}, 요청한 사용자 ID={}",
-                empId, req, empId);
+        log.info("[EvaluationHrServiceImpl] getHrEvaluations() 호출 시작 - empId={}, 요청 파라미터={}", empId, req);
 
         // 1) 평가 내역 조회
         List<HrEvaluationItemDto> items = mapper.findHrEvaluations(empId, req);
         if (items == null) {
-            log.error("HR 평가 내역을 찾을 수 없음 - empId={} - request={}", empId, req);
+            log.error("HR 평가 내역을 찾을 수 없음 - empId={}, req={}", empId, req);
             throw new HrException(ErrorCode.HR_EVALUATIONS_NOT_FOUND);
         }
-        log.info("조회된 평가 내역 - items.size={}", items.size());
+        log.info("조회된 평가 내역 수: {}", items.size());
 
         // 2) 전체 건수 조회
         long total = mapper.countHrEvaluations(empId, req);
-        log.info("전체 평가 내역 건수 - total={}", total);
+        log.info("총 평가 내역 수: {}", total);
 
-        // 3) 각 평가별 요인 점수 조회 및 합치기
-        List<FactorScoreDto> factorScores = new ArrayList<>();
+        // 3) 각 평가별 요인 점수 조회 및 Wrapping DTO 생성
+        List<HrEvaluationWithFactorsDto> wrappedItems = new ArrayList<>();
         for (HrEvaluationItemDto item : items) {
-            List<FactorScoreDto> itemFactorScores = mapper.findFactorScores(item.resultId());
-            if (itemFactorScores == null) {
+            List<FactorScoreDto> factorScores = mapper.findFactorScores(item.resultId());
+            if (factorScores == null) {
                 log.error("요인 점수를 찾을 수 없음 - resultId={}", item.resultId());
                 throw new HrException(ErrorCode.FACTOR_SCORES_NOT_FOUND);
             }
-            factorScores.addAll(itemFactorScores);
+
+            wrappedItems.add(HrEvaluationWithFactorsDto.builder()
+                    .item(item)
+                    .factorScores(factorScores)
+                    .build());
         }
-        log.info("요인 점수 조회 완료 - factorScores.size={}", factorScores.size());
+        log.info("요인 점수 포함 평가 항목 조립 완료 - wrappedItems.size={}", wrappedItems.size());
 
         // 4) 페이지네이션 정보 생성
         Pagination pagination = buildPagination(req.page(), total);
-        log.info("페이지네이션 생성 완료 - currentPage={}, totalPage={}, totalItems={}",
+        log.info("페이지네이션 완료 - currentPage={}, totalPage={}, totalItems={}",
                 pagination.getCurrentPage(), pagination.getTotalPage(), pagination.getTotalItems());
 
-        // 5) 결과 DTO 조립
+        // 5) 최종 결과 DTO 반환
         HrEvaluationListResultDto result = HrEvaluationListResultDto.builder()
-                .items(items)
-                .factorScores(factorScores)
+                .items(wrappedItems)
                 .pagination(pagination)
                 .build();
-        log.info("HR 평가 내역 조회 완료 - items.size={}, factorScores.size={}", items.size(), factorScores.size());
 
+        log.info("HR 평가 내역 반환 완료 - items.size={}", wrappedItems.size());
         return result;
     }
 

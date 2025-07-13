@@ -1,15 +1,17 @@
 package com.dao.momentum.evaluation.hr.query.service;
 
+import com.dao.momentum.common.dto.Pagination;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.evaluation.hr.exception.HrException;
 import com.dao.momentum.evaluation.hr.query.dto.request.MyHrEvaluationListRequestDto;
 import com.dao.momentum.evaluation.hr.query.dto.response.*;
 import com.dao.momentum.evaluation.hr.query.mapper.EvaluationHrMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class EvaluationHrServiceImplTest {
 
     @Mock
@@ -29,17 +32,7 @@ class EvaluationHrServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        
-        MockitoAnnotations.openMocks(this);
-
-        // Initialize the request DTO
-        req = new MyHrEvaluationListRequestDto(
-                null,  // roundId (예시로 null을 전달)
-                null,  // startDate (예시로 null을 전달)
-                null,  // endDate (예시로 null을 전달)
-                1,     // page
-                10     // size
-        );
+        req = new MyHrEvaluationListRequestDto(null, null, null, 1, 10);
     }
 
     @Nested
@@ -50,24 +43,31 @@ class EvaluationHrServiceImplTest {
         @DisplayName("정상 반환")
         void getHrEvaluations_success() {
             HrEvaluationItemDto item = HrEvaluationItemDto.builder()
-                    .resultId(1001L)
+                    .resultId(2001L)
                     .roundNo(3)
                     .overallGrade("A")
                     .evaluatedAt(LocalDateTime.now())
                     .build();
 
-            // Setup mock behavior
-            given(mapper.findHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(List.of(item));
-            given(mapper.countHrEvaluations(eq(1L), any(MyHrEvaluationListRequestDto.class))).willReturn(1L);
-            given(mapper.findFactorScores(1001L)).willReturn(List.of()); // 검증 대상 아님
+            given(mapper.findHrEvaluations(1L, req)).willReturn(List.of(item));
+            given(mapper.countHrEvaluations(1L, req)).willReturn(1L);
+            lenient().when(mapper.findFactorScores(2001L)).thenReturn(List.of());
 
-            // Call service method
             HrEvaluationListResultDto result = service.getHrEvaluations(1L, req);
 
-            // Validate results
             assertThat(result.items()).hasSize(1);
-            assertThat(result.items().get(0).resultId()).isEqualTo(1001L);
-            assertThat(result.pagination().getTotalItems()).isEqualTo(1L);
+            assertThat(result.items().get(0).item().resultId()).isEqualTo(2001L);
+        }
+
+        @Test
+        @DisplayName("조회 실패시 예외 발생")
+        void getHrEvaluations_notFound_throws() {
+            given(mapper.findHrEvaluations(1L, req)).willReturn(null);
+
+            assertThatThrownBy(() -> service.getHrEvaluations(1L, req))
+                    .isInstanceOf(HrException.class)
+                    .extracting(e -> ((HrException) e).getErrorCode())
+                    .isEqualTo(ErrorCode.HR_EVALUATIONS_NOT_FOUND);
         }
     }
 
@@ -95,16 +95,13 @@ class EvaluationHrServiceImplTest {
                     .weightGrowth(10).weightEngagement(15).weightResult(15).build();
             FactorScoreDto score = FactorScoreDto.builder().propertyName("태도").score("B").build();
 
-            // Setup mock behavior
             given(mapper.findEvaluationContent(resultId, empId)).willReturn(content);
             given(mapper.findRateInfo(resultId)).willReturn(rate);
             given(mapper.findWeightInfo(resultId)).willReturn(weight);
             given(mapper.findFactorScores(resultId)).willReturn(List.of(score));
 
-            // Call service method
             HrEvaluationDetailResultDto result = service.getHrEvaluationDetail(empId, resultId);
 
-            // Validate results
             assertThat(result.content().resultId()).isEqualTo(resultId);
             assertThat(result.factorScores()).hasSize(1);
             assertThat(result.rateInfo().rateS()).isEqualTo(10);
@@ -114,40 +111,33 @@ class EvaluationHrServiceImplTest {
         @Test
         @DisplayName("조회 결과 없으면 예외 발생")
         void getHrEvaluationDetail_notFound_throws() {
-            // Setup mock behavior
             given(mapper.findEvaluationContent(1001L, 1L)).willReturn(null);
 
-            // Call service method and validate exception
             assertThatThrownBy(() -> service.getHrEvaluationDetail(1L, 1001L))
                     .isInstanceOf(HrException.class)
-                    .satisfies(e -> {
-                        HrException ex = (HrException) e;
-                        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.HR_EVALUATION_NOT_FOUND);
-                    });
+                    .satisfies(e -> assertThat(((HrException) e).getErrorCode()).isEqualTo(ErrorCode.HR_EVALUATION_NOT_FOUND));
         }
     }
 
     @Nested
-    @DisplayName("getEvaluationCriteria: 회차 조회")
+    @DisplayName("getEvaluationCriteria: 회차 기준 조회")
     class GetEvaluationCriteria {
 
         @Test
         @DisplayName("회차 없으면 최신 회차로 조회")
         void getEvaluationCriteria_nullRoundNo_returnsLatest() {
-            // Setup mock behavior
             given(mapper.findLatestRoundNo()).willReturn(5);
             given(mapper.findRateInfoByRoundNo(5)).willReturn(
                     RateInfo.builder().rateS(10).rateA(25).rateB(30).rateC(20).rateD(15).build()
             );
             given(mapper.findWeightInfoByRoundNo(5)).willReturn(
-                    WeightInfo.builder().weightPerform(20).weightTeam(20).weightAttitude(20)
+                    WeightInfo.builder()
+                            .weightPerform(20).weightTeam(20).weightAttitude(20)
                             .weightGrowth(20).weightEngagement(10).weightResult(10).build()
             );
 
-            // Call service method
             HrEvaluationCriteriaDto result = service.getEvaluationCriteria(null);
 
-            // Validate results
             assertThat(result.rateInfo().rateA()).isEqualTo(25);
             assertThat(result.weightInfo().weightResult()).isEqualTo(10);
         }

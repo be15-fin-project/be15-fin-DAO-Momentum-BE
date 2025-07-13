@@ -44,6 +44,12 @@ class EvaluationHrControllerTest {
                 .roundNo(3)
                 .overallGrade("우수")
                 .evaluatedAt(LocalDateTime.now())
+                .objectionSubmitted(false)
+                .build();
+
+        HrEvaluationWithFactorsDto wrappedItem = HrEvaluationWithFactorsDto.builder()
+                .item(item)
+                .factorScores(Collections.emptyList())
                 .build();
 
         Pagination pagination = Pagination.builder()
@@ -53,8 +59,7 @@ class EvaluationHrControllerTest {
                 .build();
 
         HrEvaluationListResultDto mockResult = HrEvaluationListResultDto.builder()
-                .items(List.of(item))
-                .factorScores(Collections.emptyList())
+                .items(List.of(wrappedItem))
                 .pagination(pagination)
                 .build();
 
@@ -67,9 +72,9 @@ class EvaluationHrControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.items", hasSize(1)))
-                .andExpect(jsonPath("$.data.items[0].resultId").value(1001))
-                .andExpect(jsonPath("$.data.items[0].roundNo").value(3))
-                .andExpect(jsonPath("$.data.items[0].overallGrade").value("우수"))
+                .andExpect(jsonPath("$.data.items[0].item.resultId").value(1001))
+                .andExpect(jsonPath("$.data.items[0].item.roundNo").value(3))
+                .andExpect(jsonPath("$.data.items[0].item.overallGrade").value("우수"))
                 .andExpect(jsonPath("$.data.pagination.totalItems").value(1))
                 .andExpect(jsonPath("$.data.pagination.currentPage").value(1));
     }
