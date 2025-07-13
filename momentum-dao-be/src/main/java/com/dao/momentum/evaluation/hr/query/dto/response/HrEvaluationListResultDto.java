@@ -9,11 +9,8 @@ import java.util.List;
 @Builder
 @Schema(description = "사원 인사평가 내역 목록 조회 응답 DTO")
 public record HrEvaluationListResultDto(
-        @Schema(description = "평가 내역 목록")
-        List<HrEvaluationItemDto> items,
-
-        @Schema(description = "요인별 점수 목록")
-        List<FactorScoreDto> factorScores,
+        @Schema(description = "평가 내역 및 내역별 요인 점수 목록")
+        List<HrEvaluationWithFactorsDto> items,
 
         @Schema(description = "페이지네이션 정보")
         Pagination pagination

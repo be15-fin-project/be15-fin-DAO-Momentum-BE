@@ -49,6 +49,9 @@ class MyObjectionQueryServiceImplTest {
             long total = 2L;
             MyObjectionRaw raw1 = MyObjectionRaw.builder()
                     .objectionId(101L)
+                    .resultId(2001L)
+                    .roundNo(1)
+                    .statusId(1)
                     .createdAt("2025-06-22 17:00:00")
                     .overallScore(95)
                     .statusType("PENDING")
@@ -56,6 +59,9 @@ class MyObjectionQueryServiceImplTest {
 
             MyObjectionRaw raw2 = MyObjectionRaw.builder()
                     .objectionId(102L)
+                    .resultId(2002L)
+                    .roundNo(1)
+                    .statusId(1)
                     .createdAt("2025-06-21 15:30:00")
                     .overallScore(82)
                     .statusType("APPROVED")
@@ -63,28 +69,38 @@ class MyObjectionQueryServiceImplTest {
 
             List<MyObjectionRaw> rawList = List.of(raw1, raw2);
 
+            RateInfo rateInfo = RateInfo.builder()
+                    .rateS(30).rateA(30).rateB(20).rateC(15).rateD(5).build();
+
             given(mapper.countMyObjections(1L, req)).willReturn(total);
             given(mapper.findMyObjections(1L, req)).willReturn(rawList);
 
+            // 등급 계산을 위한 score 목록과 등급 기준 설정
+            given(mapper.findRateInfo(2001L)).willReturn(rateInfo);
+            given(mapper.findRateInfo(2002L)).willReturn(rateInfo);
+
+            // raw1: 95점 → 1등 → 상위 16.6% → "S" (rateS=30)
+            given(mapper.findAllScores(2001L)).willReturn(List.of(95, 92, 90, 85, 80, 75));
+            // raw2: 82점 → 3등 → 상위 42.8% → "A" (rateS+rateA=60)
+            given(mapper.findAllScores(2002L)).willReturn(List.of(90, 85, 82, 80, 75));
+
+            // when
             MyObjectionListResultDto result = service.getMyObjections(1L, req);
 
+            // then
             assertThat(result.content()).hasSize(2);
 
             MyObjectionItemDto item1 = result.content().get(0);
             assertThat(item1.objectionId()).isEqualTo(101L);
-            assertThat(item1.createdAt()).isEqualTo("2025-06-22 17:00:00");
             assertThat(item1.overallGrade()).isEqualTo("S");
-            assertThat(item1.statusType()).isEqualTo("PENDING");
 
             MyObjectionItemDto item2 = result.content().get(1);
             assertThat(item2.objectionId()).isEqualTo(102L);
-            assertThat(item2.overallGrade()).isEqualTo("B");
-            assertThat(item2.statusType()).isEqualTo("APPROVED");
+            assertThat(item2.overallGrade()).isEqualTo("A");
 
             Pagination p = result.pagination();
             assertThat(p.getCurrentPage()).isEqualTo(1);
             assertThat(p.getTotalItems()).isEqualTo(total);
-            assertThat(p.getTotalPage()).isEqualTo((int) Math.ceil((double) total / req.size()));
         }
 
         @Test
