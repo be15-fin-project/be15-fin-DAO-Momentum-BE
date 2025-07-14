@@ -129,6 +129,7 @@ public class SecurityConfig {
                 "/evaluations/form-tree",
                 "/evaluations/form-property",
                 "/evaluations/rounds",
+                "/evaluations/rounds/**",
                 "/evaluations/roundNo",
                 "/evaluations/roundStatus",
                 "/evaluations/hr",
@@ -190,13 +191,9 @@ public class SecurityConfig {
         ).hasAuthority("MASTER");
 
         auths.requestMatchers(HttpMethod.DELETE,
-                "/departments/{deptId}",
-                "/evaluations/rounds/{roundId}"
+                "/departments/{deptId}"
         ).hasAuthority("MASTER");
 
-        auths.requestMatchers(HttpMethod.PATCH,
-                "/evaluations/rounds/{roundId}"
-        ).hasAuthority("MASTER");
     }
 
     // 인사관리자 전용
