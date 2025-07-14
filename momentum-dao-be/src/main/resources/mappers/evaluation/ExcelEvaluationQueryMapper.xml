@@ -39,8 +39,12 @@
         LEFT JOIN position p   ON t.position_id = p.position_id
         JOIN eval_round r ON er.round_id = r.round_id
         <where>
+            AND et.name = 'PEER'
             <if test="roundId != null">
                 AND r.round_id = #{roundId}
+            </if>
+            <if test="formId != null">
+                AND ef.form_id = #{formId}
             </if>
             <if test="targetEmpNo != null and targetEmpNo != ''">
                 AND t.emp_no = #{targetEmpNo}
@@ -94,6 +98,9 @@
             <if test="roundId != null">
                 AND r.round_id = #{roundId}
             </if>
+            <if test="formId != null">
+                AND f.form_id = #{formId}
+            </if>
             <if test="evalEmpNo != null and evalEmpNo != ''">
                 AND e.emp_no = #{evalEmpNo}
             </if>
@@ -142,6 +149,9 @@
 
             <if test="roundId != null">
                 AND r.round_id = #{roundId}
+            </if>
+            <if test="formId != null">
+                AND f.form_id = #{formId}
             </if>
             <if test="empNo != null and empNo != ''">
                 AND e.emp_no = #{empNo}

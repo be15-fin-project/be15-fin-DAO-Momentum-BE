@@ -10,6 +10,9 @@ public record PeerEvaluationExcelRequestDto(
         @Schema(description = "회차 ID", example = "3")
         Long roundId,
 
+        @Schema(description = "평가 양식 ID", example = "5")
+        Integer formId,
+
         @Schema(description = "평가 대상자 사번", example = "20240001")
         String targetEmpNo,
 

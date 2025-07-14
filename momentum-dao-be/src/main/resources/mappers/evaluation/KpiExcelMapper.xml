@@ -5,6 +5,17 @@
 <mapper namespace="com.dao.momentum.evaluation.kpi.query.mapper.KpiExcelMapper">
 
     <select id="selectKpisForExcel" resultType="com.dao.momentum.evaluation.kpi.query.dto.response.KpiExcelDto">
+        WITH RECURSIVE dept_tree AS (
+            SELECT dept_id
+            FROM department
+            WHERE dept_id = #{deptId}
+                AND is_deleted = 'N'
+        UNION ALL
+            SELECT d.dept_id
+            FROM department d
+            INNER JOIN dept_tree dt ON d.parent_dept_id = dt.dept_id
+            WHERE d.is_deleted = 'N'
+        )
         SELECT
             e.emp_no           AS employeeNo,
             e.name             AS employeeName,
@@ -28,7 +39,9 @@
                 AND e.emp_no = #{empNo}
             </if>
             <if test="deptId != null">
-                AND e.dept_id = #{deptId}
+                AND e.dept_id IN (
+                    SELECT dept_id FROM dept_tree
+                )
             </if>
             <if test="positionId != null">
                 AND e.position_id = #{positionId}
