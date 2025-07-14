@@ -39,8 +39,8 @@
             <if test="endDate != null">
                 AND DATE(o.created_at) &lt;= #{endDate}
             </if>
-            <if test="req.isDeleted != null">
-                AND o.is_deleted = #{req.isDeleted}
+            <if test="isDeleted != null">
+                AND o.is_deleted = #{isDeleted}
             </if>
         </where>
         ORDER BY o.created_at DESC
@@ -73,8 +73,8 @@
             <if test="endDate != null">
                 AND DATE(o.created_at) &lt;= #{endDate}
             </if>
-            <if test="req.isDeleted != null">
-                AND o.is_deleted = #{req.isDeleted}
+            <if test="isDeleted != null">
+                AND o.is_deleted = #{isDeleted}
             </if>
         </where>
     </select>
