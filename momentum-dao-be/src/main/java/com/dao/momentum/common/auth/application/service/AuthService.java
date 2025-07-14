@@ -43,6 +43,7 @@ public class AuthService {
     private final RedisTemplate<String, PasswordResetToken> passwordResetTokenRedisTemplate;
     private final EmailService emailService;
 
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         Employee employee = employeeRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND)
@@ -56,6 +57,21 @@ public class AuthService {
         String[] employeeRoleArray = employeeRoles.toArray(new String[0]);
 
         String accessToken = jwtTokenProvider.createToken(String.valueOf(employee.getEmpId()), employeeRoleArray);
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .build();
+    }
+
+    @Transactional
+    public String getRefreshToken(LoginRequest loginRequest){
+        Employee employee = employeeRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND)
+                );
+
+        List<String> employeeRoles = userRoleMapper.findByEmpId(employee.getEmpId());
+        String[] employeeRoleArray = employeeRoles.toArray(new String[0]);
+
         String refreshToken = jwtTokenProvider.createRefreshToken(String.valueOf(employee.getEmpId()), employeeRoleArray);
 
         RefreshToken redisRefreshToken = RefreshToken.builder()
@@ -68,13 +84,10 @@ public class AuthService {
                 Duration.ofDays(7)
         );
 
-        return LoginResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .userRoles(employeeRoleArray)
-                .build();
+        return refreshToken;
     }
 
+    @Transactional
     public void logout(String refreshToken) {
         if(refreshToken == null)
             return;
@@ -84,6 +97,7 @@ public class AuthService {
         redisTemplate.delete(userId);
     }
 
+    @Transactional
     public TokenResponse refreshToken(String providedRefreshToken) {
         // 리프레시 토큰 유효성 검사, 저장 되어 있는 userId 추출
         jwtTokenProvider.validateToken(providedRefreshToken);
