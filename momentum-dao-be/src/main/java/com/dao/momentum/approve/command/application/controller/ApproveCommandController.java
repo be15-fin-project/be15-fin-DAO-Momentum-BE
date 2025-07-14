@@ -91,4 +91,17 @@ public class ApproveCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PutMapping("/documents/{documentId}")
+    @Operation(summary = "결재 수정하기", description = "결재 내역을 수정 합니다.")
+    public ResponseEntity<ApiResponse<Void>> updateApproval(
+            @RequestBody @Valid ApproveRequest approveRequest,
+            @PathVariable Long documentId ,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        Long empId = Long.parseLong(userDetails.getUsername());
+
+        approveCommandService.updateApproval(approveRequest, documentId, empId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

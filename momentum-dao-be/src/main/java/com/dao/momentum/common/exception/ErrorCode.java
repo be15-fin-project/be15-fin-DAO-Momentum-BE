@@ -96,8 +96,9 @@ public enum ErrorCode {
     INSUFFICIENT_DAY_OFF("30023", "남은 연차 시간이 부족합니다.", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_HALF_DAY_OFF("30024", "남은 반차 시간이 부족합니다.", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_REFRESH("30025", "남은 리프레시 휴가 일수가 부족합니다.", HttpStatus.BAD_REQUEST),
-    ALREADY_START_APPROVAL("30026", "결재가 시작되어 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_START_APPROVAL("30026", "결재가 시작되어 수정, 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
     NO_DELETE_PERMISSION("30027", "삭제할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
+    NO_UPDATE_PERMISSION("30028", "수정할 권한이 없습니다.", HttpStatus.BAD_REQUEST),
 
     // 평가 오류 (40001 ~ 49999)
     // KPI 오류

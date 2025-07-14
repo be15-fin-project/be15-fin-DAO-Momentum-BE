@@ -69,4 +69,8 @@ public class Approve {
         this.cancelAt = LocalDateTime.now();
     }
 
+    public void updateTitle(String approveTitle) {
+        this.approveTitle = approveTitle;
+    }
+
 }

@@ -157,6 +157,8 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     @Transactional
     public void deleteApproval(Long approveId, Long empId) {
 
+        log.info("삭제 하려는 결재 아이디 : {},  문서를 작성한 사원 ID : {}", approveId, empId);
+
         Approve approve = approveRepository.getApproveByApproveId(approveId)
                 .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_APPROVE));
 
@@ -181,14 +183,7 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         }
 
         // 4. 결재 관련 문서(8가지) 삭제하기
-        receiptRepository.deleteApproveReceiptByApprovalId(approveId);
-        proposalRepository.deleteApproveProposalByApprovalId(approveId);
-        cancelRepository.deleteApproveCancelByApproveId(approveId);
-        workCorrectionRepository.deleteWorkCorrectionByApproveId(approveId);
-        overtimeRepository.deleteOvertimeByApproveId(approveId);
-        remoteWorkRepository.deleteRemoteWorkByApproveId(approveId);
-        vacationRepository.deleteVacationByApproveId(approveId);
-        businessTripRepository.deleteBusinessTripByApproveId(approveId);
+        deleteDetailByType(approve.getApproveType(), approveId);
 
         // 5. 결재선 결재자 삭제하기
         for(Long approveLineId : approveLineIds) {
@@ -206,6 +201,86 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
 
         // 9. 결재 삭제하기
         approveRepository.deleteApproveByApproveId(approveId);
+    }
+
+    /*
+    * 결재 문서 수정하기
+    * */
+    @Transactional
+    public void updateApproval(ApproveRequest approveRequest, Long approveId, Long empId) {
+
+        log.info("수정 하려는 결재 아이디 : {},  문서를 작성한 사원 ID : {}", approveId, empId);
+
+        Approve approve = approveRepository.getApproveByApproveId(approveId)
+                .orElseThrow(() -> new ApproveException(ErrorCode.NOT_EXIST_APPROVE));
+
+        ApproveType approveType = approveRequest.getApproveType();
+
+        approve.updateTitle(approveRequest.getApproveTitle());
+
+        if(!Objects.equals(approve.getEmpId(), empId)) {
+            throw new ApproveException(ErrorCode.NO_UPDATE_PERMISSION);
+        }
+
+        List<Long> approveLineIds
+                = approveLineRepository.getApproveLinesByApproveId(approveId);
+
+        List<Integer> statusIds = approveLineListRepository
+                .getAllStatusesByApproveLineIds(approveLineIds);
+
+        boolean allPending = statusIds.stream()
+                .allMatch(statusId -> statusId == 1);
+
+        if (!allPending) {
+            throw new ApproveException(ErrorCode.ALREADY_START_APPROVAL);
+        }
+
+        deleteDetailByType(approve.getApproveType(), approveId);
+
+        for(Long approveLineId : approveLineIds) {
+            approveLineListRepository.deleteApproveLineListByApproveLineId(approveLineId);
+        }
+
+        approveLineRepository.deleteApproveLinesByApproveId(approveId);
+
+        approveRefRepository.deleteApproveRefByApprovalId(approveId);
+
+        fileRepository.deleteByApprovalId(approveId);
+
+        FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approveType);
+
+        strategy.saveDetail(approveRequest.getFormDetail(), approveId);
+
+        List<AttachmentRequest> attachments = approveRequest.getAttachments();
+
+        if (approveType == ApproveType.RECEIPT) {
+            if (attachments == null || attachments.isEmpty()) {
+                throw new ApproveException(ErrorCode.RECEIPT_IMAGE_REQUIRED);
+            }
+        }
+
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AttachmentRequest attachment : attachments) {
+                File file = File.builder()
+                        .announcementId(null)
+                        .approveId(approveId)
+                        .contractId(null)
+                        .name(attachment.getName())
+                        .s3Key(attachment.getS3Key())
+                        .type(attachment.getType())
+                        .build();
+                fileRepository.save(file);
+            }
+        }
+
+        createApproveLine(approveId, approveRequest.getApproveLineLists());
+
+        List<ApproveRefRequest> approveRefRequests =
+                Optional.ofNullable(approveRequest.getRefRequests()).orElse(List.of());
+
+        if (!approveRefRequests.isEmpty()) {
+            createApproveRef(approveId, approveRefRequests);
+        }
     }
 
     /*
@@ -303,5 +378,22 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
                     });
                 });
     }
+
+    /*
+    * type에 맞춰서 결재 문서 삭제하기
+    * */
+    private void deleteDetailByType(ApproveType type, Long approveId) {
+        switch (type) {
+            case RECEIPT -> receiptRepository.deleteApproveReceiptByApprovalId(approveId);
+            case PROPOSAL -> proposalRepository.deleteApproveProposalByApprovalId(approveId);
+            case CANCEL -> cancelRepository.deleteApproveCancelByApproveId(approveId);
+            case WORKCORRECTION -> workCorrectionRepository.deleteWorkCorrectionByApproveId(approveId);
+            case OVERTIME -> overtimeRepository.deleteOvertimeByApproveId(approveId);
+            case REMOTEWORK -> remoteWorkRepository.deleteRemoteWorkByApproveId(approveId);
+            case VACATION -> vacationRepository.deleteVacationByApproveId(approveId);
+            case BUSINESSTRIP -> businessTripRepository.deleteBusinessTripByApproveId(approveId);
+        }
+    }
+
 
 }
