@@ -6,6 +6,7 @@ import com.dao.momentum.organization.employee.command.application.service.Appoin
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.retention.prospect.command.application.dto.request.RetentionSupportDto;
 import com.dao.momentum.evaluation.eval.query.service.EvaluationScoreService;
+import com.dao.momentum.work.command.application.service.WlbRetentionService;
 import com.dao.momentum.work.command.application.service.WorkRetentionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     private final AppointRetentionService appointRetentionService;
     private final WorkRetentionService workRetentionService;
     private final KpiRetentionService kpiRetentionService;
+    private final WlbRetentionService wlbRetentionService;
 
     /**
      * 각 항목별 점수와 전체 점수를 계산하는 로직
@@ -152,9 +154,11 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     private int calculateWlbLevel(Integer year, Integer month, Employee emp) {
         int wlbScore = 15;
 
-        // 1. 초과 근무
+        // 1. 초과 근무 (최대 -10점)
+        wlbScore += wlbRetentionService.getOvertimeScore(emp.getEmpId(), year, month);
 
-        // 2. 재택 근무
+        // 2. 재택 근무 (최대 +2점)
+        wlbScore += wlbRetentionService.getRemoteWorkScore(emp.getEmpId(), year, month);
 
         // 3. 자가 진단
         wlbScore += evaluationScoreService.getAdjustedScoreForForm(12, emp.getEmpId(), 3.0, year, month);

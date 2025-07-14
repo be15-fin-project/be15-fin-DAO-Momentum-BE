@@ -17,7 +17,7 @@ public interface RemoteWorkRepository extends JpaRepository<RemoteWork, Long> {
     Optional<RemoteWork> findByApproveId(Long approveId);
 
     @Query(
-            value = "SELECT * FROM remote_work WHERE start_at BETWEEN :startDate AND :endDate",
+            value = "SELECT * FROM remote_work WHERE start_date BETWEEN :startDate AND :endDate",
             nativeQuery = true
     )
     List<RemoteWork> findRemoteWorksBetween(LocalDate startDate, LocalDate endDate);
