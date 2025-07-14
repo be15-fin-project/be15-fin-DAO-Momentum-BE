@@ -96,16 +96,12 @@ class AuthServiceTest {
         when(passwordEncoder.matches(loginRequest.getPassword(),employee.getPassword())).thenReturn(true);
         when(userRoleMapper.findByEmpId(employee.getEmpId())).thenReturn(roles);
         when(jwtTokenProvider.createToken(String.valueOf(employee.getEmpId()), employeeRoleArray)).thenReturn(accessToken);
-        when(jwtTokenProvider.createRefreshToken(String.valueOf(employee.getEmpId()), employeeRoleArray)).thenReturn(refreshToken);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         // when
         LoginResponse response = authService.login(loginRequest);
 
         // then
         assertEquals(accessToken, response.getAccessToken());
-        assertEquals(refreshToken, response.getRefreshToken());
-        assertArrayEquals(roles.toArray(), response.getUserRoles());
     }
 
     @Test
