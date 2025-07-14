@@ -356,7 +356,7 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
                         NotificationMessage message = NotificationMessage.builder()
                                 .content(content)
                                 .type("APPROVAL_REQUEST")
-                                .url("/approval/" + approveId)
+                                .url("/approval/detail/" + approve.getApproveId() + "?from=inbox&tab=received")
                                 .receiverId(assignee.getEmpId())
                                 .senderId(senderId)
                                 .senderName(senderName)
