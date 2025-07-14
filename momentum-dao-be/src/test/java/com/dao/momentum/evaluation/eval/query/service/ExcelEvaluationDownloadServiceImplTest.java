@@ -151,7 +151,8 @@ class ExcelEvaluationDownloadServiceImplTest {
         void downloadOrgEvaluationExcel_success() {
             // given
             OrgEvaluationExcelRequestDto request = new OrgEvaluationExcelRequestDto(
-                    3L,            // roundId
+                    3L,     // roundId
+                    1,             // formId
                     "20250001",    // evalEmpNo
                     10L,           // deptId
                     5L             // positionId
@@ -189,7 +190,8 @@ class ExcelEvaluationDownloadServiceImplTest {
         void downloadOrgEvaluationExcel_empty() {
             // given
             OrgEvaluationExcelRequestDto request = new OrgEvaluationExcelRequestDto(
-                    3L,            // roundId
+                    3L,     // roundId
+                    1,             // formId
                     "20250001",    // evalEmpNo
                     10L,           // deptId
                     5L             // positionId
@@ -207,7 +209,8 @@ class ExcelEvaluationDownloadServiceImplTest {
         void downloadOrgEvaluationExcel_generationFail() {
             // given
             OrgEvaluationExcelRequestDto request = new OrgEvaluationExcelRequestDto(
-                    3L,            // roundId
+                    3L,     // roundId
+                    1,             // formId
                     "20250001",    // evalEmpNo
                     10L,           // deptId
                     5L             // positionId
