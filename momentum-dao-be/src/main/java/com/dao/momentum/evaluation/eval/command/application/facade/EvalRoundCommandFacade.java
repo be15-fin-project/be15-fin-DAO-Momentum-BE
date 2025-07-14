@@ -1,6 +1,5 @@
 package com.dao.momentum.evaluation.eval.command.application.facade;
 
-import ch.qos.logback.core.boolex.EvaluationException;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.kafka.dto.NotificationMessage;
 import com.dao.momentum.evaluation.eval.command.application.dto.request.EvalRoundCreateRequest;
@@ -56,7 +55,7 @@ public class EvalRoundCommandFacade {
             if (startDate.isEqual(LocalDate.now())) {
                 notificationClient.sendEvaluationStart(NotificationMessage.builder()
                         .type("EVALUATION_START")
-                        .url("/performance/evaluation/my/list")
+                        .url("/eval/submit")
                         .build());
                 log.info("즉시 알림 발송 완료 - roundId={}, startDate={}", round.getRoundId(), startDate);
             } else {

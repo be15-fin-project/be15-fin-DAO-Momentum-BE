@@ -200,7 +200,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
             approve.updateApproveStatus(APPROVED);
 
             log.info("모든 결재선이 승인되어, 결재 {}이(가) 승인 처리됨", approve.getApproveId());
-
+            
             ApproveType approveType = approve.getApproveType();
             if(WORK_APPROVE_TYPE.contains(approveType)) { // 근태 결재인 경우
                 workApplyCommandService.applyApprovalWork(approve);
@@ -217,6 +217,40 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
 
                 approvalCancelCommandService.cancelApprovalWork(parentApprove);
             }
+
+            // 결재가 최종 승인되었으므로 기안자에게 승인 완료 알림 전송
+            sendFinalApprovalNotificationToDrafter(approve);
+        }
+    }
+
+    /* 결재가 최종 승인된 경우, 기안자에게 승인 완료 알림을 전송 */
+    private void sendFinalApprovalNotificationToDrafter(Approve approve) {
+        Long senderId = approve.getEmpId(); // 기안자도 발신자로 설정 (또는 마지막 결재자도 가능)
+        Long receiverId = senderId;
+
+        Employee sender = employeeRepository.findByEmpId(senderId)
+                .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        String senderName = sender.getName();
+
+        FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
+        String content = strategy.createNotificationContent(approve.getApproveId(), senderName);
+
+        NotificationMessage message = NotificationMessage.builder()
+                .content(content)
+                .type("APPROVAL_COMPLETED")
+                .url("/approval/detail/" + approve.getApproveId() + "?from=inbox&tab=sent")
+                .receiverId(receiverId)
+                .senderId(senderId)
+                .senderName(senderName)
+                .timestamp(LocalDateTime.now())
+                .approveId(approve.getApproveId())
+                .build();
+
+        try {
+            notificationKafkaProducer.sendNotification(receiverId.toString(), message);
+            log.info("결재 ID: {}, 수신자 ID(기안자): {} → 최종 결재 완료 알림 전송 완료", approve.getApproveId(), receiverId);
+        } catch (Exception e) {
+            log.error("최종 결재 완료 알림 전송 실패 - 결재 ID: {}, 수신자 ID: {}, 사유: {}", approve.getApproveId(), receiverId, e.getMessage(), e);
         }
     }
 
@@ -254,7 +288,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
             NotificationMessage message = NotificationMessage.builder()
                     .content(content)
                     .type("APPROVAL_REQUEST")
-                    .url("/approval/" + approveId)
+                    .url("/approval/detail/" + approve.getApproveId() + "?from=inbox&tab=received")
                     .receiverId(assignee.getEmpId())
                     .senderId(senderId)
                     .senderName(senderName)
@@ -286,7 +320,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
         NotificationMessage message = NotificationMessage.builder()
                 .content(content)
                 .type("APPROVAL_REJECTED")
-                .url("/approval/" + approve.getApproveId())
+                .url("/approval/detail/" + approve.getApproveId() + "?from=inbox&tab=sent")
                 .receiverId(receiverId)
                 .senderId(senderId)
                 .senderName(senderName)

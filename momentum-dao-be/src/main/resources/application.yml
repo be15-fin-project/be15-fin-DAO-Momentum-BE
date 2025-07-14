@@ -71,7 +71,7 @@ cloud:
       bucket: dao-momentum
     cloudfront:
       key-pair-id: K2HAOQD1EYCOQG
-      domain: momentum-dao.site
+      domain: dttuxlxof3ctr.cloudfront.net
       private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH}
 
 custom:
