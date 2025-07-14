@@ -34,7 +34,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest){
         LoginResponse response = authService.login(loginRequest);
-        ResponseCookie cookie = createRefreshTokenCookie(response.getRefreshToken());
+        ResponseCookie cookie = createRefreshTokenCookie(authService.getRefreshToken(loginRequest));
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(response));
