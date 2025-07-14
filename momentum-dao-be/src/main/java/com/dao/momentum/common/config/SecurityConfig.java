@@ -48,7 +48,7 @@ public class SecurityConfig {
                         auth -> {
                               permitAllEndpoints(auth);
                               employeeEndpoints(auth);
-//                            managerEndpoints(auth);
+                              managerEndpoints(auth);
                               masterEndpoints(auth);
 //                            hrManagerEndpoints(auth);
 //                            bookkeepingEndpoints(auth);
@@ -109,7 +109,40 @@ public class SecurityConfig {
         auths.requestMatchers(
                 "/employees/me",
                 "/remaining/refresh",
-                "/remaining/dayoff"
+                "/remaining/dayoff",
+
+                // KPI
+                "/kpi/dashboard",
+                "/kpi/{kpiId}",
+                "/kpi",
+                "/kpi/{kpiId}/withdraw",
+                "/kpi/{kpiId}",
+                "/kpi/{kpiId}/progress",
+                "/kpi/exel",
+                "/kpi/my-statistics",
+                "/kpi/my-timeseries",
+                "/kpi/my-list",
+                // 평가
+                "/evaluation/tasks",
+                "/eval-forms/{formId}",
+                "/evaluations/submit",
+                "/evaluations/form-tree",
+                "/evaluations/form-property",
+                "/evaluations/rounds",
+                "/evaluations/roundNo",
+                "/evaluations/roundStatus",
+                "/evaluations/hr",
+                "/evaluations/hr/{resultId}",
+                // 인사 평가
+                "/hr-objections/{evaluationId}",
+                "/hr-objections/my",
+                "/hr-objections/my/{objectionId}",
+                "/hr-objections/{objectionId}",
+                
+                // 근속 전망
+                "/retention/contact/my",
+                "/retention/contact/{retentionId}",
+                "/retention-contacts/{retentionId}/response"
         ).authenticated();
 
 //        auths.requestMatchers(
@@ -120,25 +153,51 @@ public class SecurityConfig {
     // 팀장 전용
     private void managerEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
-               ""
+                //KPI
+                "/kpi/requests",
+                "/kpi/{kpiId}/approval",
+                "/kpi/{kpiId}/cancel/approval",
+                // 인사 평가
+                "/hr-objections/requests",
+                "/hr-objections/requests/{objectionId}",
+                "/hr-objections/process"
         ).hasAuthority("MANAGER");
     }
 
+    // 마스터 관리자 전용
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
                 "/employees/roles",
                 "/employees/{empId}/roles"
-                ).hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.GET,"/holiday", "/employees/ids").hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.POST,
-                        "/employees/batch-token",
-                        "/departments",
-                        "/holiday",
-                        "/position"
-                ).hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.PUT, "/company","/departments","/position").hasAuthority("MASTER")
-                .requestMatchers(HttpMethod.DELETE,"/departments/{deptId}").hasAuthority("MASTER");
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers(HttpMethod.GET,
+                "/holiday",
+                "/employees/ids"
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers(HttpMethod.POST,
+                "/employees/batch-token",
+                "/departments",
+                "/holiday",
+                "/position"
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers(HttpMethod.PUT,
+                "/company",
+                "/departments",
+                "/position"
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers(HttpMethod.DELETE,
+                "/departments/{deptId}",
+                "/evaluations/rounds/{roundId}"
+        ).hasAuthority("MASTER");
+
+        auths.requestMatchers(HttpMethod.PATCH,
+                "/evaluations/rounds/{roundId}"
+        ).hasAuthority("MASTER");
     }
 
     // 인사관리자 전용
@@ -162,7 +221,46 @@ public class SecurityConfig {
                 "/contracts", // GET, POST
                 "/employees/csv", // GET, POST
                 "/employees/appoints",
-                "/employees/{empId}/hr-info"
+                "/employees/{empId}/hr-info",
+
+
+                // KPI 통계 및 전체 조회
+                "/kpi/statistics",
+                "/kpi/timeseries",
+                "/kpi/list",
+                "/kpi/employee-summary",
+
+                // 평가 결과 조회 (사원 간, 조직, 자가진단)
+                "/evaluation/results/peer",
+                "/evaluation/results/peer/{resultId}",
+                "/evaluation/results/org",
+                "/evaluation/results/org/{resultId}",
+                "/evaluations/self",
+                "/evaluations/self/{evalId}",
+
+                // 회차 관리
+                "/evaluations/forms",
+                "/evaluations/hr/{roundNo}/criteria",
+
+                // 근속 전망 통계 및 회차
+                "/retention/forecast",
+                "/retention/{retentionId}",
+                "/retention/statistics/overview",
+                "/retention/statistics/stability-distribution/overall",
+                "/retention/statistics/stability-distribution",
+                "/retention/statistics/timeseries",
+                "/retention/rounds",
+                "/retention-forecasts",
+                "/retention-forecasts/{roundId}",
+                "/retention-supports/excel",
+
+                // 면담 기록 및 요청
+                "/retention/contact",
+                "/retention/contact/{retentionId}",
+                "/retention-contacts/{retentionId}/request",
+                "/retention-contacts",
+                "/retention-contacts/{retentionId}",
+                "/retention-contacts/{retentionId}/feedback"
         ).hasAnyAuthority("MASTER", "HR_MANAGER");
 
         auths.requestMatchers(
