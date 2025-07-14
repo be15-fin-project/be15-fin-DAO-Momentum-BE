@@ -48,7 +48,7 @@ class PositionCommandServiceTest {
         // given
         PositionCreateRequest request = new PositionCreateRequest("Manager", 1);
 
-        when(positionRepository.existsByName("Manager")).thenReturn(true);
+        when(positionRepository.existsByNameAndIsDeleted("Manager",IsDeleted.N)).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> positionCommandService.createPositions(request))
@@ -151,7 +151,7 @@ class PositionCommandServiceTest {
         PositionUpdateRequest request = new PositionUpdateRequest(positionId, "Manager", 3);
 
         when(positionRepository.findByPositionId(positionId)).thenReturn(Optional.of(originalPosition));
-        when(positionRepository.existsByName("Manager")).thenReturn(true);
+        when(positionRepository.existsByNameAndIsDeleted("Manager",IsDeleted.N)).thenReturn(true);
         when(positionRepository.findMaxLevel()).thenReturn(5);
 
         // then
