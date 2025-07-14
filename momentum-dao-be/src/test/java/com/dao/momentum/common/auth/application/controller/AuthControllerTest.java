@@ -34,11 +34,10 @@ class AuthControllerTest {
 
         LoginResponse loginResponse = LoginResponse.builder()
                 .accessToken("access-token")
-                .refreshToken("refresh-token")
-                .userRoles(new String[]{"ROLE_USER"})
                 .build();
 
         when(authService.login(request)).thenReturn(loginResponse);
+        when(authService.getRefreshToken(request)).thenReturn("refresh-token");
 
         // when
         ResponseEntity<ApiResponse<LoginResponse>> responseEntity = authController.login(request);
@@ -50,8 +49,6 @@ class AuthControllerTest {
         ApiResponse<LoginResponse> body = responseEntity.getBody();
         assertNotNull(body);
         assertEquals("access-token", body.getData().getAccessToken());
-        assertEquals("refresh-token", body.getData().getRefreshToken());
-        assertArrayEquals(new String[]{"ROLE_USER"}, body.getData().getUserRoles());
 
         // 헤더 검증
         String setCookieHeader = responseEntity.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
