@@ -11,4 +11,6 @@ public class AttendanceDTO {
     private LocalDateTime startAt;
 
     private LocalDateTime endAt;
+
+    private LocalDateTime endPushedAt;
 }
