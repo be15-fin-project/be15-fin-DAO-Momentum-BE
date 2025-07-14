@@ -118,7 +118,7 @@ public class SecurityConfig {
                 "/kpi/{kpiId}/withdraw",
                 "/kpi/{kpiId}",
                 "/kpi/{kpiId}/progress",
-                "/kpi/exel",
+                "/kpi/excel",
                 "/kpi/my-statistics",
                 "/kpi/my-timeseries",
                 "/kpi/my-list",
@@ -164,7 +164,6 @@ public class SecurityConfig {
         ).hasAuthority("MANAGER");
     }
 
-    // 마스터 관리자 전용
     // 마스터 관리자 전용
     private void masterEndpoints(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auths) {
         auths.requestMatchers(
