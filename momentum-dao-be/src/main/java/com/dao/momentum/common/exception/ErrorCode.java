@@ -172,6 +172,7 @@ public enum ErrorCode {
     RETENTION_ROUND_ALREADY_EXIST("50008", "해당 일자의 근속 전망 회차가 이미 등록되어 있습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_ROUND_NOT_READY("50009", "근속 전망 회차는 해당 월이 끝난 이후에만 등록할 수 있습니다.", HttpStatus.BAD_REQUEST),
     RETENTION_CONTACT_MANAGER_NOT_FOUND("50010", "해당 사원의 상급자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    RETENTION_CONTACT_WRITER_NOT_MANAGER("50011", "면담 진행 요청은 팀장에게만 전달 가능합니다.", HttpStatus.BAD_REQUEST),
 
     //공지사항 오류(60001 - 69999)
     ANNOUNCEMENT_NOT_FOUND("60001", "해당 공지사항 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

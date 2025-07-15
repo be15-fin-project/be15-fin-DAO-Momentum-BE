@@ -20,6 +20,16 @@ public interface EmployeeRolesRepository {
     """, nativeQuery = true)
     boolean existsManagerRole(@Param("empId") Long empId, @Param("userRoleId") Long userRoleId);
 
+    // 팀장 여부 확인
+    @Query(value = """
+                SELECT COUNT(*)
+                FROM employee_roles
+                WHERE emp_id = :empId
+                  AND user_role_id = :userRoleId
+            """, nativeQuery = true)
+    Integer countManagerRole(@Param("empId") Long empId, @Param("userRoleId") Long userRoleId);
+
+
     // 해당 부서의 팀장 ID 목록 조회
     @Query(value = """
         SELECT e.emp_id
