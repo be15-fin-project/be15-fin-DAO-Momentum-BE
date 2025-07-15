@@ -41,22 +41,9 @@ public class OvertimeFormStrategy implements FormDetailStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("연장근무 결재 정보가 없습니다."));
 
         return switch (type) {
-            case REQUEST -> String.format(
-                    "[연장근무] %s님이 %s ~ %s 동안 연장근무를 신청했습니다. 사유: %s",
-                    senderName,
-                    overtime.getStartAt(),
-                    overtime.getEndAt(),
-                    overtime.getReason()
-            );
-            case APPROVED -> String.format(
-                    "[연장근무 승인 완료] %s님의 연장근무 신청이 승인되었습니다.",
-                    senderName
-            );
-            case REJECTED -> String.format(
-                    "[연장근무 반려] %s님의 연장근무 신청이 반려되었습니다. 사유: %s",
-                    senderName,
-                    overtime.getReason()
-            );
+            case REQUEST -> String.format("[결재 요청] %s님이 연장근무를 신청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 연장근무 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 연장근무 결재가 반려되었습니다.", senderName);
         };
     }
 }

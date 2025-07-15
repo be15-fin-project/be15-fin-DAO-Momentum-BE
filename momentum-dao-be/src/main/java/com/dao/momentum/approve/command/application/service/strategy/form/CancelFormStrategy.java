@@ -39,20 +39,9 @@ public class CancelFormStrategy implements FormDetailStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("취소 결재 정보가 없습니다."));
 
         return switch (type) {
-            case REQUEST -> String.format(
-                    "[취소 요청] %s님이 다음 사유로 결재 취소를 요청했습니다: %s",
-                    senderName,
-                    cancel.getCancelReason()
-            );
-            case APPROVED -> String.format(
-                    "[취소 승인 완료] %s님의 결재 취소 요청이 승인되었습니다.",
-                    senderName
-            );
-            case REJECTED -> String.format(
-                    "[취소 반려] %s님의 결재 취소 요청이 반려되었습니다. 사유: %s",
-                    senderName,
-                    cancel.getCancelReason()
-            );
+            case REQUEST -> String.format("[결재 요청] %s님이 결재 취소를 요청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 결재 취소가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 결재 취소가 반려되었습니다.", senderName);
         };
     }
 }

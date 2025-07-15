@@ -68,18 +68,9 @@ public class VacationFormStrategy implements FormDetailStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("휴가 결재 정보가 없습니다."));
 
         return switch (type) {
-            case REQUEST -> String.format(
-                    "[휴가] %s님이 %s ~ %s 기간 동안 휴가를 신청했습니다. 사유: %s",
-                    senderName, vacation.getStartDate(), vacation.getEndDate(), vacation.getReason()
-            );
-            case APPROVED -> String.format(
-                    "[휴가 승인 완료] %s님의 휴가 신청이 승인되었습니다.",
-                    senderName
-            );
-            case REJECTED -> String.format(
-                    "[휴가 반려] %s님의 휴가 신청이 반려되었습니다. 사유: %s",
-                    senderName, vacation.getReason()
-            );
+            case REQUEST -> String.format("[결재 요청] %s님이 영수증 결재를 요청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 영수증 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 영수증 결재가 반려되었습니다.", senderName);
         };
     }
 

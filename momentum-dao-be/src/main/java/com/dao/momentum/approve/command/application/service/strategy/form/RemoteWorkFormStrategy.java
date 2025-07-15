@@ -41,18 +41,9 @@ public class RemoteWorkFormStrategy implements FormDetailStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("재택근무 결재 정보가 없습니다."));
 
         return switch (type) {
-            case REQUEST -> String.format(
-                    "[재택근무] %s님이 %s ~ %s 재택근무를 신청했습니다. 사유: %s",
-                    senderName, remoteWork.getStartDate(), remoteWork.getEndDate(), remoteWork.getReason()
-            );
-            case APPROVED -> String.format(
-                    "[재택근무 승인 완료] %s님의 재택근무 신청이 승인되었습니다.",
-                    senderName
-            );
-            case REJECTED -> String.format(
-                    "[재택근무 반려] %s님의 재택근무 신청이 반려되었습니다. 사유: %s",
-                    senderName, remoteWork.getReason()
-            );
+            case REQUEST -> String.format("[결재 요청] %s님이 재택근무를 신청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 재택근무 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 재택근무 결재가 반려되었습니다.", senderName);
         };
     }
 
