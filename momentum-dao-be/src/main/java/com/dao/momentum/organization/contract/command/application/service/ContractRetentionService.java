@@ -35,10 +35,13 @@ public class ContractRetentionService {
      */
     @Transactional(readOnly = true)
     public int calculateScoreBySalaryIncrements(long empId, LocalDate targetDate) {
+        log.info("[연봉 인상률 감점 계산 시작] empId={}, 기준일={}", empId, targetDate);
+
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
         if (isUnderThreeYears(employee.getJoinDate(), targetDate)) {
+            log.info("- 입사 3년 미만으로 감점 제외 - empId={}, joinDate={}", empId, employee.getJoinDate());
             return 0;
         }
 
@@ -47,6 +50,7 @@ public class ContractRetentionService {
                 .findTop1ByEmpIdAndTypeOrderByCreatedAtDesc(empId, ContractType.SALARY_AGREEMENT)
                 .orElse(null);
         if (latest == null) {
+            log.info("- 연봉 계약 없음 - empId={}", empId);
             return 0;
         }
 
@@ -54,7 +58,14 @@ public class ContractRetentionService {
         LocalDateTime cutoff = targetDate.atStartOfDay().minusYears(YEAR_TO_SEARCH);
         Contract old = findOldContract(empId, cutoff, latest);
 
+        log.info("- 최신 계약: {}, 과거 계약: {}", latest.getSalary(), old.getSalary());
+
         double rate = calculateIncreaseRate(old.getSalary(), latest.getSalary());
+        int penalty = mapPenalty(rate);
+
+        log.info("- 연봉 인상률 계산 - oldSalary={}, newSalary={}, rate={}%, penalty={}",
+                old.getSalary(), latest.getSalary(), String.format("%.2f", rate), penalty);
+
         return mapPenalty(rate);
     }
 
@@ -74,6 +85,10 @@ public class ContractRetentionService {
         Optional<Contract> afterCutoff = contractRepository
                 .findTop1ByEmpIdAndTypeAndCreatedAtAfterOrderByCreatedAtAsc(
                         empId, ContractType.SALARY_AGREEMENT, cutoff);
+
+        Contract result = beforeCutoff.orElse(afterCutoff.orElse(latest));
+
+        log.info("- 감점 비교용 계약 결정 - cutoff={}, 선택된 계약 생성일={}", cutoff.toLocalDate(), result.getCreatedAt().toLocalDate());
 
         return beforeCutoff.orElse(
                 afterCutoff.orElse(latest)
