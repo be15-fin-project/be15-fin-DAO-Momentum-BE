@@ -5,6 +5,7 @@ import com.dao.momentum.common.kafka.dto.NotificationMessage;
 import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
 import com.dao.momentum.organization.employee.query.service.ManagerFinderService;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
@@ -34,6 +35,7 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
     private final RetentionSupportRepository supportRepository;
     private final NotificationKafkaProducer notificationKafkaProducer;
     private final EmployeeRepository employeeRepository;
+    private final EmployeeRolesRepository employeeRolesRepository;
     private final ManagerFinderService managerFinderService;
 
 
@@ -46,6 +48,14 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
         if (dto.targetId().equals(dto.managerId())) {
             throw new InterviewException(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER);
         }
+
+        // 팀장 권한 확인
+        Integer count = employeeRolesRepository.countManagerRole(dto.managerId(), 4L);
+        log.info("managerId={}의 팀장 role count = {}", dto.managerId(), count);
+        if (count <= 0) {
+            throw new InterviewException(ErrorCode.RETENTION_CONTACT_WRITER_NOT_MANAGER);
+        }
+
 
         Employee targetEmployee = employeeRepository.findByEmpId(dto.targetId())
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
