@@ -38,16 +38,14 @@ public class ReceiptFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         ApproveReceipt receipt = approveReceiptRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("영수증 결재 정보가 없습니다."));
 
-        return String.format(
-                "[영수증] %s님이 %s에서 사용한 %d원 결재를 요청했습니다. 사용일시: %s",
-                senderName,
-                receipt.getStoreName(),
-                receipt.getAmount(),
-                receipt.getUsedAt()
-        );
+        return switch (type) {
+            case REQUEST -> String.format("[결재 요청] %s님이 영수증 결재를 신청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 영수증 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 영수증 결재가 반려되었습니다.", senderName);
+        };
     }
 }

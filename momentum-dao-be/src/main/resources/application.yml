@@ -76,7 +76,7 @@ cloud:
 
 custom:
   kafka:
-    notification-topic: user.notification
+    notification-topic: notification-topic
 
 naver:
   service:

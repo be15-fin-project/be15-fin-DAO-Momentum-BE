@@ -233,7 +233,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
         String senderName = sender.getName();
 
         FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
-        String content = strategy.createNotificationContent(approve.getApproveId(), senderName);
+        String content = strategy.createNotificationContent(approve.getApproveId(), senderName, FormDetailStrategy.NotificationType.APPROVED);
 
         NotificationMessage message = NotificationMessage.builder()
                 .content(content)
@@ -282,7 +282,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
         String senderName = sender.getName();
 
         FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
-        String content = strategy.createNotificationContent(approveId, senderName);
+        String content = strategy.createNotificationContent(approveId, senderName, FormDetailStrategy.NotificationType.REQUEST);
 
         assignees.forEach(assignee -> {
             NotificationMessage message = NotificationMessage.builder()
@@ -315,7 +315,7 @@ public class ApprovalDecisionCommandServiceImpl implements ApprovalDecisionComma
         String senderName = sender.getName();
 
         FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approve.getApproveType());
-        String content = strategy.createNotificationContent(approve.getApproveId(), senderName);
+        String content = strategy.createNotificationContent(approve.getApproveId(), senderName, FormDetailStrategy.NotificationType.REJECTED);
 
         NotificationMessage message = NotificationMessage.builder()
                 .content(content)

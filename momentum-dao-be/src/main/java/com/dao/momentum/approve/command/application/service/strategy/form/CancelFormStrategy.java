@@ -34,14 +34,14 @@ public class CancelFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         ApproveCancel cancel = approveCancelRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("취소 결재 정보가 없습니다."));
 
-        return String.format(
-                "[취소 요청] %s님이 다음 사유로 결재 취소를 요청했습니다: %s",
-                senderName,
-                cancel.getCancelReason()
-        );
+        return switch (type) {
+            case REQUEST -> String.format("[결재 요청] %s님이 결재 취소를 요청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 결재 취소가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 결재 취소가 반려되었습니다.", senderName);
+        };
     }
 }

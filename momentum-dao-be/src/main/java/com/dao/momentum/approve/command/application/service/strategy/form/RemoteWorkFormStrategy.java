@@ -36,16 +36,15 @@ public class RemoteWorkFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         RemoteWork remoteWork = remoteWorkRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("재택근무 결재 정보가 없습니다."));
 
-        return String.format(
-                "[재택근무] %s님이 %s ~ %s 재택근무를 신청했습니다. 사유: %s",
-                senderName,
-                remoteWork.getStartDate(),
-                remoteWork.getEndDate(),
-                remoteWork.getReason()
-        );
+        return switch (type) {
+            case REQUEST -> String.format("[결재 요청] %s님이 재택근무를 신청했습니다.", senderName);
+            case APPROVED -> String.format("[결재 승인] %s님의 재택근무 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[결재 반려] %s님의 재택근무 결재가 반려되었습니다.", senderName);
+        };
     }
+
 }
