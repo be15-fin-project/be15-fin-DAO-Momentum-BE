@@ -63,17 +63,24 @@ public class VacationFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         Vacation vacation = approveProposalRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("휴가 결재 정보가 없습니다."));
 
-        return String.format(
-                "[휴가] %s님이 %s ~ %s 기간 동안 휴가를 신청했습니다. 사유: %s",
-                senderName,
-                vacation.getStartDate(),
-                vacation.getEndDate(),
-                vacation.getReason()
-        );
+        return switch (type) {
+            case REQUEST -> String.format(
+                    "[휴가] %s님이 %s ~ %s 기간 동안 휴가를 신청했습니다. 사유: %s",
+                    senderName, vacation.getStartDate(), vacation.getEndDate(), vacation.getReason()
+            );
+            case APPROVED -> String.format(
+                    "[휴가 승인 완료] %s님의 휴가 신청이 승인되었습니다.",
+                    senderName
+            );
+            case REJECTED -> String.format(
+                    "[휴가 반려] %s님의 휴가 신청이 반려되었습니다. 사유: %s",
+                    senderName, vacation.getReason()
+            );
+        };
     }
 
 }

@@ -343,7 +343,7 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
 
         // 3. 전략에 따른 content 생성
         FormDetailStrategy strategy = formDetailStrategyDispatcher.dispatch(approveType);
-        String content = strategy.createNotificationContent(approveId, senderName);
+        String content = strategy.createNotificationContent(approveId, senderName, FormDetailStrategy.NotificationType.REQUEST);
 
         // 4. 첫 번째 결재선 알림 전송
         approveLineRepository.findFirstLine(approveId)

@@ -39,17 +39,32 @@ public class BusinessTripFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         BusinessTrip trip = businessTripRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("출장 결재 정보가 없습니다."));
 
-        return String.format(
-                "[출장] %s님이 %s ~ %s 동안 %s로 출장을 신청했습니다. 사유: %s",
-                senderName,
-                trip.getStartDate(),
-                trip.getEndDate(),
-                trip.getPlace(),
-                trip.getReason()
-        );
+        return switch (type) {
+            case REQUEST -> String.format(
+                    "[출장] %s님이 %s ~ %s 동안 %s로 출장을 신청했습니다. 사유: %s",
+                    senderName,
+                    trip.getStartDate(),
+                    trip.getEndDate(),
+                    trip.getPlace(),
+                    trip.getReason()
+            );
+            case APPROVED -> String.format(
+                    "[출장 승인 완료] %s님의 출장이 %s ~ %s 기간 동안 %s로 승인되었습니다.",
+                    senderName,
+                    trip.getStartDate(),
+                    trip.getEndDate(),
+                    trip.getPlace()
+            );
+            case REJECTED -> String.format(
+                    "[출장 반려] %s님의 출장 신청이 반려되었습니다. 사유: %s",
+                    senderName,
+                    trip.getReason()
+            );
+        };
     }
+
 }

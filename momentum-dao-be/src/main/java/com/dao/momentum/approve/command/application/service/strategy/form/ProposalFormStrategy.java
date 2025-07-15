@@ -34,10 +34,14 @@ public class ProposalFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         ApproveProposal proposal = approveProposalRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("품의 결재 정보가 없습니다."));
 
-        return String.format("[품의 결재] %s님이 품의 결재를 요청했습니다.", senderName);
+        return switch (type) {
+            case REQUEST -> String.format("[품의 결재] %s님이 품의 결재를 요청했습니다.", senderName);
+            case APPROVED -> String.format("[품의 결재 승인 완료] %s님의 품의 결재가 승인되었습니다.", senderName);
+            case REJECTED -> String.format("[품의 결재 반려] %s님의 품의 결재가 반려되었습니다.", senderName);
+        };
     }
 }

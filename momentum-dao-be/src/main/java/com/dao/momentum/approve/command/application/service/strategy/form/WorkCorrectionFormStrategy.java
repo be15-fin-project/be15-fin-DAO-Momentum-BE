@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.format.DateTimeFormatter;
+
 @Component
 @RequiredArgsConstructor
 public class WorkCorrectionFormStrategy implements FormDetailStrategy {
@@ -39,18 +41,36 @@ public class WorkCorrectionFormStrategy implements FormDetailStrategy {
     }
 
     @Override
-    public String createNotificationContent(Long approveId, String senderName) {
+    public String createNotificationContent(Long approveId, String senderName, NotificationType type) {
         WorkCorrection correction = workCorrectionRepository.findByApproveId(approveId)
                 .orElseThrow(() -> new IllegalArgumentException("근무 수정 결재 정보가 없습니다."));
 
-        return String.format(
-                "[근무 수정] %s님이 기존 출퇴근 시간(%s ~ %s)을 %s ~ %s로 수정 요청했습니다. 사유: %s",
-                senderName,
-                correction.getBeforeStartAt(),
-                correction.getBeforeEndAt(),
-                correction.getAfterStartAt(),
-                correction.getAfterEndAt(),
-                correction.getReason()
-        );
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        String beforeStart = correction.getBeforeStartAt().format(formatter);
+        String beforeEnd = correction.getBeforeEndAt().format(formatter);
+        String afterStart = correction.getAfterStartAt().format(formatter);
+        String afterEnd = correction.getAfterEndAt().format(formatter);
+
+        return switch (type) {
+            case REQUEST -> String.format(
+                    "[근무 수정] %s님이 기존 출퇴근 시간(%s ~ %s)을 %s ~ %s로 수정 요청했습니다. 사유: %s",
+                    senderName,
+                    beforeStart,
+                    beforeEnd,
+                    afterStart,
+                    afterEnd,
+                    correction.getReason()
+            );
+            case APPROVED -> String.format(
+                    "[근무 수정 승인 완료] %s님의 근무 수정 요청이 승인되었습니다.",
+                    senderName
+            );
+            case REJECTED -> String.format(
+                    "[근무 수정 반려] %s님의 근무 수정 요청이 반려되었습니다. 사유: %s",
+                    senderName,
+                    correction.getReason()
+            );
+        };
     }
 }
