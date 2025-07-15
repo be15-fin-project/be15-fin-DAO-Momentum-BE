@@ -18,22 +18,22 @@
             e.name AS employee_name,
             d.name AS department_name,
 
-            CASE
-                WHEN a.emp_id = #{empId} THEN 'WRITER'
-                WHEN EXISTS (
-                    SELECT 1
-                    FROM approve_line al2
-                    JOIN approve_line_list ali2 ON al2.approve_line_id = ali2.approve_line_id
-                    WHERE al2.approve_id = a.approve_id AND ali2.emp_id = #{empId}
-                    ) THEN 'APPROVAL'
-                WHEN EXISTS (
-                    SELECT 1
-                    FROM approve_ref ar2
-                    WHERE ar2.approve_id = a.approve_id AND ar2.emp_id = #{empId}
-                    ) THEN 'REFERENCE'
-                WHEN #{isAdmin} = TRUE THEN 'MASTER'
-                ELSE NULL
-            END AS received_type
+            TRIM(TRAILING ',' FROM CONCAT(
+            CASE WHEN a.emp_id = #{empId} THEN 'WRITER,' ELSE '' END,
+            CASE WHEN EXISTS (
+                SELECT 1
+                FROM approve_line al2
+                JOIN approve_line_list ali2 ON al2.approve_line_id = ali2.approve_line_id
+                WHERE al2.approve_id = a.approve_id AND ali2.emp_id = #{empId}
+            ) THEN 'APPROVAL,' ELSE '' END,
+            CASE WHEN EXISTS (
+                SELECT 1
+                FROM approve_ref ar2
+                WHERE ar2.approve_id = a.approve_id AND ar2.emp_id = #{empId}
+            ) THEN 'REFERENCE,' ELSE '' END,
+                CASE WHEN #{isAdmin} = TRUE THEN 'MASTER,' ELSE '' END
+            )) AS received_type
+
 
         FROM approve a
         JOIN employee e ON a.emp_id = e.emp_id
