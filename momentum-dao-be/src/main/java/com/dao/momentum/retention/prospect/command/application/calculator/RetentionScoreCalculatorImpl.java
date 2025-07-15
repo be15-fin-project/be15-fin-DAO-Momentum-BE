@@ -34,6 +34,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
      *  */
     @Override
     public RetentionSupportDto calculate(Integer year, Integer month, Employee employee) {
+        log.info("[근속 점수 계산 시작] empNo={}, year={}, month={}", employee.getEmpNo(), year, month);
+
         int jobLevel = calculateJobLevel(year, month, employee);           // 직무 만족도 : 최대 20점
         int compLevel = calculateCompLevel(year, month, employee);         // 임금 및 복지 만족도 : 최대 20점
         int relationLevel = calculateRelationLevel(year, month, employee); // 상사, 동료 관계 : 최대 15점
@@ -48,6 +50,9 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
                 jobLevel, compLevel, relationLevel, growthLevel, tenureLevel, wlbLevel, ageCoefficient
         );
 
+        log.info("[근속 점수 계산 완료] empNo={}, 점수(직무={}, 보상={}, 관계={}, 성장={}, 근속={}, 워라밸={}), 보정계수={}, 총점={}",
+                employee.getEmpNo(), jobLevel, compLevel, relationLevel, growthLevel, tenureLevel, wlbLevel, ageCoefficient, retentionScore);
+
         // 각각의 총점을 100점으로 환산
         // 총점이 20점 -> 최종 점수 * 5
         // 총점이 15점 -> 최종 점수 * 20 / 3
@@ -56,7 +61,7 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
                 compLevel * 5,
                 (int) Math.round(relationLevel * 20.0 / 3),
                 (int) Math.round(growthLevel * 20.0 / 3),
-                (int) Math.round(tenureLevel * 20.0 / 3),
+                (int) Math.round((tenureLevel + 2) * 20.0 / 3),
                 (int) Math.round(wlbLevel * 20.0 / 3),
                 retentionScore
         );
@@ -68,6 +73,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
 
     /* 직무 만족도 계산 메소드 */
     private int calculateJobLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 직무 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         int jobScore = 20;
 
         // 1. 인사 평가
@@ -80,11 +87,15 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         jobScore += evaluationScoreService.getAdjustedScoreForForm(5, emp.getEmpId(), 4.0, year, month);
         jobScore += evaluationScoreService.getAdjustedScoreForForm(11, emp.getEmpId(), 4.0, year, month);
 
+        int finalScore = clampScore(jobScore, 20);
+        log.info("- 직무 만족도 계산 완료 - 결과={}", finalScore);
         return clampScore(jobScore, 20);
     }
 
     /* 경력 개발 기회 계산 메소드 */
     private int calculateCompLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 보상 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         int compScore = 20;
         long empId = emp.getEmpId();
         LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1); // 대상 달(과거 날짜)의 마지막 날
@@ -96,11 +107,16 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 2. 복리후생 (최대 -7점)
         compScore += evaluationScoreService.getAdjustedScoreForForm(8, emp.getEmpId(), 7.0, year, month);
 
+        int finalScore = clampScore(compScore, 20);
+        log.info("- 보상 만족도 계산 완료 - 결과={}", finalScore);
+
         return clampScore(compScore, 20);
     }
 
     /* 상사, 동료 관계 계산 메소드 */
     private int calculateRelationLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 관계 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         int relationScore = 15;
         long empId = emp.getEmpId();
         LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
@@ -114,11 +130,16 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 3. 발령 이력 (최대 -2점)
         relationScore += appointRetentionService.calculateScoreByDeptTransfer(empId, targetDate);
 
+        int finalScore = clampScore(relationScore, 15);
+        log.info("- 관계 만족도 계산 완료 - 결과={}", finalScore);
+
         return clampScore(relationScore, 15);
     }
 
     /* 경력 개발 기회 계산 메소드 */
     private int calculateGrowthLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 성장 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         int growthScore = 15;
         LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1).minusDays(1);
 
@@ -131,11 +152,16 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 3. 조직 공정성 평가
         growthScore += evaluationScoreService.getAdjustedScoreForForm(7, emp.getEmpId(), 4.0, year, month);
 
+        int finalScore = clampScore(growthScore, 15);
+        log.info("- 성장 만족도 계산 완료 - 결과={}", finalScore);
+
         return clampScore(growthScore, 15);
     }
 
     /* 근속 연수, 근태 계산 메소드 */
     private int calculateTenureLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 근속 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         double tenureScore = 15;
         LocalDate targetDate = LocalDate.of(year, month, 1).plusMonths(1);
         long empId = emp.getEmpId();
@@ -147,11 +173,16 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 메서드 로직 상 대상 달 다음달의 1일이 필요 (이 값을 변수 targetDate로 정의)
         tenureScore += workRetentionService.calculateScoreByAbsenceAndLate(empId, targetDate);
 
+        int finalScore = clampScore((int) tenureScore, 15);
+        log.info("- 근속 만족도 계산 완료 - 결과={}", finalScore);
+
         return clampScore((int) tenureScore, 15);
     }
 
     /* 워라밸, 초과근무 계산 메소드 */
     private int calculateWlbLevel(Integer year, Integer month, Employee emp) {
+        log.info("- 워라밸 만족도 계산 시작 - empNo={}", emp.getEmpNo());
+
         int wlbScore = 15;
 
         // 1. 초과 근무 (최대 -10점)
@@ -163,6 +194,9 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         // 3. 자가 진단
         wlbScore += evaluationScoreService.getAdjustedScoreForForm(12, emp.getEmpId(), 3.0, year, month);
         wlbScore += evaluationScoreService.getAdjustedScoreForForm(10, emp.getEmpId(), 2.0, year, month);
+
+        int finalScore = clampScore(wlbScore, 15);
+        log.info("- 워라밸 만족도 계산 완료 - 결과={}", finalScore);
 
         return clampScore(wlbScore, 15);
     }
@@ -191,8 +225,8 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
     }
 
     /**
-     *  총점 계산하는 로직
-     *  */
+     * 총점 계산하는 로직
+     */
     private BigDecimal weightedScore(
             int jobLevel, int compLevel, int relationLevel, int growthLevel,
             int tenureLevel, int wlbLevel, BigDecimal ageCoefficient
@@ -202,27 +236,34 @@ public class RetentionScoreCalculatorImpl implements RetentionScoreCalculator {
         final int MAX_GROW = 15, MAX_TENURE = 15, MAX_WLB = 15;
 
         // 감점 합산
-        int totalPenalty =
-                (MAX_JOB - jobLevel) +
-                        (MAX_COMP - compLevel) +
-                        (MAX_REL - relationLevel) +
-                        (MAX_GROW - growthLevel) +
-                        (MAX_TENURE - tenureLevel) +
-                        (MAX_WLB - wlbLevel);
+        int jobPenalty = MAX_JOB - jobLevel;
+        int compPenalty = MAX_COMP - compLevel;
+        int relationPenalty = MAX_REL - relationLevel;
+        int growthPenalty = MAX_GROW - growthLevel;
+        int tenurePenalty = MAX_TENURE - tenureLevel;
+        int wlbPenalty = MAX_WLB - wlbLevel;
+
+        int totalPenalty = jobPenalty + compPenalty + relationPenalty + growthPenalty + tenurePenalty + wlbPenalty;
 
         // 감점 × 보정 계수
         BigDecimal deduction = BigDecimal.valueOf(totalPenalty)
                 .multiply(ageCoefficient)
                 .setScale(1, RoundingMode.HALF_UP);
 
-        // 100점 만점에서 감점 차감
-        return BigDecimal.valueOf(100)
+        // 최종 점수
+        BigDecimal finalScore = BigDecimal.valueOf(100)
                 .subtract(deduction)
                 .max(BigDecimal.ZERO)
                 .min(BigDecimal.valueOf(100))
                 .setScale(1, RoundingMode.HALF_UP);
-    }
 
+        // 로그 출력
+        log.info("[총점 계산] 감점: 직무={}, 보상={}, 관계={}, 성장={}, 근속={}, 워라밸={}, 총감점={}, 보정계수={}, 최종점수={}",
+                jobPenalty, compPenalty, relationPenalty, growthPenalty, tenurePenalty, wlbPenalty,
+                totalPenalty, ageCoefficient, finalScore);
+
+        return finalScore;
+    }
 
 }
 

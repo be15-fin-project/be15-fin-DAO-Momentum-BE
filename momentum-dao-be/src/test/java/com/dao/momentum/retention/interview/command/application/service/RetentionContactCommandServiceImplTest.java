@@ -4,6 +4,7 @@ import com.dao.momentum.common.dto.UseStatus;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRolesRepository;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactCreateDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactDeleteDto;
 import com.dao.momentum.retention.interview.command.application.dto.request.RetentionContactFeedbackUpdateDto;
@@ -12,7 +13,6 @@ import com.dao.momentum.retention.interview.command.application.dto.response.Ret
 import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactFeedbackUpdateResponse;
 import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponse;
 import com.dao.momentum.retention.interview.command.application.dto.response.RetentionContactResponseUpdateResponse;
-import com.dao.momentum.retention.interview.command.application.service.RetentionContactCommandServiceImpl;
 import com.dao.momentum.retention.interview.command.domain.aggregate.RetentionContact;
 import com.dao.momentum.retention.interview.command.domain.repository.RetentionContactRepository;
 import com.dao.momentum.retention.interview.exception.InterviewException;
@@ -42,6 +42,9 @@ class RetentionContactCommandServiceImplTest {
     @Mock
     private EmployeeRepository employeeRepository;
 
+    @Mock
+    private EmployeeRolesRepository employeeRolesRepository;
+
     @InjectMocks
     private RetentionContactCommandServiceImpl service;
 
@@ -53,7 +56,10 @@ class RetentionContactCommandServiceImplTest {
         @DisplayName("면담 요청 등록 성공")
         void createContact_success() {
             // given
-            Long targetId = 1001L; // DTO와 employeeRepository stub 모두 이 ID 사용
+            Long targetId = 1001L;
+            Long managerId = 2002L;
+            Long writerId = 3003L;
+
             Employee employee = Employee.builder()
                     .empId(targetId)
                     .empNo("20240001")
@@ -62,10 +68,12 @@ class RetentionContactCommandServiceImplTest {
                     .build();
             given(employeeRepository.findByEmpId(targetId)).willReturn(Optional.of(employee));
 
+            given(employeeRolesRepository.countManagerRole(managerId, 4L)).willReturn(1);
+
             RetentionContactCreateDto dto = RetentionContactCreateDto.builder()
                     .targetId(targetId)
-                    .managerId(2002L)
-                    .writerId(3003L)
+                    .managerId(managerId)
+                    .writerId(writerId)
                     .reason("근무 태도 관련 상담 필요")
                     .build();
 
@@ -87,8 +95,8 @@ class RetentionContactCommandServiceImplTest {
             // then
             assertThat(result.retentionId()).isEqualTo(1L);
             assertThat(result.targetId()).isEqualTo(targetId);
-            assertThat(result.managerId()).isEqualTo(2002L);
-            assertThat(result.writerId()).isEqualTo(3003L);
+            assertThat(result.managerId()).isEqualTo(managerId);
+            assertThat(result.writerId()).isEqualTo(writerId);
             assertThat(result.reason()).isEqualTo("근무 태도 관련 상담 필요");
         }
 
@@ -108,6 +116,27 @@ class RetentionContactCommandServiceImplTest {
                     .isInstanceOf(InterviewException.class)
                     .hasMessageContaining(ErrorCode.RETENTION_CONTACT_TARGET_EQUALS_MANAGER.getMessage());
         }
+
+        @Test
+        @DisplayName("면담 요청 실패 - manager가 팀장 권한 없음")
+        void createContact_managerNotTeamLeader_throwsException() {
+            // given
+            Long managerId = 2002L;
+            RetentionContactCreateDto dto = RetentionContactCreateDto.builder()
+                    .targetId(1001L)
+                    .managerId(managerId)
+                    .writerId(3003L)
+                    .reason("상담 요청")
+                    .build();
+
+            given(employeeRolesRepository.countManagerRole(managerId, 4L)).willReturn(0);
+
+            // when & then
+            assertThatThrownBy(() -> service.createContact(dto))
+                    .isInstanceOf(InterviewException.class)
+                    .hasMessageContaining(ErrorCode.RETENTION_CONTACT_WRITER_NOT_MANAGER.getMessage());
+        }
+
     }
 
     @Nested
