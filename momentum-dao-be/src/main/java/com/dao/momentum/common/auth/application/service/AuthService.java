@@ -236,6 +236,17 @@ public class AuthService {
                 .build();
     }
 
+    @Transactional
+    public void checkResetToken(String passwordResetToken) {
+        String empId = jwtTokenProvider.getUsernameFromJWT(passwordResetToken);
+
+        // Redis에 저장된 리프레시 토큰 조회
+        PasswordResetToken storedPasswordResetToken = passwordResetTokenRedisTemplate.opsForValue().get(empId);
+        if (storedPasswordResetToken == null) {
+            throw new BadCredentialsException("유효하지 않은 페이지입니다.");
+        }
+    }
+
     public TokenResponse issuePermanentBatchToken() {
         // 1. 사번 1번 사용자 조회 (관리자)
         Long empId = 1L;
@@ -253,5 +264,4 @@ public class AuthService {
                 .refreshToken(null) // 배치용이므로 refresh token 생략
                 .build();
     }
-
 }

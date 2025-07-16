@@ -85,6 +85,20 @@ public class AuthController {
         return ResponseEntity.ok().body(ApiResponse.success(null));
     }
 
+    @Operation(summary = "토큰 확인", description = "비밀번호 재설정 페이지를 위한 토큰 확인 api")
+    @PostMapping("/resetToken")
+    public ResponseEntity<ApiResponse<Void>> checkResetToken(
+            @RequestHeader("Authorization") String authorizationHeader
+    ){
+        String passwordResetToken = null;
+
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            passwordResetToken = authorizationHeader.substring(7); // "Bearer " 뒤 토큰만 추출
+        }
+        authService.checkResetToken(passwordResetToken);
+        return ResponseEntity.ok().body(ApiResponse.success(null));
+    }
+
     @Operation(summary = "비밀번호 재설정 요청", description = "비회원은 자신의 이메일을 입력하여 비밀번호 재설정을 요청할 수 있다.")
     @PostMapping("/reset-password/request")
     public ResponseEntity<ApiResponse<PasswordResetResponse>> resetPasswordRequest(
