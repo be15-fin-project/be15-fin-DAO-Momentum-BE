@@ -75,7 +75,7 @@ public class RetentionContactCommandServiceImpl implements RetentionContactComma
         NotificationMessage message = NotificationMessage.builder()
                 .content(content)
                 .type("RETENTION_CONTACT")
-                .url("/retention-support/communication-requests")
+                .url("/retention/my-contacts")
                 .receiverId(saved.getManagerId())
                 .contactId(saved.getRetentionId())
                 .timestamp(LocalDateTime.now())
