@@ -159,7 +159,7 @@ public class CSVService {
 
     private void validateRequiredFields(String[] cols, Map<String, Integer> idxMap, int line) {
         List<String> required = List.of(
-                "이름", "이메일 주소", "직위명",
+                "이름", "이메일 주소", "부서명", "직위명",
                 "성별", "주소", "연락처", "생년월일"
         );
         for (String key : required) {
