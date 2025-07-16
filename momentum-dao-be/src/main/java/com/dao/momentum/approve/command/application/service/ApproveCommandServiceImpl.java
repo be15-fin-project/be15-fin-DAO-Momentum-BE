@@ -12,6 +12,7 @@ import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
 import com.dao.momentum.file.command.application.dto.request.AttachmentRequest;
 import com.dao.momentum.file.command.domain.aggregate.File;
 import com.dao.momentum.file.command.domain.repository.FileRepository;
+import com.dao.momentum.notification.command.domain.repository.NotificationRepository;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
 import com.dao.momentum.organization.employee.exception.EmployeeException;
@@ -50,6 +51,7 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
     private final FileRepository fileRepository;
     private final EmployeeRepository employeeRepository;
     private final NotificationKafkaProducer notificationKafkaProducer;
+    private final NotificationRepository notificationRepository;
 
     /*
     * 결재 문서를 작성하는 메소드
@@ -199,7 +201,10 @@ public class ApproveCommandServiceImpl implements ApproveCommandService{
         // 8. 파일 삭제하기
         fileRepository.deleteByApprovalId(approveId);
 
-        // 9. 결재 삭제하기
+        // 9. 알림 내역 삭제하기
+        notificationRepository.deleteNotificationByApproveId(approveId);
+
+        // 10. 결재 삭제하기
         approveRepository.deleteApproveByApproveId(approveId);
     }
 
