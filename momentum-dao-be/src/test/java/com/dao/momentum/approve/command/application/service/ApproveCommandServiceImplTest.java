@@ -83,7 +83,7 @@ class ApproveCommandServiceImplTest {
 
         when(dispatcher.dispatch(ApproveType.PROPOSAL))
                 .thenReturn(formDetailStrategy);
-        when(formDetailStrategy.createNotificationContent(anyLong(), anyString()))
+        when(formDetailStrategy.createNotificationContent(anyLong(), anyString(),  any(FormDetailStrategy.NotificationType.class)))
                 .thenReturn("알림 내용입니다");
         doNothing().when(formDetailStrategy).saveDetail(any(), anyLong());
 
