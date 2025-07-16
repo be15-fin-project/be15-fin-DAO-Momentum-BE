@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.dao.momentum.common.exception.ErrorCode.INVALID_PAGE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -154,12 +156,12 @@ public class AuthService {
         // Redis에 저장된 리프레시 토큰 조회
         PasswordResetToken storedPasswordResetToken = passwordResetTokenRedisTemplate.opsForValue().get(empId);
         if (storedPasswordResetToken == null) {
-            throw new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음");
+            throw new EmployeeException(ErrorCode.INVALID_PAGE);
         }
 
         // 넘어온 리프레시 토큰과 Redis의 토큰 비교
         if (!storedPasswordResetToken.getToken().equals(passwordResetToken)) {
-            throw new BadCredentialsException("리프레시 토큰 일치하지 않음");
+            throw new EmployeeException(ErrorCode.INVALID_PAGE);
         }
 
         Employee employee = employeeRepository.findByEmpId(Long.parseLong(empId))
