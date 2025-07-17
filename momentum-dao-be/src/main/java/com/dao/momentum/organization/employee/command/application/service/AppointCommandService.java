@@ -99,7 +99,7 @@ public class AppointCommandService {
         appointRepository.save(appoint);
         long appointId = appoint.getAppointId();
 
-//        if (appointDate.equals(today)) { // 날짜가 오늘이면 바로 반영, 아니면 배치 처리 (발령일 설정 기능 제공 시 if 블럭 복구)
+//        if (appointDate.equals(today)) { // 날짜가 오늘이면 바로 반영, 아니면 배치 처리 (발령일 설정 기능 제공 시 if 블록 복구)
             emp.fromAppoint(afterDeptId, afterPositionId);
             employeeRepository.save(emp);
 //        }
