@@ -9,8 +9,11 @@ import com.dao.momentum.approve.exception.ApproveException;
 import com.dao.momentum.common.exception.ErrorCode;
 import com.dao.momentum.common.kafka.dto.NotificationMessage;
 import com.dao.momentum.common.kafka.producer.NotificationKafkaProducer;
+import com.dao.momentum.file.command.domain.repository.FileRepository;
+import com.dao.momentum.notification.command.domain.repository.NotificationRepository;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Employee;
 import com.dao.momentum.organization.employee.command.domain.repository.EmployeeRepository;
+import com.dao.momentum.work.command.domain.repository.BusinessTripRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +27,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +55,16 @@ class ApproveCommandServiceImplTest {
     private EmployeeRepository employeeRepository;
 
     @Mock
+    private FileRepository fileRepository;
+
+    @Mock
     private NotificationKafkaProducer notificationKafkaProducer;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
+    @Mock
+    private BusinessTripRepository businessTripRepository;
 
     @InjectMocks
     private ApproveCommandServiceImpl approveCommandService;
@@ -173,6 +185,65 @@ class ApproveCommandServiceImplTest {
 
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_EXIST_REF);
 
+    }
 
+    @Test
+    @DisplayName("결재자 모두 대기 상태면 삭제 성공")
+    void deleteApproval() {
+        Long approveId = 1L;
+        Long empId = 10L;
+
+        Approve mockApprove = Approve.builder()
+                .empId(empId)
+                .approveType(ApproveType.BUSINESSTRIP)
+                .build();
+
+        List<Long> mockApproveLineIds = List.of(100L, 200L);
+        List<Integer> statusIds = List.of(1, 1);
+
+        given(approveRepository.getApproveByApproveId(approveId))
+                .willReturn(Optional.of(mockApprove));
+        given(approveLineRepository.getApproveLinesByApproveId(approveId))
+                .willReturn(mockApproveLineIds);
+        given(approveLineListRepository.getAllStatusesByApproveLineIds(mockApproveLineIds))
+                .willReturn(statusIds);
+
+        approveCommandService.deleteApproval(approveId, empId);
+
+        verify(businessTripRepository).deleteBusinessTripByApproveId(approveId);
+        verify(approveLineListRepository).deleteApproveLineListByApproveLineId(100L);
+        verify(approveLineListRepository).deleteApproveLineListByApproveLineId(200L);
+        verify(approveLineRepository).deleteApproveLinesByApproveId(approveId);
+        verify(approveRefRepository).deleteApproveRefByApprovalId(approveId);
+        verify(fileRepository).deleteByApprovalId(approveId);
+        verify(notificationRepository).deleteNotificationByApproveId(approveId);
+        verify(approveRepository).deleteApproveByApproveId(approveId);
+    }
+
+    @Test
+    @DisplayName("하나라도 결재자가 승인/반려 상태면 예외 발생")
+    void deleteApprovalException() {
+        Long approveId = 1L;
+        Long empId = 10L;
+
+        Approve mockApprove = Approve.builder()
+                .empId(empId)
+                .approveType(ApproveType.BUSINESSTRIP)
+                .build();
+
+        List<Long> mockApproveLineIds = List.of(100L);
+        List<Integer> statusIds = List.of(1, 2);
+
+        given(approveRepository.getApproveByApproveId(approveId))
+                .willReturn(Optional.of(mockApprove));
+        given(approveLineRepository.getApproveLinesByApproveId(approveId))
+                .willReturn(mockApproveLineIds);
+        given(approveLineListRepository.getAllStatusesByApproveLineIds(mockApproveLineIds))
+                .willReturn(statusIds);
+
+        ApproveException ex = assertThrows(ApproveException.class,
+                () -> approveCommandService.deleteApproval(approveId, empId));
+
+        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.ALREADY_START_APPROVAL);
     }
 }
