@@ -30,6 +30,7 @@ public enum ErrorCode {
 
     INVALID_APPOINT_DATE("10013", "발령일은 오늘보다 빠를 수 없습니다." , HttpStatus.BAD_REQUEST),
     PENDING_APPOINT_EXISTS("10017", "이미 대기중인 발령 등록 내역이 있습니다." , HttpStatus.BAD_REQUEST),
+    INVALID_PAGE("10017", "유효하지 않은 페이지입니다.." , HttpStatus.BAD_REQUEST),
 
     // 회사 오류 (11001 - 11999)
     COMPANY_INFO_NOT_FOUND("11001", "시스템 오류입니다.", HttpStatus.NOT_FOUND),
