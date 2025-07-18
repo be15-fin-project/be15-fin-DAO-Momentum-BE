@@ -58,6 +58,7 @@ public enum ErrorCode {
     INVALID_COLUMN_COUNT("13006", "[%d행] 컬럼 수(%d)가 헤더(%d)와 다릅니다.", HttpStatus.BAD_REQUEST),
     REQUIRED_VALUE_NOT_FOUND("13007", "[%d행] '%s' 필드는 필수 입력입니다.", HttpStatus.BAD_REQUEST),
     INVALID_STATUS("13008", "존재하지 않는 재직 상태입니다." , HttpStatus.BAD_REQUEST),
+    CSV_DUPLICATE_EMAIL("13009", "[%d행] 해당 이메일을 사용 중인 사원이 이미 존재합니다." , HttpStatus.CONFLICT),
 
     // 권한 오류 (14001 - 14999)
     USER_ROLE_NOT_FOUND("14001", "요청된 사용자 권한이 없습니다.", HttpStatus.BAD_REQUEST),
