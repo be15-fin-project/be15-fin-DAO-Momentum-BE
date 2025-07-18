@@ -18,16 +18,12 @@ import com.dao.momentum.organization.position.command.domain.repository.Position
 import com.dao.momentum.organization.position.exception.PositionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -53,12 +49,12 @@ public class AppointCommandService {
         Integer currentDeptId = emp.getDeptId();
 
         LocalDate today = LocalDate.now();
-        // 1) 이미 등록되었지만 아직 적용되지 않은 발령이 있으면 등록 차단
-        List<Appoint> pendingAppoints = appointRepository.findAllPendingAppoints(empId, today, currentPositionId, currentDeptId);
-
-        if (!pendingAppoints.isEmpty()) {
-            throw new EmployeeException(ErrorCode.PENDING_APPOINT_EXISTS);
-        }
+        // 1) 이미 등록되었지만 아직 적용되지 않은 발령이 있으면 등록 차단 (발령일 설정 기능 제공 시 필요한 검증 로직)
+//        List<Appoint> pendingAppoints = appointRepository.findAllPendingAppoints(empId, today, currentPositionId, currentDeptId);
+//
+//        if (!pendingAppoints.isEmpty()) {
+//            throw new EmployeeException(ErrorCode.PENDING_APPOINT_EXISTS);
+//        }
 
         int afterPositionId = request.getPositionId();
         Integer afterDeptId = request.getDeptId();
@@ -82,10 +78,13 @@ public class AppointCommandService {
             case DEPARTMENT_TRANSFER -> validateTransfer(emp, afterDept, afterPosition);
         }
 
-        LocalDate appointDate = request.getAppointDate();
-        if (appointDate.isBefore(today)) {
-            throw new EmployeeException(ErrorCode.INVALID_APPOINT_DATE);
-        }
+        LocalDate appointDate = today;
+
+        /* 추후 제공 예정인 기능 */
+//        LocalDate appointDate = request.getAppointDate();
+//        if (appointDate.isBefore(today)) {
+//            throw new EmployeeException(ErrorCode.INVALID_APPOINT_DATE);
+//        }
 
         Appoint appoint = Appoint.builder()
                 .empId(empId)
@@ -100,10 +99,10 @@ public class AppointCommandService {
         appointRepository.save(appoint);
         long appointId = appoint.getAppointId();
 
-        if (appointDate.equals(today)) { // 날짜가 오늘이면 바로 반영, 아니면 배치 처리
+//        if (appointDate.equals(today)) { // 날짜가 오늘이면 바로 반영, 아니면 배치 처리 (발령일 설정 기능 제공 시 if 블록 복구)
             emp.fromAppoint(afterDeptId, afterPositionId);
             employeeRepository.save(emp);
-        }
+//        }
 
         log.info("인사 발령 등록 성공 - 발령 ID: {}, 발령 등록자 ID: {}, 발령 대상자 ID: {}, 등록 일시: {}", appointId, adminId, empId, LocalDateTime.now());
         return AppointCreateResponse.builder()
@@ -112,6 +111,8 @@ public class AppointCommandService {
                 .build();
     }
 
+    /* 추후 제공 예정인 기능 */
+    /*
     @Transactional
     @Scheduled(cron = "0 0 0 * * *") // 매일 자정 배치작업
     public void applyAppoint() {
@@ -150,7 +151,7 @@ public class AppointCommandService {
             log.warn("[발령 등록 Batch System] 처리되지 않은 유효하지 않은 발령 ID 목록: {}", invalidAppointIds);
         }
     }
-
+*/
     private void validatePromotion(Employee emp, Position beforePosition, Position afterPosition, Department afterDept) {
         int beforeLevel = beforePosition.getLevel();
 

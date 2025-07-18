@@ -101,7 +101,8 @@ public class SecurityConfig {
                 "/employees/reset-password",
                 "/employees/reset-password/request",
                 "/swagger-ui/**",
-                "/v3/api-docs/**"
+                "/v3/api-docs/**",
+                "/actuator/health"
         ).permitAll();
     }
 
