@@ -154,6 +154,20 @@ public class EmployeeCommandService {
         Employee employee = employeeRepository.findByEmpId(empId)
                 .orElseThrow(() -> new EmployeeException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
+        String requestedEmail = request.getEmail();
+        String requestedEmpNo = request.getEmpNo();
+
+        // 중복 empNo 검증
+        if (!employee.getEmpNo().equals(requestedEmpNo)
+                && employeeRepository.existsByEmpNo(requestedEmpNo)) {
+            throw new EmployeeException(ErrorCode.EMPNO_ALREADY_EXISTS);
+        }
+
+        // 중복 email 검증
+        if (!employee.getEmail().equals(requestedEmail) && employeeRepository.findByEmail(requestedEmail).isPresent()) {
+            throw new EmployeeException(ErrorCode.DUPLICATE_EMAIL_ADDRESS);
+        }
+
         employee.fromUpdateEmpInfo(request);
         employeeRepository.save(employee);
 

@@ -21,6 +21,8 @@ public enum ErrorCode {
     INVALID_POSITION_FOR_PROMOTION("10010", "한 단계 높은 직위로만 승진 가능합니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_PROMOTION("10011", "승진 시에는 소속을 변경할 수 없습니다." , HttpStatus.BAD_REQUEST ),
     INVALID_DEPARTMENT_FOR_TRANSFER("10012", "소속이 변경되지 않았습니다." , HttpStatus.BAD_REQUEST ),
+    EMPNO_ALREADY_EXISTS("10018", "해당 사번이 이미 존재합니다.", HttpStatus.CONFLICT),
+    DUPLICATE_EMAIL_ADDRESS("10019", "해당 이메일을 사용 중인 사원이 이미 존재합니다." , HttpStatus.CONFLICT),
 
     PASSWORD_NOT_CORRECT("10014", "유효하지 않은 비밀번호 변경입니다.", HttpStatus.BAD_REQUEST),
     EMAIL_SENDING_FAILED("10015", "이메일 전송에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
