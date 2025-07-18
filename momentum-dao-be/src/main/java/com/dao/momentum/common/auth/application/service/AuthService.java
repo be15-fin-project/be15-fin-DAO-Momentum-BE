@@ -197,7 +197,7 @@ public class AuthService {
 
         //이메일 처리
         Map<String, Object> variables = new HashMap<>();
-        variables.put("resetLink","http://localhost:5173/password/reset?token="+passwordResetToken);
+        variables.put("resetLink","https://momentum-dao.site/password/reset?token="+passwordResetToken);
         emailService.sendEmailWithTemplate(
                 employee.getEmail(),
                 "Momentum 비밀번호 재설정",
