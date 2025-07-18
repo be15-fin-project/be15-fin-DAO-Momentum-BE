@@ -108,7 +108,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
     
           git clone https://x-access-token:${{ secrets.MANIFEST_TOKEN }}@github.com/be15-fin-project/be15-DAO-Momentum-GitOps.git
-          cd k8s
+          cd be15-DAO-Momentum-GitOps/k8s
           # ECR 이미지로 경로 반영
           sed -i "s|image:.*|image: ${ECR_REGISTRY}/momentum-be:${TAG}|" backend.yml
 
