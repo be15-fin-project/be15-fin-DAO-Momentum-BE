@@ -14,6 +14,7 @@ env:
   ECR_REGISTRY: ${{ secrets.ECR_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
   TAG: ${{ github.run_number }}
 
+  
 
 jobs:
   build:
