@@ -91,6 +91,18 @@ public class CSVService {
 
         // 4) 일괄 이메일 발송
         for (Map.Entry<Employee, String> entry : emailMap.entrySet()) {
+            Employee employee = entry.getKey();
+            String passwordResetToken = emailMap.get(employee);
+
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("resetLink", "https://momentum-dao.site/password/init?token="+passwordResetToken);
+            emailService.sendEmailWithTemplate(
+                    employee.getEmail(),
+                    "Momentum 초기 비밀번호 설정",
+                    "email/init-password",
+                    variables
+            );
+
             emailService.sendPasswordResetEmail(entry.getKey(), entry.getValue());
         }
 

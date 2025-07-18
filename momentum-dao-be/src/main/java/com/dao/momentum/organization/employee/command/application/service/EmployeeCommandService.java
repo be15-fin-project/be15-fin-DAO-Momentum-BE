@@ -66,7 +66,7 @@ public class EmployeeCommandService {
 
         //이메일 처리
         Map<String, Object> variables = new HashMap<>();
-        variables.put("resetLink","http://localhost:5173/password/init?token="+passwordResetToken);
+        variables.put("resetLink","https://momentum-dao.site/password/init?token="+passwordResetToken);
         emailService.sendEmailWithTemplate(
                 employee.getEmail(),
                 "Momentum 초기 비밀번호 설정",
