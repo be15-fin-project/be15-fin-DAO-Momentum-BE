@@ -41,6 +41,8 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 6000ms  # ?? ????
+      ssl:
+        enabled: true
       lettuce:
         pool:
           max-active: 10  # ?? ?? ?? ?
@@ -86,3 +88,16 @@ naver:
 batch:
   server:
     url: ${BATCH_SERVER_URL} # 알림 배치 서버
+
+server:
+  servlet:
+    context-path: /api/backend/v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
