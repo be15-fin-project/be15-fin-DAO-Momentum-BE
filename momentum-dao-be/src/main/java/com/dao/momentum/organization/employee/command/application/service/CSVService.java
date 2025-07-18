@@ -56,16 +56,19 @@ public class CSVService {
         employeeCommandService.validateActiveAdmin(adminId);
 
         // 1) 파싱 & 검증
-        List<EmployeeRegisterRequest> requests = parseAndValidate(file);
+        List<Integer> lineNumbers = new ArrayList<>();
+        List<EmployeeRegisterRequest> requests = parseAndValidate(file, lineNumbers);
 
         // 2) 저장 및 토큰 수집
         Map<Employee, String> emailMap = new LinkedHashMap<>();
-        for (EmployeeRegisterRequest req : requests) {
+        for (int i = 0; i < requests.size(); i++) {
+            EmployeeRegisterRequest req = requests.get(i);
             Employee emp = modelMapper.map(req, Employee.class);
 
-            // 중복 이메일 체크
             if (employeeRepository.findByEmail(req.getEmail()).isPresent()) {
-                throw new EmployeeException(ErrorCode.EMPLOYEE_ALREADY_EXISTS);
+                int line = lineNumbers.get(i);
+
+                throw new EmployeeException(ErrorCode.CSV_DUPLICATE_EMAIL, line);
             }
 
             // 사번 생성 및 비밀번호 설정
@@ -104,7 +107,7 @@ public class CSVService {
                 .build();
     }
 
-    public List<EmployeeRegisterRequest> parseAndValidate(MultipartFile file) {
+    public List<EmployeeRegisterRequest> parseAndValidate(MultipartFile file, List<Integer> lineNumbers) {
         List<String[]> rows = readAllRows(file);
 
         // 1) 헤더 정리 및 인덱스 맵 생성
@@ -123,6 +126,8 @@ public class CSVService {
                         ErrorCode.INVALID_COLUMN_COUNT, line, cols.length, headers.size());
             }
             validateRequiredFields(cols, idxMap, line);
+
+            lineNumbers.add(line);
             requests.add(toRequest(cols, idxMap));
         }
         return requests;
