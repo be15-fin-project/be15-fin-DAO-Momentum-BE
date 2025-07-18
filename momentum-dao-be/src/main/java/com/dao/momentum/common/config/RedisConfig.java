@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -33,10 +34,11 @@ public class RedisConfig {
         redisStandaloneConfiguration.setPort(Integer.parseInt(redisPort));
         redisStandaloneConfiguration.setPassword(redisPassword);
 
-        LettuceConnectionFactory lettuceConnectionFactory =
-                new LettuceConnectionFactory(redisStandaloneConfiguration);
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .useSsl()  // TLS 활성화
+                .build();
 
-        return lettuceConnectionFactory;
+        return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
     }
 
     @Bean
