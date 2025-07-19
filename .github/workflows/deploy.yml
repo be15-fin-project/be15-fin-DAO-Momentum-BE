@@ -1,0 +1,121 @@
+name: Spring Boot CI
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - "release"
+
+env:
+  AWS_REGION: ap-northeast-2  # 원하는 리전
+  ECR_REGISTRY: ${{ secrets.ECR_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
+  TAG: ${{ github.run_number }}
+
+  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # 가상 머신(runner)에 **현재 GitHub 저장소의 코드를 복제
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+        # actions/setup-java@v4을 사용하여 JDK 설치
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+          # gradlew 실행권한 부여
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./momentum-dao-be/gradlew
+        shell: bash
+
+      - name: Gradle build and test
+        run: cd momentum-dao-be && ./gradlew clean build test
+        shell: bash
+
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      
+      # #run_number를 이용하여 태그 지정하여 빌드
+      # - name: Build and Push Docker Image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./momentum-dao-be
+      #     file: ./momentum-dao-be/Dockerfile
+      #     push: false
+      #     tags: ${{ secrets.DOCKER_USERNAME }}/momentum-be:${{ env.TAG }}
+      
+      #MANIFEST에 반영
+      # - name: K8S Manifest Update
+      #   run: |
+      #       # 자동화 봇이 코드를 수정하거나 푸시할 수 있도록 설계된 기능 [ GitHub에서 공식적으로 인식하는 자동 커밋 작성자 ]
+      #       git config --global user.name "github-actions[bot]"
+      #       git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            
+      #       # git 클론
+      #       git clone https://x-access-token:${{ secrets.MANIFEST_TOKEN }}@github.com/Taein5415/k8s-manifests.git
+      #       cd k8s-manifests
+
+      #       # deployment.yaml 파일의 IMAGE_TAG 값을 새로운 TAG로 교체
+      #       sed -i "s/image:.*/image: momentum-be:$TAG/" backend.yml
+
+      #       git add .
+      #       git commit -m "Update image tag to $TAG"
+      #       git push origin main
+      
+      ############################################################################################
+      #  AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+  
+      #ECR에 PUSH
+      # ECR에 로그인
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 이미지 빌드 및 ECR로 Push
+      - name: Build and Push Docker Image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: ./momentum-dao-be
+          file: ./momentum-dao-be/Dockerfile
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/momentum-be:${{ env.TAG }}
+
+      # Manifest에 반영
+      - name: K8S Manifest Update
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    
+          git clone https://x-access-token:${{ secrets.MANIFEST_TOKEN }}@github.com/be15-fin-project/be15-DAO-Momentum-GitOps.git
+          cd be15-DAO-Momentum-GitOps/k8s
+          # ECR 이미지로 경로 반영
+          sed -i "s|image:.*|image: ${ECR_REGISTRY}/momentum-be:${TAG}|" backend.yml
+
+          git add .
+          git commit -m "Update image tag to $TAG"
+          git push origin main
+
+ 
+        
+
