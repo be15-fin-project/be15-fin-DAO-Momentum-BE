@@ -3,10 +3,7 @@ package com.dao.momentum.organization.employee.command.application.dto.request;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Gender;
 import com.dao.momentum.organization.employee.command.domain.aggregate.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -49,9 +46,11 @@ public class EmployeeRegisterRequest {
     private LocalDate joinDate;
 
     @NotNull(message = "부여 연차 시간은 필수 항목입니다.")
+    @Min(value = 0, message = "부여 연차 시간은 0 이상이어야 합니다.")
     private Integer remainingDayoffHours;
 
     @NotNull(message = "부여 리프레시 휴가 일수는 필수 항목입니다.")
+    @Min(value = 0, message = "부여 리프레시 휴가 일수는 0 이상이어야 합니다.")
     private Integer remainingRefreshDays;
 
     @NotNull(message = "성별은 필수 항목입니다.")
