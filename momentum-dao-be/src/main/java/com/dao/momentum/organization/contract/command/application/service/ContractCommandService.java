@@ -96,14 +96,12 @@ public class ContractCommandService {
 
         long empId = contractToDelete.getEmpId();
 
-
         // 첨부파일 hard delete
         File file = fileRepository.findByContractId(contractId)
                         .orElseThrow(() -> {
                             log.warn("계약서 첨부파일 조회 실패 - contractId: {}", contractId);
                             return new ContractException(ErrorCode.ATTACHMENT_NOT_FOUND);
                         });
-        s3Service.deleteFileFromS3(file.getS3Key());
         fileRepository.deleteById(file.getAttachmentId());
 
         contractRepository.delete(contractToDelete);

@@ -102,8 +102,6 @@ public class CSVService {
                     "email/init-password",
                     variables
             );
-
-            emailService.sendPasswordResetEmail(entry.getKey(), entry.getValue());
         }
 
         // 5) 결과 응답
