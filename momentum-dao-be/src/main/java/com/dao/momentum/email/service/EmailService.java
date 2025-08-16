@@ -7,6 +7,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class EmailService {
+    @Value("${app.server.url}")
+    private String serverURL;
+
     private final JavaMailSender mailSender;
     private final SpringTemplateEngine templateEngine;
 
@@ -34,8 +38,9 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(Employee employee, String token) {
+
         // 비밀번호 재설정 링크
-        String resetLink = "https://momentum-dao.site/password/reset?token=" + token;
+        String resetLink = "%s/password/reset?token=%s".formatted(serverURL, token);
 
         // 이메일 제목
         String subject = "Momentum 비밀번호 재설정";
