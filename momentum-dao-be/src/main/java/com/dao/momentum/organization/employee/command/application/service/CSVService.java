@@ -21,6 +21,7 @@ import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,8 @@ import java.util.stream.IntStream;
 @Slf4j
 @RequiredArgsConstructor
 public class CSVService {
+    @Value("${app.server.url}")
+    private String serverURL;
 
     private final EmployeeCommandService employeeCommandService;
     private final VacationTimeCommandService vacationTimeCommandService;
@@ -95,7 +98,7 @@ public class CSVService {
             String passwordResetToken = emailMap.get(employee);
 
             Map<String, Object> variables = new HashMap<>();
-            variables.put("resetLink", "https://momentum-dao.site/password/init?token="+passwordResetToken);
+            variables.put("resetLink", "%s/password/init?token=%s".formatted(serverURL, passwordResetToken));
             emailService.sendEmailWithTemplate(
                     employee.getEmail(),
                     "Momentum 초기 비밀번호 설정",

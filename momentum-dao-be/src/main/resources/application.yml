@@ -40,8 +40,6 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
       timeout: 6000ms  # ?? ????
-      ssl:
-        enabled: true
       lettuce:
         pool:
           max-active: 10  # ?? ?? ?? ?
@@ -100,3 +98,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+app:
+  server:
+    url: http://localhost:5173

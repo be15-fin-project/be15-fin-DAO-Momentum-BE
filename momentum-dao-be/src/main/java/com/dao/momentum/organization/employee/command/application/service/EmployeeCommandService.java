@@ -18,6 +18,7 @@ import com.dao.momentum.organization.employee.exception.EmployeeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class EmployeeCommandService {
+    @Value("${app.server.url}")
+    private String serverURL;
+
     private final EmployeeRepository employeeRepository;
     private final EmployeeRolesRepository employeeRolesRepository;
     private final EmployeeRecordsRepository employeeRecordsRepository;
@@ -66,7 +70,7 @@ public class EmployeeCommandService {
 
         //이메일 처리
         Map<String, Object> variables = new HashMap<>();
-        variables.put("resetLink","https://momentum-dao.site/password/init?token="+passwordResetToken);
+        variables.put("resetLink", "%s/password/init?token=%s".formatted(serverURL, passwordResetToken));
         emailService.sendEmailWithTemplate(
                 employee.getEmail(),
                 "Momentum 초기 비밀번호 설정",
