@@ -42,19 +42,21 @@
     </resultMap>
 
     <select id="getDepartmentListWithEmployees" resultMap="DepartmentNodeResultMap">
-        SELECT
-                d.dept_id,
-                d.parent_dept_id,
-                d.name AS dept_name,
-                e.emp_id,
-                e.name AS emp_name,
-                e.status,
-                p.name AS position_name
-        FROM department d
-        LEFT JOIN employee e ON d.dept_id = e.dept_id AND e.status != 'RESIGNED'
-        LEFT JOIN position p ON e.position_id = p.position_id AND p.is_deleted = 'N'
-        WHERE d.is_deleted = 'N'
-        ORDER BY d.parent_dept_id, d.dept_id
+        SSELECT 
+    d.dept_id,
+    d.parent_dept_id,
+    d.name AS dept_name,
+    e.emp_id,
+    e.name AS emp_name,
+    e.status,
+    p.name AS position_name
+FROM (
+    SELECT * FROM department 
+    WHERE is_deleted = 'N' 
+    ORDER BY parent_dept_id, dept_id
+) d
+LEFT JOIN employee e ON d.dept_id = e.dept_id AND e.status != 'RESIGNED'
+LEFT JOIN position p ON e.position_id = p.position_id AND p.is_deleted = 'N';
     </select>
 
     <select id="getLeafDepartment" resultType="com.dao.momentum.organization.department.query.dto.response.LeafDepartmentDTO">
